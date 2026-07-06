@@ -1,0 +1,147 @@
+{
+  "theme_and_archetype": {
+    "domain": "CRM / Education / Travel",
+    "theme": "Light",
+    "archetype": "Archetype 1: Organic & Earthy (Warm Professional)",
+    "description": "A distinctive, warm, and professional CRM that feels human and editorial. Avoids the standard cold 'tech/SaaS' aesthetic by utilizing rich terracotta accents, warm stone backgrounds, and elegant typography. No purple or teal gradients."
+  },
+  "typography": {
+    "heading_font": "Cabinet Grotesk",
+    "body_font": "Manrope",
+    "scale": {
+      "h1": "text-4xl tracking-tight leading-none",
+      "h2": "text-2xl tracking-tight",
+      "h3": "text-xl font-medium",
+      "body": "text-sm text-stone-600 leading-relaxed",
+      "small": "text-xs text-stone-500",
+      "overline": "text-[10px] uppercase tracking-widest text-stone-400 font-semibold"
+    },
+    "rules": [
+      "Avoid Inter and Roboto completely.",
+      "Use Cabinet Grotesk for KPI numbers, dashboard titles, and bold highlights.",
+      "Use Manrope for dense data tables, lists, and form inputs for max legibility."
+    ]
+  },
+  "colors": {
+    "background": {
+      "page": "#F9F8F6",
+      "surface": "#FFFFFF",
+      "surface_hover": "#F4F2EE"
+    },
+    "primary": {
+      "DEFAULT": "#C05B43",
+      "hover": "#A64D37",
+      "foreground": "#FFFFFF",
+      "description": "Rich Terracotta - signifies action and warmth"
+    },
+    "secondary": {
+      "DEFAULT": "#1B365D",
+      "foreground": "#FFFFFF",
+      "description": "Deep Navy - for strong authoritative contrast like the sidebar or dark headers"
+    },
+    "text": {
+      "primary": "#1C1917",
+      "secondary": "#57534E",
+      "muted": "#A8A29E"
+    },
+    "border": {
+      "DEFAULT": "#E7E5E4",
+      "focus": "#C05B43"
+    },
+    "anti_patterns": [
+      "No purple (#9D4CDD) or teal (#1B93A4) gradients.",
+      "No pure #000000 or pure #FFFFFF backgrounds for the entire page (use #F9F8F6 for main body)."
+    ]
+  },
+  "spacing_and_layout": {
+    "system": "Generous spacing. Use p-6 or p-8 for cards instead of standard p-4.",
+    "dashboard_grid": "grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6",
+    "radii": {
+      "card": "rounded-2xl",
+      "button": "rounded-xl",
+      "input": "rounded-lg",
+      "badge": "rounded-full"
+    },
+    "shadows": {
+      "card": "shadow-[0_2px_12px_rgba(28,25,23,0.04)]",
+      "hover": "shadow-[0_8px_24px_rgba(28,25,23,0.08)]"
+    }
+  },
+  "components": {
+    "cards": {
+      "style": "Clean white backgrounds with 1px stone borders (border-stone-200) and soft ambient shadow.",
+      "padding": "p-6"
+    },
+    "kanban_board": {
+      "column": "bg-stone-50/50 rounded-2xl p-4 min-w-[300px] border border-stone-100",
+      "item": "bg-white p-4 rounded-xl shadow-sm border border-stone-200 cursor-grab hover:border-[#C05B43]/50 transition-colors"
+    },
+    "tables": {
+      "style": "No vertical dividers. Generous horizontal padding. Table headers should use the 'overline' typography style.",
+      "row": "border-b border-stone-100 hover:bg-stone-50 transition-colors py-4"
+    },
+    "buttons": {
+      "primary": "bg-[#C05B43] text-white hover:bg-[#A64D37] shadow-sm rounded-xl px-4 py-2 font-medium transition-all",
+      "secondary": "bg-white text-stone-700 border border-stone-200 hover:bg-stone-50 rounded-xl px-4 py-2 font-medium transition-all",
+      "ghost": "text-stone-600 hover:text-stone-900 hover:bg-stone-100 rounded-xl px-4 py-2"
+    },
+    "inputs": {
+      "style": "bg-white border border-stone-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#C05B43]/20 focus:border-[#C05B43] transition-all"
+    },
+    "sidebar": {
+      "style": "bg-[#F9F8F6] border-r border-stone-200 w-64 flex flex-col p-4",
+      "link_active": "bg-white border border-stone-200 text-[#C05B43] shadow-sm rounded-xl",
+      "link_idle": "text-stone-600 hover:bg-stone-100 rounded-xl"
+    }
+  },
+  "stage_badges": {
+    "style": "px-2.5 py-0.5 rounded-full text-xs font-semibold inline-flex items-center ring-1 ring-inset",
+    "study_abroad": {
+      "NL": { "label": "New Lead", "classes": "bg-sky-50 text-sky-700 ring-sky-600/20" },
+      "CC": { "label": "Counsellor Contacted", "classes": "bg-blue-50 text-blue-700 ring-blue-600/20" },
+      "DNP": { "label": "Did Not Respond", "classes": "bg-rose-50 text-rose-700 ring-rose-600/20" },
+      "SL": { "label": "Shortlisting", "classes": "bg-slate-100 text-slate-700 ring-slate-600/20" },
+      "DR": { "label": "Docs Received", "classes": "bg-stone-100 text-stone-700 ring-stone-600/20" },
+      "PR": { "label": "Prospect", "classes": "bg-emerald-50 text-emerald-700 ring-emerald-600/20" },
+      "RA": { "label": "Ready to Application", "classes": "bg-amber-50 text-amber-700 ring-amber-600/20" },
+      "AP": { "label": "Application", "classes": "bg-orange-50 text-orange-700 ring-orange-600/20" },
+      "OL": { "label": "Offer Letter", "classes": "bg-green-50 text-green-700 ring-green-600/20" },
+      "RD": { "label": "Ready to Deposit", "classes": "bg-yellow-50 text-yellow-800 ring-yellow-600/20" },
+      "DP": { "label": "Deposit", "classes": "bg-red-50 text-red-700 ring-red-600/20" },
+      "VS": { "label": "Visa", "classes": "bg-cyan-50 text-cyan-700 ring-cyan-600/20" },
+      "EN": { "label": "Enrollment", "classes": "bg-emerald-100 text-emerald-800 ring-emerald-600/30" }
+    },
+    "accommodation": {
+      "IN": { "label": "Inquiry", "classes": "bg-sky-50 text-sky-700 ring-sky-600/20" },
+      "OS": { "label": "Options Sent", "classes": "bg-amber-50 text-amber-700 ring-amber-600/20" },
+      "VS": { "label": "Viewing/Shortlist", "classes": "bg-orange-50 text-orange-700 ring-orange-600/20" },
+      "BK": { "label": "Booking", "classes": "bg-emerald-50 text-emerald-700 ring-emerald-600/20" },
+      "CF": { "label": "Confirmed", "classes": "bg-green-100 text-green-800 ring-green-600/30" }
+    },
+    "loan": {
+      "AS": { "label": "App Started", "classes": "bg-slate-50 text-slate-700 ring-slate-600/20" },
+      "DS": { "label": "Docs Submitted", "classes": "bg-blue-50 text-blue-700 ring-blue-600/20" },
+      "PR": { "label": "Processing", "classes": "bg-amber-50 text-amber-700 ring-amber-600/20" },
+      "AP": { "label": "Approved", "classes": "bg-emerald-50 text-emerald-700 ring-emerald-600/20" },
+      "DB": { "label": "Disbursed", "classes": "bg-green-100 text-green-800 ring-green-600/30" }
+    }
+  },
+  "media": {
+    "login_background": {
+      "url": "https://images.unsplash.com/photo-1779733263861-8ee442f6a1f2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDB8MHwxfHNlYXJjaHwzfHxzdHVkeSUyMGFicm9hZCUyMHVuaXZlcnNpdHklMjBjYW1wdXMlMjBhcmNoaXRlY3R1cmV8ZW58MHx8fHwxNzgzMzcyMjgyfDA&ixlib=rb-4.1.0&q=85",
+      "description": "Historic college chapel and buildings with a large green lawn. Use with a bg-black/30 overlay."
+    },
+    "counsellor_avatars": [
+      "https://images.unsplash.com/photo-1699899657680-421c2c2d5064?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTF8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBidXNpbmVzcyUyMGhlYWRzaG90c3xlbnwwfHx8fDE3ODMzNzIyODJ8MA&ixlib=rb-4.1.0&q=85",
+      "https://images.unsplash.com/photo-1685760259914-ee8d2c92d2e0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxOTF8MHwxfHNlYXJjaHwzfHxwcm9mZXNzaW9uYWwlMjBidXNpbmVzcyUyMGhlYWRzaG90c3xlbnwwfHx8fDE3ODMzNzIyODJ8MA&ixlib=rb-4.1.0&q=85",
+      "https://images.pexels.com/photos/37148308/pexels-photo-37148308.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940"
+    ]
+  },
+  "technical_instructions": {
+    "icons": "Use @phosphor-icons/react. It provides a polished, professional look suitable for an elegant CRM.",
+    "testing": "All interactive and key informational elements MUST include a data-testid attribute to facilitate robust automated testing.",
+    "data_viz": "Use Recharts for Analytics (Funnel, Bar, Leaderboard). Use the primary Terracotta and Secondary Navy colors for chart bars/lines.",
+    "ui_library": "Use Shadcn/UI but heavy customization required to remove the default 'Vercel-look'. Increase padding and border radii, and ensure borders use the stone-200 color instead of default gray.",
+    "drag_and_drop": "Use a lightweight library like dnd-kit or react-beautiful-dnd for the Kanban boards."
+  }
+}
