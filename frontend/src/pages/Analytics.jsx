@@ -9,6 +9,8 @@ export default function Analytics() {
   const { user } = useAuth();
   const [pipeline, setPipeline] = useState("study_abroad");
   const [days, setDays] = useState(30);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
   const [counsellor, setCounsellor] = useState("__all__");
   const [source, setSource] = useState("__all__");
   const [summary, setSummary] = useState(null);
@@ -58,6 +60,8 @@ export default function Analytics() {
               <SelectItem value="1825">All time</SelectItem>
             </SelectContent>
           </Select>
+          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} data-testid="analytics-from" className="h-9 text-xs border border-stone-200 rounded-lg px-2 bg-white" />
+          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} data-testid="analytics-to" className="h-9 text-xs border border-stone-200 rounded-lg px-2 bg-white" />
           {user?.role === "admin" && (
             <Select value={counsellor} onValueChange={setCounsellor}>
               <SelectTrigger className="w-40 h-9 text-xs"><SelectValue placeholder="Counsellor" /></SelectTrigger>

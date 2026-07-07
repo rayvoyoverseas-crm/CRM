@@ -54,7 +54,7 @@ export default function Team() {
             <tr className="text-[10px] uppercase tracking-widest text-stone-500 bg-stone-50 border-b border-stone-200">
               <th className="text-left px-6 py-3">Member</th>
               <th className="text-left px-6 py-3">Role</th>
-              <th className="text-left px-6 py-3">Phone</th>
+              <th className="text-left px-6 py-3">Permissions</th>
               <th className="text-left px-6 py-3">Status</th>
               <th className="text-right px-6 py-3">Actions</th>
             </tr>
@@ -74,7 +74,32 @@ export default function Team() {
                     {u.role === "admin" && <ShieldCheck className="w-3 h-3" />} {u.role}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-xs text-stone-600">{u.phone || "—"}</td>
+                <td className="px-6 py-4 text-xs text-stone-600">
+                  {u.role !== "admin" && (
+                    <div className="flex flex-wrap gap-1">
+                      {[
+                        ["see_all_leads", "All leads"],
+                        ["see_analytics", "Analytics"],
+                        ["see_website_leads", "Website"],
+                        ["see_targets", "Targets"],
+                        ["see_team", "Team"],
+                      ].map(([k, l]) => {
+                        const on = u.permissions?.[k];
+                        return (
+                          <button
+                            key={k}
+                            onClick={async () => {
+                              await api.patch(`/users/${u.id}`, { permissions: { ...u.permissions, [k]: !on } });
+                              load();
+                            }}
+                            data-testid={`perm-${u.id}-${k}`}
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ring-1 ring-inset ${on ? "bg-emerald-50 text-emerald-700 ring-emerald-600/30" : "bg-stone-100 text-stone-500 ring-stone-300"}`}
+                          >{l}</button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </td>
                 <td className="px-6 py-4">
                   <button onClick={() => toggleActive(u)} className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ring-1 ring-inset ${u.active ? "bg-emerald-50 text-emerald-700 ring-emerald-600/20" : "bg-rose-50 text-rose-700 ring-rose-600/20"}`}>
                     {u.active ? "Active" : "Disabled"}
@@ -106,6 +131,7 @@ export default function Team() {
                 <SelectTrigger data-testid="member-role"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="counsellor">Counsellor</SelectItem>
+                  <SelectItem value="team_lead">Team Lead</SelectItem>
                   <SelectItem value="admin">Admin</SelectItem>
                 </SelectContent>
               </Select>

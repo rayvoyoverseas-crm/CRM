@@ -25,6 +25,8 @@ export const STAGE_MAP = {
     DP: { label: "Deposit Paid", classes: "bg-[#C05B43]/10 text-[#8a3f2c] ring-[#C05B43]/30" },
     VS: { label: "Visa", classes: "bg-cyan-50 text-cyan-800 ring-cyan-600/20" },
     EN: { label: "Enrollment", classes: "bg-[#1B365D]/10 text-[#1B365D] ring-[#1B365D]/30" },
+    LO: { label: "Lost", classes: "bg-red-100 text-red-800 ring-red-600/30" },
+    DF: { label: "Deferred", classes: "bg-purple-50 text-purple-800 ring-purple-600/20" },
   },
   accommodation: {
     IN: { label: "Inquiry", classes: "bg-sky-50 text-sky-700 ring-sky-600/20" },
@@ -43,7 +45,7 @@ export const STAGE_MAP = {
 };
 
 export const PIPELINE_STAGES = {
-  study_abroad: ["NL", "CC", "DNP", "SL", "DR", "PR", "RA", "AP", "OL", "RD", "DP", "VS", "EN"],
+  study_abroad: ["NL", "CC", "DNP", "SL", "DR", "PR", "RA", "AP", "OL", "RD", "DP", "VS", "EN", "LO", "DF"],
   accommodation: ["IN", "OS", "VS", "BK", "CF"],
   loan: ["AS", "DS", "PR", "AP", "DB"],
 };

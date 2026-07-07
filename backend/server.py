@@ -14,17 +14,31 @@ from typing import List, Optional, Literal
 import bcrypt
 import jwt
 from bson import ObjectId
-from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Depends, Header
+from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Depends, Header, UploadFile, File, Query
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr
+import requests as httpreq
 
 # --- Config -----------------------------------------------------------------
 
 JWT_ALGORITHM = "HS256"
-STUDY_STAGES = ["NL", "CC", "DNP", "SL", "DR", "PR", "RA", "AP", "OL", "RD", "DP", "VS", "EN"]
+STUDY_STAGES = ["NL", "CC", "DNP", "SL", "DR", "PR", "RA", "AP", "OL", "RD", "DP", "VS", "EN", "LO", "DF"]
 ACCOM_STAGES = ["IN", "OS", "VS", "BK", "CF"]
 LOAN_STAGES = ["AS", "DS", "PR", "AP", "DB"]
+DEFAULT_PERMS = {
+    "see_all_leads": False, "see_analytics": False, "see_website_leads": False,
+    "see_team": False, "see_targets": False, "see_integrations": False,
+    "manage_tasks_for_others": False,
+}
+ROLE_PERMS = {
+    "admin": {k: True for k in DEFAULT_PERMS},
+    "team_lead": {**DEFAULT_PERMS, "see_all_leads": True, "see_analytics": True, "see_website_leads": True, "manage_tasks_for_others": True},
+    "counsellor": DEFAULT_PERMS,
+}
+STORAGE_URL = "https://integrations.emergentagent.com/objstore/api/v1/storage"
+APP_NAME = os.environ.get("APP_NAME", "rayvoy-crm")
+_storage_key = None
 
 mongo_url = os.environ["MONGO_URL"]
 client = AsyncIOMotorClient(mongo_url)
@@ -68,14 +82,16 @@ def clear_cookies(response: Response):
     response.delete_cookie("refresh_token", path="/")
 
 def serialize_user(u: dict) -> dict:
+    role = u.get("role", "counsellor")
     return {
         "id": str(u["_id"]),
         "email": u["email"],
         "name": u.get("name", ""),
-        "role": u.get("role", "counsellor"),
+        "role": role,
         "phone": u.get("phone", ""),
         "created_at": u.get("created_at").isoformat() if isinstance(u.get("created_at"), datetime) else u.get("created_at"),
         "active": u.get("active", True),
+        "permissions": {**ROLE_PERMS.get(role, DEFAULT_PERMS), **(u.get("permissions") or {})},
     }
 
 async def get_current_user(request: Request) -> dict:
@@ -115,14 +131,15 @@ class UserCreateIn(BaseModel):
     password: str
     name: str
     phone: Optional[str] = ""
-    role: Literal["admin", "counsellor"] = "counsellor"
+    role: Literal["admin", "team_lead", "counsellor"] = "counsellor"
 
 class UserUpdateIn(BaseModel):
     name: Optional[str] = None
     phone: Optional[str] = None
-    role: Optional[Literal["admin", "counsellor"]] = None
+    role: Optional[Literal["admin", "team_lead", "counsellor"]] = None
     active: Optional[bool] = None
     password: Optional[str] = None
+    permissions: Optional[dict] = None
 
 class LeadCreateIn(BaseModel):
     name: str
@@ -278,10 +295,14 @@ def serialize_lead(l: dict) -> dict:
         "updated_at": l["updated_at"].isoformat() if isinstance(l.get("updated_at"), datetime) else l.get("updated_at"),
         "activity": l.get("activity", []),
         "reviewed": l.get("reviewed", True),
+        "highest_qualification": l.get("highest_qualification"),
+        "profile": l.get("profile", {}),
+        "referees": l.get("referees", []),
+        "loan_info": l.get("loan_info", {}),
     }
 
 async def _lead_visible_filter(user: dict) -> dict:
-    if user.get("role") == "admin":
+    if user.get("role") == "admin" or (user.get("permissions") or {}).get("see_all_leads"):
         return {}
     return {"assigned_to": str(user["_id"])}
 
@@ -292,6 +313,8 @@ async def list_leads(
     assigned_to: Optional[str] = None,
     source: Optional[str] = None,
     reviewed: Optional[bool] = None,
+    date_from: Optional[str] = None,
+    date_to: Optional[str] = None,
     user: dict = Depends(get_current_user),
 ):
     q: dict = await _lead_visible_filter(user)
@@ -300,8 +323,23 @@ async def list_leads(
     if assigned_to: q["assigned_to"] = assigned_to
     if source: q["source"] = source
     if reviewed is not None: q["reviewed"] = reviewed
+    if date_from or date_to:
+        rng: dict = {}
+        if date_from: rng["$gte"] = datetime.fromisoformat(date_from.replace("Z", "+00:00"))
+        if date_to: rng["$lte"] = datetime.fromisoformat(date_to.replace("Z", "+00:00"))
+        q["created_at"] = rng
     leads = await db.leads.find(q).sort("created_at", -1).to_list(2000)
-    return [serialize_lead(l) for l in leads]
+    threshold_days = int(os.environ.get("STALE_LEAD_DAYS", "2"))
+    cutoff = datetime.now(timezone.utc) - timedelta(days=threshold_days)
+    result = []
+    for l in leads:
+        s = serialize_lead(l)
+        upd = l.get("updated_at") or l.get("created_at")
+        if isinstance(upd, datetime) and upd.tzinfo is None:
+            upd = upd.replace(tzinfo=timezone.utc)
+        s["is_stale"] = bool(isinstance(upd, datetime) and upd < cutoff and l.get("stage") not in ("EN", "LO", "DF", "DNP"))
+        result.append(s)
+    return result
 
 @api.post("/leads")
 async def create_lead(payload: LeadCreateIn, user: dict = Depends(get_current_user)):
@@ -332,7 +370,7 @@ async def create_lead(payload: LeadCreateIn, user: dict = Depends(get_current_us
 @api.get("/leads/{lead_id}")
 async def get_lead(lead_id: str, user: dict = Depends(get_current_user)):
     q = {"_id": ObjectId(lead_id)}
-    if user.get("role") != "admin":
+    if user.get("role") != "admin" and not (user.get("permissions") or {}).get("see_all_leads"):
         q["assigned_to"] = str(user["_id"])
     l = await db.leads.find_one(q)
     if not l:
@@ -342,7 +380,7 @@ async def get_lead(lead_id: str, user: dict = Depends(get_current_user)):
 @api.patch("/leads/{lead_id}")
 async def update_lead(lead_id: str, payload: LeadUpdateIn, user: dict = Depends(get_current_user)):
     q = {"_id": ObjectId(lead_id)}
-    if user.get("role") != "admin":
+    if user.get("role") != "admin" and not (user.get("permissions") or {}).get("see_all_leads"):
         q["assigned_to"] = str(user["_id"])
     existing = await db.leads.find_one(q)
     if not existing:
@@ -579,6 +617,238 @@ async def root():
 @api.get("/meta/stages")
 async def stages_meta():
     return {"study_abroad": STUDY_STAGES, "accommodation": ACCOM_STAGES, "loan": LOAN_STAGES}
+
+# --- Tasks / Reminders / Notifications ------------------------------------
+
+class TaskIn(BaseModel):
+    lead_id: str
+    title: str
+    description: Optional[str] = ""
+    due_at: str  # ISO string
+    remind_at: Optional[str] = None
+    assigned_to: Optional[str] = None
+
+class TaskUpdateIn(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    due_at: Optional[str] = None
+    remind_at: Optional[str] = None
+    status: Optional[Literal["pending", "done", "cancelled"]] = None
+
+def serialize_task(t: dict) -> dict:
+    return {
+        "id": str(t["_id"]), "lead_id": t.get("lead_id"), "title": t.get("title", ""),
+        "description": t.get("description", ""), "due_at": t.get("due_at"),
+        "remind_at": t.get("remind_at"), "status": t.get("status", "pending"),
+        "assigned_to": t.get("assigned_to"), "assigned_to_name": t.get("assigned_to_name", ""),
+        "lead_name": t.get("lead_name", ""),
+        "created_at": t.get("created_at").isoformat() if isinstance(t.get("created_at"), datetime) else t.get("created_at"),
+    }
+
+async def _notify(user_id: str, title: str, body: str, link: Optional[str] = None, kind: str = "info"):
+    await db.notifications.insert_one({
+        "user_id": user_id, "title": title, "body": body, "link": link,
+        "kind": kind, "read": False, "created_at": datetime.now(timezone.utc),
+    })
+
+@api.post("/tasks")
+async def create_task(payload: TaskIn, user: dict = Depends(get_current_user)):
+    lead = await db.leads.find_one({"_id": ObjectId(payload.lead_id)})
+    if not lead:
+        raise HTTPException(404, "Lead not found")
+    assignee_id = payload.assigned_to or lead.get("assigned_to") or str(user["_id"])
+    assignee = await db.users.find_one({"_id": ObjectId(assignee_id)}) if assignee_id else None
+    doc = {
+        "lead_id": payload.lead_id, "lead_name": lead.get("name", ""),
+        "title": payload.title, "description": payload.description or "",
+        "due_at": payload.due_at, "remind_at": payload.remind_at,
+        "assigned_to": assignee_id, "assigned_to_name": assignee.get("name", "") if assignee else "",
+        "status": "pending", "created_at": datetime.now(timezone.utc), "created_by": user.get("name", ""),
+    }
+    res = await db.tasks.insert_one(doc)
+    doc["_id"] = res.inserted_id
+    if assignee_id and assignee_id != str(user["_id"]):
+        await _notify(assignee_id, "New Task Assigned", f"{payload.title} · {lead.get('name', '')}", link=f"/lead/{payload.lead_id}", kind="task")
+    # Add to lead activity
+    await db.leads.update_one({"_id": ObjectId(payload.lead_id)}, {
+        "$push": {"activity": {"type": "task", "text": f"Task: {payload.title} (due {payload.due_at})", "at": datetime.now(timezone.utc).isoformat(), "by": user.get("name", "")}},
+        "$set": {"updated_at": datetime.now(timezone.utc)},
+    })
+    return serialize_task(doc)
+
+@api.get("/tasks")
+async def list_tasks(lead_id: Optional[str] = None, status: Optional[str] = None, user: dict = Depends(get_current_user)):
+    q: dict = {}
+    if lead_id:
+        q["lead_id"] = lead_id
+    elif user.get("role") == "counsellor" and not (user.get("permissions") or {}).get("manage_tasks_for_others"):
+        q["assigned_to"] = str(user["_id"])
+    if status:
+        q["status"] = status
+    tasks = await db.tasks.find(q).sort("due_at", 1).to_list(1000)
+    return [serialize_task(t) for t in tasks]
+
+@api.patch("/tasks/{task_id}")
+async def update_task(task_id: str, payload: TaskUpdateIn, user: dict = Depends(get_current_user)):
+    update = payload.model_dump(exclude_none=True)
+    await db.tasks.update_one({"_id": ObjectId(task_id)}, {"$set": update})
+    t = await db.tasks.find_one({"_id": ObjectId(task_id)})
+    return serialize_task(t)
+
+@api.delete("/tasks/{task_id}")
+async def delete_task(task_id: str, user: dict = Depends(get_current_user)):
+    await db.tasks.delete_one({"_id": ObjectId(task_id)})
+    return {"ok": True}
+
+@api.get("/notifications")
+async def list_notifications(user: dict = Depends(get_current_user)):
+    items = await db.notifications.find({"user_id": str(user["_id"])}).sort("created_at", -1).limit(100).to_list(100)
+    return [{
+        "id": str(i["_id"]), "title": i.get("title"), "body": i.get("body"),
+        "link": i.get("link"), "kind": i.get("kind", "info"), "read": i.get("read", False),
+        "created_at": i["created_at"].isoformat() if isinstance(i.get("created_at"), datetime) else i.get("created_at"),
+    } for i in items]
+
+@api.post("/notifications/read-all")
+async def read_all(user: dict = Depends(get_current_user)):
+    await db.notifications.update_many({"user_id": str(user["_id"]), "read": False}, {"$set": {"read": True}})
+    return {"ok": True}
+
+@api.post("/notifications/{nid}/read")
+async def read_one(nid: str, user: dict = Depends(get_current_user)):
+    await db.notifications.update_one({"_id": ObjectId(nid)}, {"$set": {"read": True}})
+    return {"ok": True}
+
+# --- Documents (Object Storage) --------------------------------------------
+
+def init_storage():
+    global _storage_key
+    if _storage_key:
+        return _storage_key
+    key = os.environ.get("EMERGENT_LLM_KEY")
+    if not key:
+        raise HTTPException(500, "Object storage not configured")
+    resp = httpreq.post(f"{STORAGE_URL}/init", json={"emergent_key": key}, timeout=30)
+    resp.raise_for_status()
+    _storage_key = resp.json()["storage_key"]
+    return _storage_key
+
+def put_object(path: str, data: bytes, content_type: str):
+    key = init_storage()
+    resp = httpreq.put(f"{STORAGE_URL}/objects/{path}", headers={"X-Storage-Key": key, "Content-Type": content_type}, data=data, timeout=120)
+    resp.raise_for_status()
+    return resp.json()
+
+def get_object(path: str):
+    key = init_storage()
+    resp = httpreq.get(f"{STORAGE_URL}/objects/{path}", headers={"X-Storage-Key": key}, timeout=60)
+    resp.raise_for_status()
+    return resp.content, resp.headers.get("Content-Type", "application/octet-stream")
+
+@api.post("/leads/{lead_id}/documents")
+async def upload_doc(lead_id: str, doc_type: str = Query(...), meta: str = Query("{}"), file: UploadFile = File(...), user: dict = Depends(get_current_user)):
+    lead = await db.leads.find_one({"_id": ObjectId(lead_id)})
+    if not lead:
+        raise HTTPException(404, "Lead not found")
+    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else "bin"
+    path = f"{APP_NAME}/leads/{lead_id}/{doc_type}/{uuid.uuid4()}.{ext}"
+    data = await file.read()
+    result = put_object(path, data, file.content_type or "application/octet-stream")
+    import json as _json
+    try:
+        meta_obj = _json.loads(meta) if meta else {}
+    except Exception:
+        meta_obj = {}
+    doc = {
+        "lead_id": lead_id, "doc_type": doc_type, "storage_path": result["path"],
+        "original_filename": file.filename, "content_type": file.content_type,
+        "size": result.get("size", 0), "is_deleted": False, "meta": meta_obj,
+        "uploaded_by": user.get("name", ""),
+        "created_at": datetime.now(timezone.utc),
+    }
+    res = await db.documents.insert_one(doc)
+    doc["_id"] = res.inserted_id
+    await db.leads.update_one({"_id": ObjectId(lead_id)}, {
+        "$push": {"activity": {"type": "document", "text": f"Uploaded {doc_type}: {file.filename}", "at": datetime.now(timezone.utc).isoformat(), "by": user.get("name", "")}},
+        "$set": {"updated_at": datetime.now(timezone.utc)},
+    })
+    return {"id": str(doc["_id"]), "doc_type": doc_type, "original_filename": file.filename, "size": doc["size"], "meta": meta_obj}
+
+@api.get("/leads/{lead_id}/documents")
+async def list_docs(lead_id: str, user: dict = Depends(get_current_user)):
+    docs = await db.documents.find({"lead_id": lead_id, "is_deleted": False}).to_list(500)
+    return [{"id": str(d["_id"]), "doc_type": d.get("doc_type"), "original_filename": d.get("original_filename"),
+             "size": d.get("size", 0), "meta": d.get("meta", {}),
+             "created_at": d["created_at"].isoformat() if isinstance(d.get("created_at"), datetime) else d.get("created_at")} for d in docs]
+
+@api.get("/documents/{doc_id}/download")
+async def download_doc(doc_id: str, user: dict = Depends(get_current_user)):
+    d = await db.documents.find_one({"_id": ObjectId(doc_id), "is_deleted": False})
+    if not d:
+        raise HTTPException(404, "Not found")
+    data, ct = get_object(d["storage_path"])
+    return Response(content=data, media_type=d.get("content_type") or ct, headers={"Content-Disposition": f'inline; filename="{d.get("original_filename", "file")}"'})
+
+@api.delete("/documents/{doc_id}")
+async def delete_doc(doc_id: str, user: dict = Depends(get_current_user)):
+    await db.documents.update_one({"_id": ObjectId(doc_id)}, {"$set": {"is_deleted": True}})
+    return {"ok": True}
+
+# --- Lead extras (referees, loan info, profile) ---------------------------
+
+class LeadExtraIn(BaseModel):
+    highest_qualification: Optional[Literal["12th", "UG", "PG"]] = None
+    profile: Optional[dict] = None  # name, surname, dob, address, etc.
+    referees: Optional[list] = None  # list of {name, profession, relationship, phone, email}
+    loan_info: Optional[dict] = None  # co-applicant, cibil, amount, etc.
+
+@api.patch("/leads/{lead_id}/extras")
+async def update_extras(lead_id: str, payload: LeadExtraIn, user: dict = Depends(get_current_user)):
+    upd = payload.model_dump(exclude_none=True)
+    upd["updated_at"] = datetime.now(timezone.utc)
+    await db.leads.update_one({"_id": ObjectId(lead_id)}, {"$set": upd})
+    l = await db.leads.find_one({"_id": ObjectId(lead_id)})
+    return {"ok": True, "highest_qualification": l.get("highest_qualification"), "profile": l.get("profile", {}), "referees": l.get("referees", []), "loan_info": l.get("loan_info", {})}
+
+# --- Pipeline Stats & Stale --------------------------------------------------
+
+@api.get("/pipeline/stats")
+async def pipeline_stats(user: dict = Depends(get_current_user)):
+    q: dict = {} if user.get("role") == "admin" or (user.get("permissions") or {}).get("see_all_leads") else {"assigned_to": str(user["_id"])}
+    total_study = await db.leads.count_documents({**q, "pipeline": "study_abroad"})
+    in_pipeline = await db.leads.count_documents({**q, "pipeline": "study_abroad", "stage": {"$nin": ["EN", "LO", "DF", "DNP"]}})
+    deposit = await db.leads.count_documents({**q, "pipeline": "study_abroad", "stage": {"$in": ["DP", "VS", "EN"]}})
+    visa = await db.leads.count_documents({**q, "pipeline": "study_abroad", "stage": {"$in": ["VS", "EN"]}})
+    enrollment = await db.leads.count_documents({**q, "pipeline": "study_abroad", "stage": "EN"})
+    accom = await db.leads.count_documents({**q, "pipeline": "accommodation"})
+    loan = await db.leads.count_documents({**q, "pipeline": "loan"})
+    return {"total": total_study, "in_pipeline": in_pipeline, "deposit": deposit, "visa": visa, "enrollment": enrollment, "accommodation": accom, "loan": loan}
+
+@api.get("/leads/stale/list")
+async def stale_leads(user: dict = Depends(get_current_user)):
+    threshold_days = int(os.environ.get("STALE_LEAD_DAYS", "2"))
+    cutoff = datetime.now(timezone.utc) - timedelta(days=threshold_days)
+    q: dict = {"updated_at": {"$lt": cutoff}, "stage": {"$nin": ["EN", "LO", "DF", "DNP"]}}
+    if user.get("role") != "admin" and not (user.get("permissions") or {}).get("see_all_leads"):
+        q["assigned_to"] = str(user["_id"])
+    leads = await db.leads.find(q).sort("updated_at", 1).limit(200).to_list(200)
+    return {"threshold_days": threshold_days, "leads": [serialize_lead(l) for l in leads]}
+
+class ConfigIn(BaseModel):
+    stale_lead_days: Optional[int] = None
+
+@api.get("/config/app")
+async def get_config(user: dict = Depends(get_current_user)):
+    cfg = await db.app_config.find_one({"_id": "app"}) or {}
+    return {"stale_lead_days": cfg.get("stale_lead_days", int(os.environ.get("STALE_LEAD_DAYS", "2")))}
+
+@api.post("/config/app")
+async def set_config(payload: ConfigIn, admin: dict = Depends(require_admin)):
+    upd = payload.model_dump(exclude_none=True)
+    if "stale_lead_days" in upd:
+        os.environ["STALE_LEAD_DAYS"] = str(upd["stale_lead_days"])
+    await db.app_config.update_one({"_id": "app"}, {"$set": upd}, upsert=True)
+    return {"ok": True}
 
 # --- App wiring -------------------------------------------------------------
 

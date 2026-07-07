@@ -6,18 +6,19 @@ import {
 } from "lucide-react";
 
 const nav = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, testId: "nav-dashboard" },
-  { to: "/pipeline/study", label: "Study Abroad", icon: Users2, testId: "nav-study" },
-  { to: "/pipeline/accommodation", label: "Accommodation", icon: Home, testId: "nav-accom" },
-  { to: "/pipeline/loan", label: "Education Loan", icon: Landmark, testId: "nav-loan" },
-  { to: "/website-leads", label: "Website Leads", icon: Globe, testId: "nav-website" },
-  { to: "/analytics", label: "Analytics", icon: BarChart3, testId: "nav-analytics" },
+  { to: "/", label: "Dashboard", icon: LayoutDashboard, testId: "nav-dashboard", perm: null },
+  { to: "/pipeline/study", label: "Study Abroad", icon: Users2, testId: "nav-study", perm: null },
+  { to: "/pipeline/accommodation", label: "Accommodation", icon: Home, testId: "nav-accom", perm: null },
+  { to: "/pipeline/loan", label: "Education Loan", icon: Landmark, testId: "nav-loan", perm: null },
+  { to: "/website-leads", label: "Website Leads", icon: Globe, testId: "nav-website", perm: "see_website_leads" },
+  { to: "/analytics", label: "Analytics", icon: BarChart3, testId: "nav-analytics", perm: "see_analytics" },
+  { to: "/tasks", label: "My Tasks", icon: Users2, testId: "nav-tasks", perm: null },
 ];
 
 const adminNav = [
-  { to: "/team", label: "Team", icon: UserCog, testId: "nav-team" },
-  { to: "/targets", label: "Targets", icon: Target, testId: "nav-targets" },
-  { to: "/settings", label: "Integrations", icon: Settings2, testId: "nav-settings" },
+  { to: "/team", label: "Team", icon: UserCog, testId: "nav-team", perm: "see_team" },
+  { to: "/targets", label: "Targets", icon: Target, testId: "nav-targets", perm: "see_targets" },
+  { to: "/settings", label: "Integrations", icon: Settings2, testId: "nav-settings", perm: "see_integrations" },
 ];
 
 export default function Sidebar() {
@@ -39,7 +40,7 @@ export default function Sidebar() {
 
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         <div className="text-[10px] uppercase tracking-widest text-stone-400 font-semibold px-2 mb-1.5">Workspace</div>
-        {nav.map((n) => (
+        {nav.filter((n) => !n.perm || user.role === "admin" || user.permissions?.[n.perm]).map((n) => (
           <NavLink
             key={n.to}
             to={n.to}

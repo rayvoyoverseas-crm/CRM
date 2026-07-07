@@ -13,7 +13,8 @@ import { useAuth } from "@/context/AuthContext";
 function LeadCard({ lead, pipeline, onStageChange, users }) {
   const stages = PIPELINE_STAGES[pipeline];
   return (
-    <div className="kanban-card" data-testid={`lead-card-${lead.id}`}>
+    <div className={`kanban-card ${lead.is_stale ? "!border-rose-400 !bg-rose-50/40" : ""}`} data-testid={`lead-card-${lead.id}`}>
+      {lead.is_stale && <div className="text-[10px] uppercase tracking-widest text-rose-600 font-bold mb-1">⚠ Stale · needs update</div>}
       <div className="flex items-start justify-between gap-2">
         <Link to={`/lead/${lead.id}`} className="font-semibold text-sm text-stone-900 hover:text-[#C05B43] truncate flex-1">
           {lead.name}
@@ -53,17 +54,23 @@ export default function PipelineBoard({ pipeline }) {
   const [openNew, setOpenNew] = useState(false);
   const [users, setUsers] = useState([]);
   const [filterAssignee, setFilterAssignee] = useState("__all__");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [stats, setStats] = useState(null);
   const stages = PIPELINE_STAGES[pipeline];
 
   const load = useCallback(async () => {
     const params = { pipeline };
     if (filterAssignee !== "__all__") params.assigned_to = filterAssignee;
+    if (dateFrom) params.date_from = new Date(dateFrom).toISOString();
+    if (dateTo) params.date_to = new Date(dateTo + "T23:59:59").toISOString();
     const { data } = await api.get("/leads", { params });
     setLeads(data);
-  }, [pipeline, filterAssignee]);
+  }, [pipeline, filterAssignee, dateFrom, dateTo]);
 
   useEffect(() => { load(); }, [load]);
-  useEffect(() => { if (user?.role === "admin") api.get("/users").then((r) => setUsers(r.data)).catch(() => {}); }, [user]);
+  useEffect(() => { api.get("/pipeline/stats").then((r) => setStats(r.data)).catch(() => {}); }, [leads.length]);
+  useEffect(() => { if (user?.role === "admin" || user?.permissions?.see_team) api.get("/users").then((r) => setUsers(r.data)).catch(() => {}); }, [user]);
 
   const onStageChange = async (lead, newStage) => {
     try {
@@ -89,10 +96,30 @@ export default function PipelineBoard({ pipeline }) {
   return (
     <Layout
       title={PIPELINE_LABELS[pipeline]}
-      subtitle={`${leads.length} leads · ${stages.length} stages`}
+      subtitle={
+        pipeline === "study_abroad" && stats ? (
+          <span className="flex flex-wrap items-center gap-3 text-xs mt-1">
+            <span className="font-semibold text-stone-700" data-testid="stats-total">Total: <span className="text-[#C05B43]">{stats.total}</span></span>
+            <span className="text-stone-300">·</span>
+            <span data-testid="stats-pipeline">Pipeline: <b>{stats.in_pipeline}</b></span>
+            <span className="text-stone-300">·</span>
+            <span>Deposit: <b>{stats.deposit}</b></span>
+            <span className="text-stone-300">·</span>
+            <span>Visa: <b>{stats.visa}</b></span>
+            <span className="text-stone-300">·</span>
+            <span>Enrollment: <b>{stats.enrollment}</b></span>
+            <span className="text-stone-300">·</span>
+            <span>Accommodation: <b>{stats.accommodation}</b></span>
+            <span className="text-stone-300">·</span>
+            <span>Loan: <b>{stats.loan}</b></span>
+          </span>
+        ) : `${leads.length} leads · ${stages.length} stages`
+      }
       actions={
-        <div className="flex items-center gap-2">
-          {user?.role === "admin" && (
+        <div className="flex items-center gap-2 flex-wrap">
+          <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} data-testid="date-from" className="h-9 text-xs border border-stone-200 rounded-lg px-2 bg-white" />
+          <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} data-testid="date-to" className="h-9 text-xs border border-stone-200 rounded-lg px-2 bg-white" />
+          {(user?.role === "admin" || user?.permissions?.see_team) && (
             <Select value={filterAssignee} onValueChange={setFilterAssignee}>
               <SelectTrigger className="h-9 w-44 text-xs" data-testid="filter-assignee">
                 <Filter className="w-3.5 h-3.5 mr-1" /><SelectValue placeholder="Assignee" />

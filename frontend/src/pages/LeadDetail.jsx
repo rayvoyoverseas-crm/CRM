@@ -10,6 +10,10 @@ import { toast } from "sonner";
 import { ArrowLeft, Mail, Phone, Globe, MessageSquare, Clock } from "lucide-react";
 import StageBadge from "@/components/StageBadge";
 import { useAuth } from "@/context/AuthContext";
+import LeadDocuments from "@/components/LeadDocuments";
+import LeadTasks from "@/components/LeadTasks";
+import { LeadReferees, LeadLoanInfo } from "@/components/LeadExtras";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default function LeadDetail() {
   const { user } = useAuth();
@@ -68,6 +72,17 @@ export default function LeadDetail() {
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 space-y-5">
+          <Tabs defaultValue="overview">
+            <TabsList className="mb-3">
+              <TabsTrigger value="overview" data-testid="tab-overview">Overview</TabsTrigger>
+              <TabsTrigger value="documents" data-testid="tab-documents">Documents</TabsTrigger>
+              <TabsTrigger value="tasks" data-testid="tab-tasks">Tasks</TabsTrigger>
+              <TabsTrigger value="referees" data-testid="tab-referees">Referees</TabsTrigger>
+              {lead.pipeline === "loan" && <TabsTrigger value="loan" data-testid="tab-loan">Loan Info</TabsTrigger>}
+              <TabsTrigger value="activity" data-testid="tab-activity">Activity</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="space-y-5">
           {/* Header */}
           <div className="bg-white border border-stone-200 rounded-2xl p-6">
             <div className="flex items-start gap-4">
@@ -113,7 +128,14 @@ export default function LeadDetail() {
               <Button onClick={saveEdit} className="bg-[#C05B43] hover:bg-[#A64D37]" data-testid="save-lead">Save Changes</Button>
             </div>
           </div>
+            </TabsContent>
 
+            <TabsContent value="documents"><LeadDocuments lead={lead} onUpdate={load} /></TabsContent>
+            <TabsContent value="tasks"><LeadTasks leadId={lead.id} /></TabsContent>
+            <TabsContent value="referees"><LeadReferees lead={lead} onUpdate={load} /></TabsContent>
+            {lead.pipeline === "loan" && <TabsContent value="loan"><LeadLoanInfo lead={lead} onUpdate={load} /></TabsContent>}
+
+            <TabsContent value="activity">
           {/* Activity + notes */}
           <div className="bg-white border border-stone-200 rounded-2xl p-6">
             <div className="flex items-center gap-2 mb-4">
@@ -135,6 +157,8 @@ export default function LeadDetail() {
               {(!lead.activity || lead.activity.length === 0) && <div className="text-sm text-stone-400">No activity yet.</div>}
             </div>
           </div>
+            </TabsContent>
+          </Tabs>
         </div>
 
         {/* Right column */}
