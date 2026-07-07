@@ -6,26 +6,97 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 
+const BOARDS_10_12 = ["CBSE", "ICSE", "IB", "IGCSE", "State Board - Maharashtra", "State Board - Karnataka", "State Board - Tamil Nadu", "State Board - Delhi", "State Board - UP", "State Board - Other", "Other"];
+
+const ACADEMIC_META = {
+  "10th": [
+    { key: "school_name", label: "School Name", type: "text" },
+    { key: "board", label: "Board", type: "select", options: BOARDS_10_12 },
+    { key: "start_date", label: "Start Date", type: "date" },
+    { key: "end_date", label: "End Date", type: "date" },
+    { key: "grade_type", label: "CGPA / Percentage", type: "select", options: ["CGPA", "Percentage"] },
+    { key: "score", label: "Score", type: "text" },
+  ],
+  "12th": [
+    { key: "school_name", label: "School / Institute Name", type: "text" },
+    { key: "board", label: "Board", type: "select", options: BOARDS_10_12 },
+    { key: "stream", label: "Stream", type: "select", options: ["Science", "Commerce", "Arts", "Diploma", "Other"] },
+    { key: "start_date", label: "Start Date", type: "date" },
+    { key: "end_date", label: "End Date", type: "date" },
+    { key: "grade_type", label: "CGPA / Percentage", type: "select", options: ["CGPA", "Percentage"] },
+    { key: "score", label: "Score", type: "text" },
+  ],
+  "UG": [
+    { key: "university", label: "University / College", type: "text" },
+    { key: "degree", label: "Degree (e.g. B.Tech, BBA)", type: "text" },
+    { key: "specialization", label: "Specialization", type: "text" },
+    { key: "start_date", label: "Start Date", type: "date" },
+    { key: "end_date", label: "End Date", type: "date" },
+    { key: "grade_type", label: "CGPA / Percentage", type: "select", options: ["CGPA", "Percentage"] },
+    { key: "score", label: "Score", type: "text" },
+  ],
+  "PG": [
+    { key: "university", label: "University", type: "text" },
+    { key: "degree", label: "Degree (e.g. M.Tech, MBA)", type: "text" },
+    { key: "specialization", label: "Specialization", type: "text" },
+    { key: "start_date", label: "Start Date", type: "date" },
+    { key: "end_date", label: "End Date", type: "date" },
+    { key: "grade_type", label: "CGPA / Percentage", type: "select", options: ["CGPA", "Percentage"] },
+    { key: "score", label: "Score", type: "text" },
+  ],
+};
+
 const BASE_DOCS = [
-  { key: "10th", label: "10th Certificate", qual: ["12th", "UG", "PG"] },
-  { key: "12th", label: "12th / Diploma Certificate", qual: ["12th", "UG", "PG"] },
-  { key: "ug_sem", label: "UG · Semester-wise Marksheets", qual: ["UG", "PG"] },
+  { key: "10th", label: "10th Certificate", qual: ["12th", "UG", "PG"], meta: ACADEMIC_META["10th"] },
+  { key: "12th", label: "12th / Diploma Certificate", qual: ["12th", "UG", "PG"], meta: ACADEMIC_META["12th"] },
+  { key: "ug_sem", label: "UG · Semester Marksheets", qual: ["UG", "PG"], meta: ACADEMIC_META["UG"] },
   { key: "ug_transcript", label: "UG · Transcript", qual: ["UG", "PG"] },
   { key: "ug_degree", label: "UG · Degree Certificate", qual: ["UG", "PG"] },
   { key: "ug_grading", label: "UG · Grading Scale", qual: ["UG", "PG"] },
-  { key: "pg_sem", label: "PG · Semester-wise Marksheets", qual: ["PG"] },
+  { key: "pg_sem", label: "PG · Semester Marksheets", qual: ["PG"], meta: ACADEMIC_META["PG"] },
   { key: "pg_transcript", label: "PG · Transcript", qual: ["PG"] },
   { key: "pg_degree", label: "PG · Degree Certificate", qual: ["PG"] },
   { key: "pg_grading", label: "PG · Grading Scale", qual: ["PG"] },
-  { key: "passport", label: "Passport", qual: ["12th", "UG", "PG"], metaFields: ["name_on_passport", "passport_no", "address"] },
-  { key: "ept_ielts", label: "EPT · IELTS", qual: ["12th", "UG", "PG"] },
-  { key: "ept_toefl", label: "EPT · TOEFL", qual: ["12th", "UG", "PG"] },
-  { key: "ept_duolingo", label: "EPT · Duolingo", qual: ["12th", "UG", "PG"] },
+  { key: "passport", label: "Passport", qual: ["12th", "UG", "PG"], meta: [
+    { key: "name_on_passport", label: "Name on Passport", type: "text" },
+    { key: "passport_no", label: "Passport Number", type: "text" },
+    { key: "issue_date", label: "Issue Date", type: "date" },
+    { key: "expiry_date", label: "Expiry Date", type: "date" },
+    { key: "address", label: "Address on Passport", type: "text" },
+  ] },
+  { key: "ept_ielts", label: "EPT · IELTS", qual: ["12th", "UG", "PG"], meta: [
+    { key: "overall_score", label: "Overall Score", type: "text" },
+    { key: "test_date", label: "Test Date", type: "date" },
+  ] },
+  { key: "ept_toefl", label: "EPT · TOEFL", qual: ["12th", "UG", "PG"], meta: [
+    { key: "overall_score", label: "Overall Score", type: "text" },
+    { key: "test_date", label: "Test Date", type: "date" },
+  ] },
+  { key: "ept_duolingo", label: "EPT · Duolingo", qual: ["12th", "UG", "PG"], meta: [
+    { key: "overall_score", label: "Overall Score", type: "text" },
+    { key: "test_date", label: "Test Date", type: "date" },
+  ] },
   { key: "sop", label: "SOP", qual: ["12th", "UG", "PG"] },
   { key: "aps", label: "APS", qual: ["12th", "UG", "PG"] },
   { key: "other_1", label: "Other Document 1", qual: ["12th", "UG", "PG"] },
   { key: "other_2", label: "Other Document 2", qual: ["12th", "UG", "PG"] },
   { key: "other_3", label: "Other Document 3", qual: ["12th", "UG", "PG"] },
+];
+
+const LOAN_DOCS = [
+  { key: "aadhaar", label: "Aadhaar Card", meta: [{ key: "aadhaar_no", label: "Aadhaar Number", type: "text" }] },
+  { key: "pan", label: "PAN Card (Applicant)", meta: [{ key: "pan_no", label: "PAN Number", type: "text" }] },
+  { key: "coapp_pan", label: "Co-Applicant PAN Card", meta: [{ key: "pan_no", label: "PAN Number", type: "text" }] },
+  { key: "address_proof", label: "Address Proof" },
+  { key: "salary_slips", label: "Salary Slips (Last 3 months)" },
+  { key: "form_16", label: "Form 16 / ITR (Last 2 years)" },
+  { key: "bank_statement", label: "Bank Statement (Last 6 months)" },
+  { key: "coapp_income", label: "Co-Applicant Income Proof" },
+  { key: "cibil_report", label: "CIBIL Report", meta: [{ key: "cibil_score", label: "CIBIL Score", type: "text" }] },
+  { key: "collateral_docs", label: "Collateral Documents (if any)" },
+  { key: "offer_letter", label: "Admission / Offer Letter" },
+  { key: "fee_structure", label: "University Fee Structure" },
+  { key: "existing_loan", label: "Existing Loan Statement (if any)" },
 ];
 
 function DocSlot({ leadId, cfg, existing, onChange }) {
@@ -49,11 +120,9 @@ function DocSlot({ leadId, cfg, existing, onChange }) {
   };
 
   const download = async () => {
-    try {
-      const res = await api.get(`/documents/${existing.id}/download`, { responseType: "blob" });
-      const url = URL.createObjectURL(res.data);
-      const a = document.createElement("a"); a.href = url; a.download = existing.original_filename; a.click();
-    } catch (e) { toast.error("Failed"); }
+    const res = await api.get(`/documents/${existing.id}/download`, { responseType: "blob" });
+    const url = URL.createObjectURL(res.data);
+    const a = document.createElement("a"); a.href = url; a.download = existing.original_filename; a.click();
   };
 
   const remove = async () => {
@@ -61,34 +130,43 @@ function DocSlot({ leadId, cfg, existing, onChange }) {
     await api.delete(`/documents/${existing.id}`); toast.success("Deleted"); onChange();
   };
 
+  const renderField = (f) => {
+    if (f.type === "select") {
+      return (
+        <Select value={meta[f.key] || ""} onValueChange={(v) => setMeta({ ...meta, [f.key]: v })}>
+          <SelectTrigger className="h-8 text-xs"><SelectValue placeholder={f.label} /></SelectTrigger>
+          <SelectContent>{f.options.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
+        </Select>
+      );
+    }
+    return <Input type={f.type} placeholder={f.label} className="h-8 text-xs" value={meta[f.key] || ""} onChange={(e) => setMeta({ ...meta, [f.key]: e.target.value })} />;
+  };
+
   return (
     <div className="border border-stone-200 rounded-xl p-3 bg-white">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <FileText className="w-4 h-4 text-stone-400 shrink-0" />
-          <div className="text-xs font-semibold text-stone-800 truncate">{cfg.label}</div>
+          <div className="text-sm font-semibold text-stone-800 truncate">{cfg.label}</div>
         </div>
-        {existing ? (
+        {existing && (
           <div className="flex items-center gap-1">
-            <button onClick={download} data-testid={`download-${cfg.key}`} className="p-1 text-stone-500 hover:text-stone-800"><Download className="w-3.5 h-3.5" /></button>
+            <button onClick={download} className="p-1 text-stone-500 hover:text-stone-800"><Download className="w-3.5 h-3.5" /></button>
             <button onClick={remove} className="p-1 text-stone-500 hover:text-rose-600"><Trash2 className="w-3.5 h-3.5" /></button>
           </div>
-        ) : null}
+        )}
       </div>
-      {cfg.metaFields && (
-        <div className="mt-2 grid grid-cols-1 gap-1">
-          {cfg.metaFields.map((f) => (
-            <Input key={f} placeholder={f.replace(/_/g, " ")} className="h-7 text-xs"
-              value={meta[f] || ""} onChange={(e) => setMeta({ ...meta, [f]: e.target.value })} />
-          ))}
+      {cfg.meta && (
+        <div className="mt-2 grid grid-cols-1 gap-1.5">
+          {cfg.meta.map((f) => <div key={f.key}><div className="text-[10px] text-stone-500 mb-0.5">{f.label}</div>{renderField(f)}</div>)}
         </div>
       )}
       {existing ? (
-        <div className="mt-2 text-[10px] text-stone-500 truncate">{existing.original_filename}</div>
+        <div className="mt-2 text-[11px] text-stone-500 truncate">📎 {existing.original_filename}</div>
       ) : (
         <>
-          <input ref={inp} type="file" className="hidden" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} data-testid={`upload-input-${cfg.key}`} />
-          <Button size="sm" variant="outline" className="w-full mt-2 h-7 text-xs" onClick={() => inp.current?.click()} disabled={uploading} data-testid={`upload-${cfg.key}`}>
+          <input ref={inp} type="file" className="hidden" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
+          <Button size="sm" variant="outline" className="w-full mt-3 h-8 text-xs" onClick={() => inp.current?.click()} disabled={uploading} data-testid={`upload-${cfg.key}`}>
             {uploading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Upload className="w-3 h-3 mr-1" />} Upload
           </Button>
         </>
@@ -97,7 +175,7 @@ function DocSlot({ leadId, cfg, existing, onChange }) {
   );
 }
 
-export default function LeadDocuments({ lead, onUpdate }) {
+export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
   const [docs, setDocs] = useState([]);
   const [qual, setQual] = useState(lead.highest_qualification || "");
 
@@ -111,26 +189,29 @@ export default function LeadDocuments({ lead, onUpdate }) {
     onUpdate?.();
   };
 
-  const docsFor = qual ? BASE_DOCS.filter((d) => d.qual.includes(qual)) : [];
+  const isLoan = mode === "loan";
+  const docsFor = isLoan ? LOAN_DOCS : (qual ? BASE_DOCS.filter((d) => d.qual.includes(qual)) : []);
 
   return (
     <div className="bg-white border border-stone-200 rounded-2xl p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-display font-semibold text-lg">Documents</h3>
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] uppercase tracking-widest text-stone-400 font-semibold">Highest Qualification</span>
-          <Select value={qual} onValueChange={saveQual}>
-            <SelectTrigger className="w-40 h-8 text-xs" data-testid="highest-qual-select"><SelectValue placeholder="Select…" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="12th">12th Completed</SelectItem>
-              <SelectItem value="UG">UG Completed</SelectItem>
-              <SelectItem value="PG">PG Completed</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <h3 className="font-display font-semibold text-xl">{isLoan ? "Loan Documents" : "Documents"}</h3>
+        {!isLoan && (
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] uppercase tracking-widest text-stone-400 font-semibold">Highest Qualification</span>
+            <Select value={qual} onValueChange={saveQual}>
+              <SelectTrigger className="w-44 h-9 text-sm" data-testid="highest-qual-select"><SelectValue placeholder="Select…" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="12th">12th Completed</SelectItem>
+                <SelectItem value="UG">UG Completed</SelectItem>
+                <SelectItem value="PG">PG Completed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
-      {!qual && <div className="text-sm text-stone-400 py-6 text-center border-2 border-dashed border-stone-200 rounded-xl">Select highest qualification to unlock the document checklist.</div>}
-      {qual && (
+      {!isLoan && !qual && <div className="text-sm text-stone-400 py-8 text-center border-2 border-dashed border-stone-200 rounded-xl">Select highest qualification to unlock the document checklist.</div>}
+      {docsFor.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           {docsFor.map((cfg) => {
             const existing = docs.find((d) => d.doc_type === cfg.key);

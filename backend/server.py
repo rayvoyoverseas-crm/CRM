@@ -302,9 +302,10 @@ def serialize_lead(l: dict) -> dict:
     }
 
 async def _lead_visible_filter(user: dict) -> dict:
+    base = {"is_deleted": {"$ne": True}}
     if user.get("role") == "admin" or (user.get("permissions") or {}).get("see_all_leads"):
-        return {}
-    return {"assigned_to": str(user["_id"])}
+        return base
+    return {**base, "assigned_to": str(user["_id"])}
 
 @api.get("/leads")
 async def list_leads(
@@ -430,8 +431,26 @@ async def add_note(lead_id: str, payload: NoteIn, user: dict = Depends(get_curre
 
 @api.delete("/leads/{lead_id}")
 async def delete_lead(lead_id: str, admin: dict = Depends(require_admin)):
-    await db.leads.delete_one({"_id": ObjectId(lead_id)})
+    # Soft-delete → move to Bin
+    await db.leads.update_one({"_id": ObjectId(lead_id)}, {"$set": {"is_deleted": True, "deleted_at": datetime.now(timezone.utc)}})
     return {"ok": True}
+
+@api.post("/leads/{lead_id}/restore")
+async def restore_lead(lead_id: str, admin: dict = Depends(require_admin)):
+    await db.leads.update_one({"_id": ObjectId(lead_id)}, {"$set": {"is_deleted": False}, "$unset": {"deleted_at": ""}})
+    return {"ok": True}
+
+@api.delete("/leads/{lead_id}/permanent")
+async def permanent_delete(lead_id: str, admin: dict = Depends(require_admin)):
+    await db.leads.delete_one({"_id": ObjectId(lead_id)})
+    await db.documents.update_many({"lead_id": lead_id}, {"$set": {"is_deleted": True}})
+    await db.tasks.delete_many({"lead_id": lead_id})
+    return {"ok": True}
+
+@api.get("/leads/bin/list")
+async def list_bin(admin: dict = Depends(require_admin)):
+    leads = await db.leads.find({"is_deleted": True}).sort("deleted_at", -1).to_list(500)
+    return [serialize_lead(l) for l in leads]
 
 # --- Website Webhook --------------------------------------------------------
 
@@ -814,7 +833,9 @@ async def update_extras(lead_id: str, payload: LeadExtraIn, user: dict = Depends
 
 @api.get("/pipeline/stats")
 async def pipeline_stats(user: dict = Depends(get_current_user)):
-    q: dict = {} if user.get("role") == "admin" or (user.get("permissions") or {}).get("see_all_leads") else {"assigned_to": str(user["_id"])}
+    q: dict = {"is_deleted": {"$ne": True}}
+    if not (user.get("role") == "admin" or (user.get("permissions") or {}).get("see_all_leads")):
+        q["assigned_to"] = str(user["_id"])
     total_study = await db.leads.count_documents({**q, "pipeline": "study_abroad"})
     in_pipeline = await db.leads.count_documents({**q, "pipeline": "study_abroad", "stage": {"$nin": ["EN", "LO", "DF", "DNP"]}})
     deposit = await db.leads.count_documents({**q, "pipeline": "study_abroad", "stage": {"$in": ["DP", "VS", "EN"]}})

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import api, { PIPELINE_STAGES, STAGE_MAP } from "@/lib/api";
+import api, { PIPELINE_STAGES, STAGE_MAP, COUNTRIES } from "@/lib/api";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -61,7 +61,10 @@ export default function LeadDialog({ open, onOpenChange, pipeline, onCreated, de
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-xs">Country Interest</Label>
-                <Input value={form.country_interest} onChange={(e) => setForm({ ...form, country_interest: e.target.value })} />
+                <Select value={form.country_interest} onValueChange={(v) => setForm({ ...form, country_interest: v })}>
+                  <SelectTrigger data-testid="lead-country-select"><SelectValue placeholder="Select country" /></SelectTrigger>
+                  <SelectContent>{COUNTRIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                </Select>
               </div>
               <div>
                 <Label className="text-xs">Course Interest</Label>

@@ -2,7 +2,7 @@ import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import {
-  LayoutDashboard, Users2, Home, Landmark, Globe, BarChart3, UserCog, Target, LogOut, Settings2,
+  LayoutDashboard, Users2, Home, Landmark, Globe, BarChart3, UserCog, Target, LogOut, Settings2, Trash2,
 } from "lucide-react";
 
 const nav = [
@@ -18,6 +18,7 @@ const nav = [
 const adminNav = [
   { to: "/team", label: "Team", icon: UserCog, testId: "nav-team", perm: "see_team" },
   { to: "/targets", label: "Targets", icon: Target, testId: "nav-targets", perm: "see_targets" },
+  { to: "/bin", label: "Bin", icon: Trash2, testId: "nav-bin", perm: null },
   { to: "/settings", label: "Integrations", icon: Settings2, testId: "nav-settings", perm: "see_integrations" },
 ];
 

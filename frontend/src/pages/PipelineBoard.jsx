@@ -3,26 +3,31 @@ import Layout from "@/components/Layout";
 import api, { PIPELINE_STAGES, PIPELINE_LABELS, STAGE_MAP } from "@/lib/api";
 import { Link } from "react-router-dom";
 import StageBadge, { StageChip } from "@/components/StageBadge";
-import { Plus, LayoutGrid, List, Filter } from "lucide-react";
+import { Plus, LayoutGrid, List, Filter, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LeadDialog from "@/components/LeadDialog";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/context/AuthContext";
 
-function LeadCard({ lead, pipeline, onStageChange, users }) {
+function LeadCard({ lead, pipeline, onStageChange, users, onDelete, canDelete }) {
   const stages = PIPELINE_STAGES[pipeline];
   return (
     <div className={`kanban-card ${lead.is_stale ? "!border-rose-400 !bg-rose-50/40" : ""}`} data-testid={`lead-card-${lead.id}`}>
       {lead.is_stale && <div className="text-[10px] uppercase tracking-widest text-rose-600 font-bold mb-1">⚠ Stale · needs update</div>}
       <div className="flex items-start justify-between gap-2">
-        <Link to={`/lead/${lead.id}`} className="font-semibold text-sm text-stone-900 hover:text-[#C05B43] truncate flex-1">
+        <Link to={`/lead/${lead.id}`} className="font-semibold text-[15px] text-stone-900 hover:text-[#C05B43] truncate flex-1">
           {lead.name}
         </Link>
+        {canDelete && (
+          <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(lead); }} data-testid={`delete-lead-${lead.id}`} className="p-1 text-stone-300 hover:text-rose-600 shrink-0" title="Move to Bin">
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        )}
         <StageChip pipeline={pipeline} stage={lead.stage} />
       </div>
-      <div className="text-xs text-stone-500 mt-1 truncate">{lead.country_interest || "—"} · {lead.course_interest || "TBD"}</div>
-      <div className="text-[11px] text-stone-400 mt-2 truncate">{lead.phone || lead.email || "no contact"}</div>
+      <div className="text-[13px] text-stone-500 mt-1 truncate">{lead.country_interest || "—"} · {lead.course_interest || "TBD"}</div>
+      <div className="text-xs text-stone-400 mt-2 truncate">{lead.phone || lead.email || "no contact"}</div>
       <div className="mt-3 flex items-center gap-1.5">
         <Select value={lead.stage} onValueChange={(v) => onStageChange(lead, v)}>
           <SelectTrigger className="h-7 text-[11px] flex-1" data-testid={`stage-change-${lead.id}`}>
@@ -80,6 +85,15 @@ export default function PipelineBoard({ pipeline }) {
     } catch (e) {
       toast.error("Failed to update stage");
     }
+  };
+
+  const onDelete = async (lead) => {
+    if (!window.confirm(`Move ${lead.name} to Bin?`)) return;
+    try {
+      await api.delete(`/leads/${lead.id}`);
+      setLeads((prev) => prev.filter((l) => l.id !== lead.id));
+      toast.success("Moved to Bin");
+    } catch (e) { toast.error("Failed to delete"); }
   };
 
   const onAssignChange = async (lead, newAssignee) => {
@@ -150,15 +164,16 @@ export default function PipelineBoard({ pipeline }) {
             const cfg = STAGE_MAP[pipeline][s];
             return (
               <div key={s} className="kanban-column" data-testid={`column-${s}`}>
-                <div className="flex items-center justify-between mb-3 px-1">
-                  <div className="flex items-center gap-1.5">
-                    <StageChip pipeline={pipeline} stage={s} />
-                    <span className="text-[11px] text-stone-500 font-medium">{cfg.label}</span>
+                <div className={`flex items-center justify-between mb-3 px-3 py-2.5 rounded-xl ring-1 ring-inset ${cfg.classes}`}>
+                  <div className="flex items-center gap-2">
+                    <span className="font-display font-bold text-base tracking-wide">{s}</span>
+                    <span className="opacity-70">·</span>
+                    <span className="text-sm font-semibold">{cfg.label}</span>
                   </div>
-                  <span className="text-xs font-semibold text-stone-500">{grouped[s].length}</span>
+                  <span className="text-sm font-bold px-2 py-0.5 rounded-full bg-white/60">{grouped[s].length}</span>
                 </div>
                 {grouped[s].map((l) => (
-                  <LeadCard key={l.id} lead={l} pipeline={pipeline} onStageChange={onStageChange} users={users} />
+                  <LeadCard key={l.id} lead={l} pipeline={pipeline} onStageChange={onStageChange} users={users} onDelete={onDelete} canDelete={user?.role === "admin"} />
                 ))}
                 {grouped[s].length === 0 && <div className="text-[11px] text-stone-400 text-center py-4">Empty</div>}
               </div>

@@ -107,8 +107,8 @@ export default function Team() {
                 </td>
                 <td className="px-6 py-4 text-right">
                   {u.id !== user?.id && (
-                    <button onClick={() => remove(u)} data-testid={`remove-${u.id}`} className="text-stone-400 hover:text-rose-600 transition-colors p-2 rounded-lg hover:bg-rose-50">
-                      <Trash2 className="w-4 h-4" />
+                    <button onClick={() => remove(u)} data-testid={`remove-${u.id}`} className="inline-flex items-center gap-1 text-xs font-semibold text-rose-600 border border-rose-200 hover:bg-rose-50 px-2.5 py-1 rounded-lg transition-colors">
+                      <Trash2 className="w-3.5 h-3.5" /> Remove
                     </button>
                   )}
                 </td>

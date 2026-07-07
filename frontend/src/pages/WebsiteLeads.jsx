@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import api from "@/lib/api";
-import { Globe, CheckCircle2, ExternalLink } from "lucide-react";
+import { Globe, CheckCircle2, ExternalLink, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -93,6 +93,16 @@ export default function WebsiteLeads() {
                 </Button>
               )}
               <Link to={`/lead/${l.id}`} className="ml-auto text-xs font-semibold text-[#C05B43] hover:underline">Open →</Link>
+              {user?.role === "admin" && (
+                <button
+                  onClick={async () => { if (window.confirm(`Move ${l.name} to Bin?`)) { await api.delete(`/leads/${l.id}`); toast.success("Moved to Bin"); load(); } }}
+                  data-testid={`web-delete-${l.id}`}
+                  className="p-1.5 text-stone-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors"
+                  title="Move to Bin"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
             </div>
           </div>
         ))}

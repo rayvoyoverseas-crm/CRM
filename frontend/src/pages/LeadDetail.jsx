@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Layout from "@/components/Layout";
-import api, { PIPELINE_STAGES, STAGE_MAP, PIPELINE_LABELS } from "@/lib/api";
+import api, { PIPELINE_STAGES, STAGE_MAP, PIPELINE_LABELS, COUNTRIES } from "@/lib/api";
 import { useParams, Link } from "react-router-dom";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -117,7 +117,12 @@ export default function LeadDetail() {
               </div>
               <div>
                 <label className="text-[11px] uppercase tracking-widest text-stone-400 font-semibold">Country</label>
-                <Input value={edit.country_interest} onChange={(e) => setEdit({ ...edit, country_interest: e.target.value })} className="mt-1" />
+                <Select value={edit.country_interest || ""} onValueChange={(v) => setEdit({ ...edit, country_interest: v })}>
+                  <SelectTrigger className="mt-1" data-testid="country-select"><SelectValue placeholder="Select country" /></SelectTrigger>
+                  <SelectContent>
+                    {COUNTRIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
               </div>
               <div className="col-span-2">
                 <label className="text-[11px] uppercase tracking-widest text-stone-400 font-semibold">Course</label>
@@ -130,7 +135,7 @@ export default function LeadDetail() {
           </div>
             </TabsContent>
 
-            <TabsContent value="documents"><LeadDocuments lead={lead} onUpdate={load} /></TabsContent>
+            <TabsContent value="documents"><LeadDocuments lead={lead} onUpdate={load} mode={lead.pipeline === "loan" ? "loan" : "study"} /></TabsContent>
             <TabsContent value="tasks"><LeadTasks leadId={lead.id} /></TabsContent>
             <TabsContent value="referees"><LeadReferees lead={lead} onUpdate={load} /></TabsContent>
             {lead.pipeline === "loan" && <TabsContent value="loan"><LeadLoanInfo lead={lead} onUpdate={load} /></TabsContent>}

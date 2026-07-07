@@ -12,6 +12,7 @@ import Targets from "@/pages/Targets";
 import Settings from "@/pages/Settings";
 import LeadDetail from "@/pages/LeadDetail";
 import TasksPage from "@/pages/TasksPage";
+import BinPage from "@/pages/BinPage";
 import { Loader2 } from "lucide-react";
 
 function Protected({ children }) {
@@ -38,6 +39,7 @@ function App() {
           <Route path="/settings" element={<Protected><Settings /></Protected>} />
           <Route path="/lead/:id" element={<Protected><LeadDetail /></Protected>} />
           <Route path="/tasks" element={<Protected><TasksPage /></Protected>} />
+          <Route path="/bin" element={<Protected><BinPage /></Protected>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

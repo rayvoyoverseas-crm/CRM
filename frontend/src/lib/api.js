@@ -10,6 +10,8 @@ const api = axios.create({
 
 export default api;
 
+export const COUNTRIES = ["UK", "USA", "Ireland", "Germany", "Australia", "New Zealand", "France", "Poland", "Malta", "Spain", "EU"];
+
 export const STAGE_MAP = {
   study_abroad: {
     NL: { label: "New Lead", classes: "bg-sky-50 text-sky-700 ring-sky-600/20" },
