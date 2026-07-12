@@ -873,17 +873,19 @@ async def set_config(payload: ConfigIn, admin: dict = Depends(require_admin)):
 
 # --- App wiring -------------------------------------------------------------
 
-app.include_router(api)
 
-_frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:3000")
-_cors_origins = os.environ.get("CORS_ORIGINS", _frontend_url).split(",")
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=[o.strip() for o in _cors_origins if o.strip()],
+    allow_origins=[
+        "https://crm-3b52.vercel.app",
+    ],
+    allow_origin_regex=r"https://crm-3b52.*\.vercel\.app",
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(api)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
