@@ -879,6 +879,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_origins=[
         "https://crm-3b52.vercel.app",
+        "https://crm.rayvoyoverseas.com",
     ],
     allow_origin_regex=r"https://crm-3b52.*\.vercel\.app",
     allow_methods=["*"],
