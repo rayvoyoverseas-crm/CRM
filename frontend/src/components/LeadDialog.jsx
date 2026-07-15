@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 
-export default function LeadDialog({ open, onOpenChange, pipeline, onCreated, defaultSource = "manual" }) {
+export default function LeadDialog({ open, onOpenChange, pipeline, onCreated, defaultSource = "website" }) {
   const [form, setForm] = useState({
     name: "", email: "", phone: "", country_interest: "", course_interest: "",
     source: defaultSource, notes: "", assigned_to: "",
