@@ -118,23 +118,42 @@ const isCounsellor = user?.role === "counsellor";
     </Select>
   )}
 </div>
-            <div>
-              <Label className="text-xs">Assign To</Label>
-            
-              <Select value={form.assigned_to || "__none__"} 
-                onValueChange={(v) => 
-                  setForm({ 
-                    ...form, 
-                    assigned_to: v === "__none__" ? "" : v })}>
-                
-                <SelectTrigger data-testid="lead-assignee-select"><SelectValue placeholder="Unassigned" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__none__">Unassigned</SelectItem>
-                  {users.map((u) => (<SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+           <div>
+  <Label className="text-xs">Assign To</Label>
+
+  {isCounsellor ? (
+    <Input
+      value={user?.name || ""}
+      disabled
+      className="bg-stone-50"
+    />
+  ) : (
+    <Select
+      value={form.assigned_to || "__none__"}
+      onValueChange={(v) =>
+        setForm({
+          ...form,
+          assigned_to: v === "__none__" ? "" : v,
+        })
+      }
+    >
+      <SelectTrigger data-testid="lead-assignee-select">
+        <SelectValue placeholder="Unassigned" />
+      </SelectTrigger>
+
+      <SelectContent>
+        <SelectItem value="__none__">Unassigned</SelectItem>
+
+        {users.map((u) => (
+          <SelectItem key={u.id} value={u.id}>
+            {u.name}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )}
+</div>
+  </div>
           <div>
             <Label className="text-xs">Notes</Label>
             <Textarea rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
