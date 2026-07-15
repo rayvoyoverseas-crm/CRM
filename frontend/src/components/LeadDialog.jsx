@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 import api, { PIPELINE_STAGES, STAGE_MAP, COUNTRIES } from "@/lib/api";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -9,18 +10,35 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 
 export default function LeadDialog({ open, onOpenChange, pipeline, onCreated, defaultSource = "website" }) {
+  const { user } = useAuth();
+const isCounsellor = user?.role === "counsellor";
+  
   const [form, setForm] = useState({
     name: "", email: "", phone: "", country_interest: "", course_interest: "",
     source: defaultSource, notes: "", assigned_to: "",
   });
+  
   const [users, setUsers] = useState([]);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!open) return;
-    setForm({ name: "", email: "", phone: "", country_interest: "", course_interest: "", source: defaultSource, notes: "", assigned_to: "" });
+  if (!open) return;
+
+  setForm({
+    name: "",
+    email: "",
+    phone: "",
+    country_interest: "",
+    course_interest: "",
+    source: isCounsellor ? "referral" : defaultSource,
+    notes: "",
+    assigned_to: isCounsellor ? user.id : "",
+  });
+
+  if (!isCounsellor) {
     api.get("/users").then((r) => setUsers(r.data)).catch(() => {});
-  }, [open, defaultSource]);
+  }
+}, [open, defaultSource, isCounsellor, user]);
 
   const submit = async (e) => {
     e.preventDefault();
@@ -73,21 +91,42 @@ export default function LeadDialog({ open, onOpenChange, pipeline, onCreated, de
             </div>
           )}
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label className="text-xs">Source</Label>
-              <Select value={form.source} onValueChange={(v) => setForm({ ...form, source: v })}>
-                <SelectTrigger data-testid="lead-source-select"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="website">Website</SelectItem>
-                  <SelectItem value="referral">Referral</SelectItem>
-                  <SelectItem value="walk-in">Walk-in</SelectItem>
-                  <SelectItem value="social">Social Media</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+           <div>
+  <Label className="text-xs">Source</Label>
+
+  {isCounsellor ? (
+    <Input
+      value="Referral"
+      disabled
+      className="bg-stone-50"
+    />
+  ) : (
+    <Select
+      value={form.source}
+      onValueChange={(v) => setForm({ ...form, source: v })}
+    >
+      <SelectTrigger data-testid="lead-source-select">
+        <SelectValue />
+      </SelectTrigger>
+
+      <SelectContent>
+        <SelectItem value="website">Website</SelectItem>
+        <SelectItem value="referral">Referral</SelectItem>
+        <SelectItem value="walk-in">Walk-in</SelectItem>
+        <SelectItem value="social">Social Media</SelectItem>
+      </SelectContent>
+    </Select>
+  )}
+</div>
             <div>
               <Label className="text-xs">Assign To</Label>
-              <Select value={form.assigned_to || "__none__"} onValueChange={(v) => setForm({ ...form, assigned_to: v === "__none__" ? "" : v })}>
+            
+              <Select value={form.assigned_to || "__none__"} 
+                onValueChange={(v) => 
+                  setForm({ 
+                    ...form, 
+                    assigned_to: v === "__none__" ? "" : v })}>
+                
                 <SelectTrigger data-testid="lead-assignee-select"><SelectValue placeholder="Unassigned" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="__none__">Unassigned</SelectItem>
