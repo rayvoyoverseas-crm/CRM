@@ -343,29 +343,52 @@ async def list_leads(
     return result
 
 @api.post("/leads")
-async def create_lead(payload: LeadCreateIn, user: dict = Depends(get_current_user)):
+async def create_lead(
+    payload: LeadCreateIn,
+    user: dict = Depends(get_current_user)
+):
     now = datetime.now(timezone.utc)
+
+    lead_data = payload.model_dump()
     assigned_name = ""
-    if payload.assigned_to:
-        assignee = await db.users.find_one({"_id": ObjectId(payload.assigned_to)})
+
+    # When a counsellor creates a lead:
+    # 1. Force the source to Referral
+    # 2. Automatically assign the lead to that counsellor
+    if user.get("role") == "counsellor":
+        lead_data["source"] = "referral"
+        lead_data["assigned_to"] = str(user["_id"])
+        assigned_name = user.get("name", "")
+
+    # Admin or team lead can select an assignee normally
+    elif payload.assigned_to:
+        assignee = await db.users.find_one(
+            {"_id": ObjectId(payload.assigned_to)}
+        )
+
         if assignee:
             assigned_name = assignee.get("name", "")
+
     doc = {
-        **payload.model_dump(),
+        **lead_data,
         "stage": default_stage(payload.pipeline),
         "assigned_to_name": assigned_name,
         "created_at": now,
         "updated_at": now,
         "reviewed": True,
-        "activity": [{
-            "type": "created",
-            "text": f"Lead created by {user.get('name', 'user')}",
-            "at": now.isoformat(),
-            "by": user.get("name", ""),
-        }],
+        "activity": [
+            {
+                "type": "created",
+                "text": f"Lead created by {user.get('name', 'user')}",
+                "at": now.isoformat(),
+                "by": user.get("name", ""),
+            }
+        ],
     }
+
     res = await db.leads.insert_one(doc)
     doc["_id"] = res.inserted_id
+
     return serialize_lead(doc)
 
 @api.get("/leads/{lead_id}")
