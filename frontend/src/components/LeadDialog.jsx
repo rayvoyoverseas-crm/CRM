@@ -78,7 +78,6 @@ export default function LeadDialog({ open, onOpenChange, pipeline, onCreated, de
               <Select value={form.source} onValueChange={(v) => setForm({ ...form, source: v })}>
                 <SelectTrigger data-testid="lead-source-select"><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="manual">Manual</SelectItem>
                   <SelectItem value="website">Website</SelectItem>
                   <SelectItem value="referral">Referral</SelectItem>
                   <SelectItem value="walk-in">Walk-in</SelectItem>
