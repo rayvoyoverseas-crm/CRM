@@ -10,7 +10,7 @@ const api = axios.create({
 
 export default api;
 
-export const COUNTRIES = ["UK", "USA", "Ireland", "Germany", "Australia", "New Zealand", "France", "Poland", "Malta", "Spain", "EU"];
+export const COUNTRIES = ["UK", "USA", "Canada", "Ireland", "Germany", "Australia", "New Zealand", "France", "Poland", "Malta", "Spain", "Other EU", "Korea", "Japan", "China", "India", "Singapore", "Malaysia", "Other"];
 
 export const STAGE_MAP = {
   study_abroad: {
