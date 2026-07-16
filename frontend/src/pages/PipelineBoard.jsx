@@ -156,7 +156,8 @@ const grouped = stages.reduce(
       }
       actions={
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-2">
+          
+          <div className="flex items-center gap-2 px-3 py-2 rounded-xl border-2 border-[#D7B7A8] bg-[#E8DDD6] shadow-md">
   <Select
     value={searchType}
     onValueChange={(value) => {
@@ -164,7 +165,7 @@ const grouped = stages.reduce(
       setSearchTerm("");
     }}
   >
-    <SelectTrigger className="h-9 w-28 text-xs">
+    <SelectTrigger className="h-10 w-32 text-sm font-medium border border-[#B98A78] bg-white shadow-sm">
       <SelectValue />
     </SelectTrigger>
 
@@ -175,7 +176,7 @@ const grouped = stages.reduce(
   </Select>
 
   <div className="relative">
-    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8B5E4F]" />
 
     <Input
       value={searchTerm}
@@ -195,12 +196,11 @@ const grouped = stages.reduce(
           ? "Search phone"
           : "Search name"
       }
-      className="h-9 w-48 pl-9 text-xs"
+      className="h-10 w-56 pl-10 text-sm border border-[#B98A78] bg-white shadow-sm placeholder:text-stone-500 focus-visible:ring-2 focus-visible:ring-[#C05B43]/40"
     />
   </div>
 </div>
 
-          
           <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} data-testid="date-from" className="h-9 text-xs border border-stone-200 rounded-lg px-2 bg-white" />
           <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} data-testid="date-to" className="h-9 text-xs border border-stone-200 rounded-lg px-2 bg-white" />
           {(user?.role === "admin" || user?.permissions?.see_team) && (
