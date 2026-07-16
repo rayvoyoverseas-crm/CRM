@@ -3,8 +3,9 @@ import Layout from "@/components/Layout";
 import api, { PIPELINE_STAGES, PIPELINE_LABELS, STAGE_MAP } from "@/lib/api";
 import { Link } from "react-router-dom";
 import StageBadge, { StageChip } from "@/components/StageBadge";
-import { Plus, LayoutGrid, List, Filter, Trash2 } from "lucide-react";
+import { Plus, LayoutGrid, List, Filter, Trash2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import LeadDialog from "@/components/LeadDialog";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -62,6 +63,8 @@ export default function PipelineBoard({ pipeline }) {
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [stats, setStats] = useState(null);
+  const [searchType, setSearchType] = useState("name");
+  const [searchTerm, setSearchTerm] = useState("");
   const stages = PIPELINE_STAGES[pipeline];
 
   const load = useCallback(async () => {
@@ -105,7 +108,29 @@ export default function PipelineBoard({ pipeline }) {
     } catch (e) { toast.error("Failed to reassign"); }
   };
 
-  const grouped = stages.reduce((acc, s) => ({ ...acc, [s]: leads.filter((l) => l.stage === s) }), {});
+   const filteredLeads = leads.filter((lead) => {
+  const term = searchTerm.trim().toLowerCase();
+
+  if (!term) return true;
+
+  if (searchType === "phone") {
+    const enteredPhone = searchTerm.replace(/\D/g, "");
+    const leadPhone = String(lead.phone || "").replace(/\D/g, "");
+    return leadPhone.includes(enteredPhone);
+  }
+
+  return String(lead.name || "")
+    .toLowerCase()
+    .includes(term);
+});
+
+const grouped = stages.reduce(
+  (acc, s) => ({
+    ...acc,
+    [s]: filteredLeads.filter((l) => l.stage === s),
+  }),
+  {}
+);
 
   return (
     <Layout
@@ -131,6 +156,51 @@ export default function PipelineBoard({ pipeline }) {
       }
       actions={
         <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2">
+  <Select
+    value={searchType}
+    onValueChange={(value) => {
+      setSearchType(value);
+      setSearchTerm("");
+    }}
+  >
+    <SelectTrigger className="h-9 w-28 text-xs">
+      <SelectValue />
+    </SelectTrigger>
+
+    <SelectContent>
+      <SelectItem value="name">Name</SelectItem>
+      <SelectItem value="phone">Phone No.</SelectItem>
+    </SelectContent>
+  </Select>
+
+  <div className="relative">
+    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-stone-400" />
+
+    <Input
+      value={searchTerm}
+      type={searchType === "phone" ? "tel" : "text"}
+      inputMode={searchType === "phone" ? "numeric" : "text"}
+      onChange={(e) => {
+        const value = e.target.value;
+
+        if (searchType === "phone") {
+          setSearchTerm(value.replace(/[^\d+\-\s()]/g, ""));
+        } else {
+          setSearchTerm(value);
+        }
+      }}
+      placeholder={
+        searchType === "phone"
+          ? "Search phone"
+          : "Search name"
+      }
+      className="h-9 w-48 pl-9 text-xs"
+    />
+  </div>
+</div>
+
+          
           <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} data-testid="date-from" className="h-9 text-xs border border-stone-200 rounded-lg px-2 bg-white" />
           <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} data-testid="date-to" className="h-9 text-xs border border-stone-200 rounded-lg px-2 bg-white" />
           {(user?.role === "admin" || user?.permissions?.see_team) && (
@@ -175,7 +245,12 @@ export default function PipelineBoard({ pipeline }) {
                 {grouped[s].map((l) => (
                   <LeadCard key={l.id} lead={l} pipeline={pipeline} onStageChange={onStageChange} users={users} onDelete={onDelete} canDelete={user?.role === "admin"} />
                 ))}
-                {grouped[s].length === 0 && <div className="text-[11px] text-stone-400 text-center py-4">Empty</div>}
+
+                {grouped[s].length === 0 && (
+  <div className="text-[11px] text-stone-400 text-center py-4">
+    {searchTerm ? "No matching leads" : "Empty"}
+  </div>
+)}    
               </div>
             );
           })}
@@ -194,7 +269,7 @@ export default function PipelineBoard({ pipeline }) {
               </tr>
             </thead>
             <tbody>
-              {leads.map((l) => (
+              {filteredLeads.map((l) => (
                 <tr key={l.id} className="border-b border-stone-100 hover:bg-stone-50">
                   <td className="px-5 py-3.5">
                     <Link to={`/lead/${l.id}`} className="font-semibold text-stone-800 hover:text-[#C05B43]">{l.name}</Link>
@@ -217,7 +292,19 @@ export default function PipelineBoard({ pipeline }) {
                   <td className="px-5 py-3.5 text-xs text-stone-500">{new Date(l.created_at).toLocaleDateString()}</td>
                 </tr>
               ))}
-              {leads.length === 0 && <tr><td colSpan={6} className="text-center py-12 text-sm text-stone-400">No leads found</td></tr>}
+
+              {filteredLeads.length === 0 && (
+  <tr>
+    <td
+      colSpan={6}
+      className="text-center py-12 text-sm text-stone-400"
+    >
+      {searchTerm ? "No matching leads found" : "No leads found"}
+    </td>
+  </tr>
+)}
+
+              
             </tbody>
           </table>
         </div>
