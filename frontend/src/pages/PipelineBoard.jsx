@@ -196,7 +196,7 @@ const grouped = stages.reduce(
           ? "Search phone"
           : "Search name"
       }
-      className="h-11 w-72 rounded-xl border-2 border-[#A64D37] bg-white pl-11 text-sm font-medium shadow placeholder:text-stone-500"
+      className="h-10 w-60 rounded-xl border-2 border-[#B44F36] bg-white pl-10 text-sm shadow-sm placeholder:text-[#7A746F] focus-visible:ring-2 focus-visible:ring-[#B44F36]/30"
     />
   </div>
 </div>
