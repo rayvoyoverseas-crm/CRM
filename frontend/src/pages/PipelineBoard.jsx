@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import Layout from "@/components/Layout";
 import api, { PIPELINE_STAGES, PIPELINE_LABELS, STAGE_MAP } from "@/lib/api";
 import { Link } from "react-router-dom";
 import StageBadge, { StageChip } from "@/components/StageBadge";
-import { Plus, LayoutGrid, List, Filter, Trash2, Search } from "lucide-react";
+import { Plus, LayoutGrid, List, Filter, Trash2, Search, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import LeadDialog from "@/components/LeadDialog";
@@ -58,6 +58,8 @@ export default function PipelineBoard({ pipeline }) {
   const [leads, setLeads] = useState([]);
   const [view, setView] = useState("kanban");
   const [openNew, setOpenNew] = useState(false);
+  const bulkFileInputRef = useRef(null);
+  const [bulkUploading, setBulkUploading] = useState(false);
   const [users, setUsers] = useState([]);
   const [filterAssignee, setFilterAssignee] = useState("__all__");
   const [dateFrom, setDateFrom] = useState("");
@@ -131,7 +133,61 @@ const grouped = stages.reduce(
   }),
   {}
 );
+const handleBulkUpload = async (event) => {
+  const file = event.target.files?.[0];
 
+  if (!file) {
+    return;
+  }
+
+  if (!file.name.toLowerCase().endsWith(".csv")) {
+    toast.error("Please select a valid CSV file.");
+    event.target.value = "";
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Are you sure you want to upload "${file.name}"?`
+  );
+
+  if (!confirmed) {
+    event.target.value = "";
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    setBulkUploading(true);
+
+    const response = await api.post(
+      "/leads/bulk-upload",
+      formData
+    );
+
+    const result = response.data;
+
+    toast.success(
+      `Upload complete: ${result.imported || 0} imported, ` +
+      `${result.skipped || 0} skipped, ` +
+      `${result.failed || 0} failed.`
+    );
+
+    await load();
+  } catch (error) {
+    console.error("Bulk upload failed:", error);
+
+    const errorMessage =
+      error.response?.data?.detail ||
+      "CSV upload failed. Please check the file and try again.";
+
+    toast.error(errorMessage);
+  } finally {
+    setBulkUploading(false);
+    event.target.value = "";
+  }
+};
   return (
     <Layout
       title={PIPELINE_LABELS[pipeline]}
@@ -222,9 +278,38 @@ const grouped = stages.reduce(
               <List className="w-3.5 h-3.5" /> List
             </button>
           </div>
-          <Button onClick={() => setOpenNew(true)} data-testid="new-lead-button" className="bg-[#C05B43] hover:bg-[#A64D37] rounded-xl">
-            <Plus className="w-4 h-4 mr-1" /> New Lead
-          </Button>
+          
+          <input
+  ref={bulkFileInputRef}
+  type="file"
+  accept=".csv,text/csv"
+  onChange={handleBulkUpload}
+  className="hidden"
+/>
+
+{user?.role === "admin" && (
+  <Button
+    type="button"
+    variant="outline"
+    disabled={bulkUploading}
+    onClick={() => bulkFileInputRef.current?.click()}
+    data-testid="bulk-upload-button"
+    className="rounded-xl border-[#C05B43] text-[#C05B43] hover:bg-[#FFF5F1] hover:text-[#A64D37]"
+  >
+    <Upload className="w-4 h-4 mr-1" />
+    {bulkUploading ? "Uploading..." : "Bulk Upload"}
+  </Button>
+)}
+
+<Button
+  onClick={() => setOpenNew(true)}
+  data-testid="new-lead-button"
+  className="bg-[#C05B43] hover:bg-[#A64D37] rounded-xl"
+>
+  <Plus className="w-4 h-4 mr-1" />
+  New Lead
+</Button>
+          
         </div>
       }
     >
