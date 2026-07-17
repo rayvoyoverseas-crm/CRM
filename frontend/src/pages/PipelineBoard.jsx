@@ -157,7 +157,7 @@ const grouped = stages.reduce(
       actions={
         <div className="flex items-center gap-2 flex-wrap">
           
-          <div className="flex items-center gap-2 px-3 py-2 rounded-xl border-2 border-[#D7B7A8] bg-[#E8DDD6] shadow-md">
+         <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border-2 border-[#A64D37] bg-[#D5B6A6] shadow-xl">
   <Select
     value={searchType}
     onValueChange={(value) => {
@@ -165,7 +165,7 @@ const grouped = stages.reduce(
       setSearchTerm("");
     }}
   >
-    <SelectTrigger className="h-10 w-32 text-sm font-medium border border-[#B98A78] bg-white shadow-sm">
+     <SelectTrigger className="h-11 w-36 rounded-xl border-2 border-[#A64D37] bg-white text-sm font-semibold shadow">
       <SelectValue />
     </SelectTrigger>
 
@@ -196,7 +196,7 @@ const grouped = stages.reduce(
           ? "Search phone"
           : "Search name"
       }
-      className="h-10 w-56 pl-10 text-sm border border-[#B98A78] bg-white shadow-sm placeholder:text-stone-500 focus-visible:ring-2 focus-visible:ring-[#C05B43]/40"
+      className="h-11 w-72 rounded-xl border-2 border-[#A64D37] bg-white pl-11 text-sm font-medium shadow placeholder:text-stone-500"
     />
   </div>
 </div>
