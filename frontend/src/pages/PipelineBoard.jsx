@@ -165,7 +165,7 @@ const grouped = stages.reduce(
       setSearchTerm("");
     }}
   >
-     <SelectTrigger className="h-11 w-36 rounded-xl border-2 border-[#A64D37] bg-white text-sm font-semibold shadow">
+      <SelectTrigger className="h-10 w-32 rounded-xl border-2 border-[#B44F36] bg-white text-sm font-medium shadow-sm">
       <SelectValue />
     </SelectTrigger>
 
