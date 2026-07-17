@@ -176,7 +176,7 @@ const grouped = stages.reduce(
   </Select>
 
   <div className="relative">
-    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#8B5E4F]" />
+    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#B44F36]" />
 
     <Input
       value={searchTerm}
