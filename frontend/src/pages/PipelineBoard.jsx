@@ -157,7 +157,7 @@ const grouped = stages.reduce(
       actions={
         <div className="flex items-center gap-2 flex-wrap">
           
-         <div className="flex items-center gap-3 px-4 py-3 rounded-2xl border-2 border-[#A64D37] bg-[#F3E9E4] shadow-xl">
+         <div className="flex items-center gap-2 px-3 py-2 rounded-2xl border-2 border-[#A64D37] ...
   <Select
     value={searchType}
     onValueChange={(value) => {
