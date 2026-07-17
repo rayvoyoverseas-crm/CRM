@@ -393,6 +393,275 @@ async def create_lead(
 
     return serialize_lead(doc)
 
+@api.post("/leads/bulk-upload")
+async def bulk_upload_leads(
+    file: UploadFile = File(...),
+    user: dict = Depends(require_admin),
+):
+    # Only CSV files are accepted
+    if not file.filename or not file.filename.lower().endswith(".csv"):
+        raise HTTPException(
+            status_code=400,
+            detail="Please upload a valid CSV file.",
+        )
+
+    try:
+        file_bytes = await file.read()
+        file_text = file_bytes.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "The CSV file could not be read. "
+                "Please save it as a UTF-8 CSV file."
+            ),
+        )
+
+    csv_reader = csv.DictReader(io.StringIO(file_text))
+
+    if not csv_reader.fieldnames:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "The CSV file is empty or does not contain "
+                "column headings."
+            ),
+        )
+
+    # Remove accidental spaces from column headings
+    csv_reader.fieldnames = [
+        heading.strip() if heading else ""
+        for heading in csv_reader.fieldnames
+    ]
+
+    if "name" not in csv_reader.fieldnames:
+        raise HTTPException(
+            status_code=400,
+            detail="The CSV file must contain a 'name' column.",
+        )
+
+    imported_count = 0
+    skipped_count = 0
+    failed_count = 0
+    errors = []
+
+    for row_number, row in enumerate(csv_reader, start=2):
+        # Clean spaces from every CSV value
+        cleaned_row = {
+            str(key).strip(): str(value or "").strip()
+            for key, value in row.items()
+            if key is not None
+        }
+
+        # Ignore completely empty rows
+        if not any(cleaned_row.values()):
+            continue
+
+        name = cleaned_row.get("name", "")
+        email = cleaned_row.get("email", "")
+        phone = cleaned_row.get("phone", "")
+        country_interest = cleaned_row.get(
+            "country_interest",
+            "",
+        )
+        course_interest = cleaned_row.get(
+            "course_interest",
+            "",
+        )
+        notes = cleaned_row.get("notes", "")
+        assigned_to = (
+            cleaned_row.get("assigned_to", "") or None
+        )
+
+        source = cleaned_row.get("source", "").lower()
+        pipeline = cleaned_row.get("pipeline", "").lower()
+
+        # Default values when CSV cells are blank
+        if not source:
+            source = "manual"
+
+        if not pipeline:
+            pipeline = "study_abroad"
+
+        # Accept common source spellings
+        source_aliases = {
+            "walk in": "walk-in",
+            "walkin": "walk-in",
+            "social media": "social",
+            "social-media": "social",
+        }
+
+        source = source_aliases.get(source, source)
+
+        # Accept common pipeline spellings
+        pipeline_aliases = {
+            "study abroad": "study_abroad",
+            "study-abroad": "study_abroad",
+            "accommodation": "accommodation",
+            "education loan": "loan",
+            "education-loan": "loan",
+        }
+
+        pipeline = pipeline_aliases.get(
+            pipeline,
+            pipeline,
+        )
+
+        if not name:
+            failed_count += 1
+            errors.append({
+                "row": row_number,
+                "error": "Name is required.",
+            })
+            continue
+
+        valid_sources = {
+            "website",
+            "manual",
+            "referral",
+            "walk-in",
+            "social",
+        }
+
+        if source not in valid_sources:
+            failed_count += 1
+            errors.append({
+                "row": row_number,
+                "name": name,
+                "error": (
+                    "Invalid source. Use website, manual, "
+                    "referral, walk-in, or social."
+                ),
+            })
+            continue
+
+        valid_pipelines = {
+            "study_abroad",
+            "accommodation",
+            "loan",
+        }
+
+        if pipeline not in valid_pipelines:
+            failed_count += 1
+            errors.append({
+                "row": row_number,
+                "name": name,
+                "error": (
+                    "Invalid pipeline. Use study_abroad, "
+                    "accommodation, or loan."
+                ),
+            })
+            continue
+
+        # Check for duplicate email or phone number
+        duplicate_conditions = []
+
+        if email:
+            duplicate_conditions.append({
+                "email": email,
+            })
+
+        if phone:
+            duplicate_conditions.append({
+                "phone": phone,
+            })
+
+        if duplicate_conditions:
+            existing_lead = await db.leads.find_one({
+                "$or": duplicate_conditions
+            })
+
+            if existing_lead:
+                skipped_count += 1
+                errors.append({
+                    "row": row_number,
+                    "name": name,
+                    "error": (
+                        "Duplicate email or phone number."
+                    ),
+                })
+                continue
+
+        assigned_name = ""
+
+        # Validate the assigned counsellor, if provided
+        if assigned_to:
+            if not ObjectId.is_valid(assigned_to):
+                failed_count += 1
+                errors.append({
+                    "row": row_number,
+                    "name": name,
+                    "error": (
+                        "The assigned_to user ID is invalid."
+                    ),
+                })
+                continue
+
+            assignee = await db.users.find_one({
+                "_id": ObjectId(assigned_to)
+            })
+
+            if not assignee:
+                failed_count += 1
+                errors.append({
+                    "row": row_number,
+                    "name": name,
+                    "error": (
+                        "The assigned counsellor was not found."
+                    ),
+                })
+                continue
+
+            assigned_name = assignee.get("name", "")
+
+        now = datetime.now(timezone.utc)
+
+        lead_doc = {
+            "name": name,
+            "email": email,
+            "phone": phone,
+            "country_interest": country_interest,
+            "course_interest": course_interest,
+            "source": source,
+            "pipeline": pipeline,
+            "notes": notes,
+            "assigned_to": assigned_to,
+            "assigned_to_name": assigned_name,
+            "stage": default_stage(pipeline),
+            "created_at": now,
+            "updated_at": now,
+            "reviewed": True,
+            "activity": [
+                {
+                    "type": "created",
+                    "text": (
+                        f"Lead imported by "
+                        f"{user.get('name', 'admin')} "
+                        f"through CSV"
+                    ),
+                    "at": now.isoformat(),
+                    "by": user.get("name", ""),
+                }
+            ],
+        }
+
+        await db.leads.insert_one(lead_doc)
+        imported_count += 1
+
+    return {
+        "message": "CSV bulk upload completed.",
+        "imported": imported_count,
+        "skipped": skipped_count,
+        "failed": failed_count,
+        "total_processed": (
+            imported_count
+            + skipped_count
+            + failed_count
+        ),
+        "errors": errors[:100],
+    }
+
+
 @api.get("/leads/{lead_id}")
 async def get_lead(lead_id: str, user: dict = Depends(get_current_user)):
     q = {"_id": ObjectId(lead_id)}
