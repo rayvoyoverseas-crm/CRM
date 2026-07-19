@@ -74,13 +74,24 @@ export default function LeadDetail() {
         <div className="lg:col-span-2 space-y-5">
           <Tabs defaultValue="overview">
             <TabsList className="mb-3">
-              <TabsTrigger value="overview" data-testid="tab-overview">Overview</TabsTrigger>
-              <TabsTrigger value="documents" data-testid="tab-documents">Documents</TabsTrigger>
-              <TabsTrigger value="tasks" data-testid="tab-tasks">Tasks</TabsTrigger>
-              <TabsTrigger value="referees" data-testid="tab-referees">Referees</TabsTrigger>
-              {lead.pipeline === "loan" && <TabsTrigger value="loan" data-testid="tab-loan">Loan Info</TabsTrigger>}
-              <TabsTrigger value="activity" data-testid="tab-activity">Activity</TabsTrigger>
-            </TabsList>
+  <TabsTrigger value="overview" data-testid="tab-overview">
+    Overview
+  </TabsTrigger>
+
+  <TabsTrigger value="tasks" data-testid="tab-tasks">
+    Tasks
+  </TabsTrigger>
+
+  <TabsTrigger value="referees" data-testid="tab-referees">
+    Referees
+  </TabsTrigger>
+
+  {lead.pipeline === "loan" && (
+    <TabsTrigger value="loan" data-testid="tab-loan">
+      Loan Info
+    </TabsTrigger>
+  )}
+</TabsList>
 
             <TabsContent value="overview" className="space-y-5">
           {/* Header */}
@@ -129,52 +140,162 @@ export default function LeadDetail() {
                 <Input value={edit.course_interest} onChange={(e) => setEdit({ ...edit, course_interest: e.target.value })} className="mt-1" />
               </div>
             </div>
+
+            
             <div className="mt-4 flex justify-end">
-              <Button onClick={saveEdit} className="bg-[#C05B43] hover:bg-[#A64D37]" data-testid="save-lead">Save Changes</Button>
+              <Button
+                onClick={saveEdit}
+                className="bg-[#C05B43] hover:bg-[#A64D37]"
+                data-testid="save-lead"
+              >
+                Save Changes
+              </Button>
             </div>
           </div>
-            </TabsContent>
 
-            <TabsContent value="documents"><LeadDocuments lead={lead} onUpdate={load} mode={lead.pipeline === "loan" ? "loan" : "study"} /></TabsContent>
+          {/* Documents dropdown */}
+          <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
+            <summary className="cursor-pointer list-none flex items-center justify-between px-6 py-5 hover:bg-stone-50">
+              <div>
+                <h3 className="font-display font-semibold text-lg">
+                  Documents
+                </h3>
+                <p className="text-xs text-stone-400 mt-1">
+                  Upload and manage documents for this lead
+                </p>
+              </div>
+
+              <span className="text-stone-500 text-sm transition-transform group-open:rotate-180">
+                ▼
+              </span>
+            </summary>
+
+            <div className="border-t border-stone-200 p-6">
+              <LeadDocuments
+                lead={lead}
+                onUpdate={load}
+                mode={lead.pipeline === "loan" ? "loan" : "study"}
+              />
+            </div>
+          </details>
+
+          {/* Activity dropdown */}
+          <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
+            <summary className="cursor-pointer list-none flex items-center justify-between px-6 py-5 hover:bg-stone-50">
+              <div>
+                <h3 className="font-display font-semibold text-lg">
+                  Activity
+                </h3>
+                <p className="text-xs text-stone-400 mt-1">
+                  View updates and history for this lead
+                </p>
+              </div>
+
+              <span className="text-stone-500 text-sm transition-transform group-open:rotate-180">
+                ▼
+              </span>
+            </summary>
+
+            <div className="border-t border-stone-200 p-6">
+              <div className="space-y-3">
+                {(lead.activity || [])
+                  .slice()
+                  .reverse()
+                  .map((activity, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-[#C05B43]/30 pl-3 py-1"
+                    >
+                      <div className="text-[10px] uppercase tracking-widest text-stone-400 font-semibold">
+                        {activity.type.replace("_", " ")} · {activity.by}
+                      </div>
+
+                      <div className="text-sm text-stone-700 mt-0.5">
+                        {activity.text}
+                      </div>
+
+                      <div className="text-[11px] text-stone-400 mt-0.5">
+                        {new Date(activity.at).toLocaleString()}
+                      </div>
+                    </div>
+                  ))}
+
+                {(!lead.activity || lead.activity.length === 0) && (
+                  <div className="text-sm text-stone-400">
+                    No activity yet.
+                  </div>
+                )}
+              </div>
+            </div>
+          </details>
+        </TabsContent>
+
             <TabsContent value="tasks"><LeadTasks leadId={lead.id} /></TabsContent>
             <TabsContent value="referees"><LeadReferees lead={lead} onUpdate={load} /></TabsContent>
             {lead.pipeline === "loan" && <TabsContent value="loan"><LeadLoanInfo lead={lead} onUpdate={load} /></TabsContent>}
-
-            <TabsContent value="activity">
-          {/* Activity + notes */}
-          <div className="bg-white border border-stone-200 rounded-2xl p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Clock className="w-4 h-4 text-stone-400" />
-              <h3 className="font-display font-semibold text-lg">Activity & Notes</h3>
-            </div>
-            <div className="flex gap-2 mb-5">
-              <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Add a note or update…" rows={2} data-testid="note-input" />
-              <Button onClick={addNote} className="bg-[#1B365D] hover:bg-[#152a4a] self-end" data-testid="add-note-button"><MessageSquare className="w-4 h-4 mr-1" /> Post</Button>
-            </div>
-            <div className="space-y-3">
-              {(lead.activity || []).slice().reverse().map((a, idx) => (
-                <div key={idx} className="border-l-2 border-[#C05B43]/30 pl-3 py-1">
-                  <div className="text-[10px] uppercase tracking-widest text-stone-400 font-semibold">{a.type.replace("_", " ")} · {a.by}</div>
-                  <div className="text-sm text-stone-700 mt-0.5">{a.text}</div>
-                  <div className="text-[11px] text-stone-400 mt-0.5">{new Date(a.at).toLocaleString()}</div>
-                </div>
-              ))}
-              {(!lead.activity || lead.activity.length === 0) && <div className="text-sm text-stone-400">No activity yet.</div>}
-            </div>
-          </div>
-            </TabsContent>
           </Tabs>
         </div>
 
         {/* Right column */}
         <div className="space-y-4">
+
+          {/* Notes */}
+  <div className="bg-white border border-stone-200 rounded-2xl p-6">
+    <div className="flex items-center gap-2 mb-4">
+      <MessageSquare className="w-4 h-4 text-[#C05B43]" />
+
+      <div>
+        <h3 className="font-display font-semibold text-lg">
+          Notes
+        </h3>
+
+        <p className="text-xs text-stone-400 mt-0.5">
+          Add a note for this lead
+        </p>
+      </div>
+    </div>
+
+    <Textarea
+      value={note}
+      onChange={(event) => setNote(event.target.value)}
+      placeholder="Write a note or update..."
+      rows={5}
+      data-testid="note-input"
+    />
+
+    <Button
+      onClick={addNote}
+      disabled={!note.trim()}
+      className="w-full mt-3 bg-[#1B365D] hover:bg-[#152a4a]"
+      data-testid="add-note-button"
+    >
+      <MessageSquare className="w-4 h-4 mr-1" />
+      Add Note
+    </Button>
+  </div>
+
+          {/* Current Stage*/}
           <div className="bg-white border border-stone-200 rounded-2xl p-6">
-            <div className="text-[11px] uppercase tracking-widest text-stone-400 font-semibold">Current Stage</div>
-            <div className="mt-2"><StageBadge pipeline={lead.pipeline} stage={lead.stage} /></div>
+            <div className="text-[11px] uppercase tracking-widest text-stone-400 font-semibold">
+              Current Stage
+            </div>
+            
+            <div className="mt-2">
+              <StageBadge pipeline={lead.pipeline} stage={lead.stage} />
+            </div>
+            
             <div className="mt-4">
-              <label className="text-[11px] uppercase tracking-widest text-stone-400 font-semibold">Move to</label>
-              <Select value={lead.stage} onValueChange={(v) => updateField({ stage: v })}>
-                <SelectTrigger data-testid="detail-stage-select"><SelectValue /></SelectTrigger>
+              <label className="text-[11px] uppercase tracking-widest text-stone-400 font-semibold">
+                Move to
+              </label>
+              
+              <Select value={lead.stage} onValueChange={(v) => updateField({ stage: v })}
+                >
+                
+                <SelectTrigger data-testid="detail-stage-select">
+                  <SelectValue />
+                </SelectTrigger>
+                
                 <SelectContent>
                   {stages.map((s) => <SelectItem key={s} value={s}>{s} · {STAGE_MAP[lead.pipeline][s].label}</SelectItem>)}
                 </SelectContent>
