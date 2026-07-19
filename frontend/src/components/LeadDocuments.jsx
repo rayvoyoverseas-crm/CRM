@@ -64,22 +64,11 @@ const BASE_DOCS = [
     { key: "expiry_date", label: "Expiry Date", type: "date" },
     { key: "address", label: "Address on Passport", type: "text" },
   ] },
-  { key: "ept_ielts", label: "EPT · IELTS", qual: ["12th", "UG", "PG"], meta: [
-    { key: "overall_score", label: "Overall Score", type: "text" },
-    { key: "test_date", label: "Test Date", type: "date" },
-  ] },
-  { key: "ept_toefl", label: "EPT · TOEFL", qual: ["12th", "UG", "PG"], meta: [
-    { key: "overall_score", label: "Overall Score", type: "text" },
-    { key: "test_date", label: "Test Date", type: "date" },
-  ] },
-  { key: "ept_pte", label: "EPT · PTE", qual: ["12th", "UG", "PG"], meta: [
-  { key: "overall_score", label: "Overall Score", type: "text" },
-  { key: "test_date", label: "Test Date", type: "date" },
-] },
-  { key: "ept_duolingo", label: "EPT · Duolingo", qual: ["12th", "UG", "PG"], meta: [
-    { key: "overall_score", label: "Overall Score", type: "text" },
-    { key: "test_date", label: "Test Date", type: "date" },
-  ] },
+  {
+  key: "ept",
+  label: "English Proficiency",
+  qual: ["12th", "UG", "PG"],
+},
   { key: "sop", label: "SOP", qual: ["12th", "UG", "PG"] },
   { key: "aps", label: "APS", qual: ["12th", "UG", "PG"] },
   { key: "other_1", label: "Other Document 1", qual: ["12th", "UG", "PG"] },
@@ -203,6 +192,9 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
   const [docs, setDocs] = useState([]);
   const [qual, setQual] = useState(lead.highest_qualification || "");
 
+  const [eptType, setEptType] = useState("");
+  const [eptScore, setEptScore] = useState("");
+
   const load = async () => { const { data } = await api.get(`/leads/${lead.id}/documents`); setDocs(data); };
   useEffect(() => { load(); }, [lead.id]);
 
@@ -238,6 +230,37 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
 
       {docsFor.length > 0 && (
   <div className="space-y-3">
+
+    <div className="border border-stone-200 rounded-xl p-4 bg-white">
+  <div className="text-sm font-semibold text-stone-800 mb-3">
+    English Proficiency <span className="text-red-500">*</span>
+  </div>
+
+  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+    {[
+      "IELTS",
+      "PTE",
+      "TOEFL",
+      "Duolingo",
+      "EPT Waiver",
+      "Will Provide Later",
+    ].map((type) => (
+      <label
+        key={type}
+        className="flex items-center gap-2 cursor-pointer text-sm"
+      >
+        <input
+          type="radio"
+          name="english-test"
+          value={type}
+          checked={eptType === type}
+          onChange={() => setEptType(type)}
+        />
+        {type}
+      </label>
+    ))}
+  </div>
+</div>
 
     {docsFor
       .filter((cfg) => cfg.key === "10th")
