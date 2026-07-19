@@ -277,6 +277,7 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
   ["ug_sem", "ug_transcript", "ug_degree", "ug_grading"].includes(cfg.key)
 ) && (
   <DocumentDropdown title="UG">
+    
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
       {docsFor
         .filter((cfg) =>
@@ -299,6 +300,23 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
   </DocumentDropdown>
 )}
 
+{docsFor
+  .filter((cfg) => cfg.key === "passport")
+  .map((cfg) => {
+    const existing = docs.find((d) => d.doc_type === cfg.key);
+
+    return (
+      <DocumentDropdown key={cfg.key} title="Passport">
+        <DocSlot
+          leadId={lead.id}
+          cfg={cfg}
+          existing={existing}
+          onChange={load}
+        />
+      </DocumentDropdown>
+    );
+  })}
+
     
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
       {docsFor
@@ -310,6 +328,7 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
       "ug_sem",
       "ug_transcript",
       "ug_degree",
+      "passport",
       "ug_grading",
     ].includes(cfg.key)
 )
