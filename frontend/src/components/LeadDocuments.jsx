@@ -317,6 +317,34 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
     );
   })}
 
+
+{docsFor.some((cfg) =>
+  ["ept_ielts", "ept_toefl", "ept_pte", "ept_duolingo"].includes(cfg.key)
+) && (
+  <DocumentDropdown title="EPT">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {docsFor
+        .filter((cfg) =>
+          ["ept_ielts", "ept_toefl", "ept_pte", "ept_duolingo"].includes(cfg.key)
+        )
+        .map((cfg) => {
+          const existing = docs.find((d) => d.doc_type === cfg.key);
+
+          return (
+            <DocSlot
+              key={cfg.key}
+              leadId={lead.id}
+              cfg={cfg}
+              existing={existing}
+              onChange={load}
+            />
+          );
+        })}
+    </div>
+  </DocumentDropdown>
+)}
+    
+
     
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
       {docsFor
@@ -329,6 +357,10 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
       "ug_transcript",
       "ug_degree",
       "passport",
+      "ept_ielts",
+      "ept_toefl",
+      "ept_pte",
+      "ept_duolingo",
       "ug_grading",
     ].includes(cfg.key)
 )
