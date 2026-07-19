@@ -318,30 +318,23 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
     English Proficiency <span className="text-red-500">*</span>
   </div>
 
-  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-    {[
-      "IELTS",
-      "PTE",
-      "TOEFL",
-      "Duolingo",
-      "EPT Waiver",
-      "Will Provide Later",
-    ].map((type) => (
-      <label
-        key={type}
-        className="flex items-center gap-2 cursor-pointer text-sm"
-      >
-        <input
-          type="radio"
-          name="english-test"
-          value={type}
-          checked={eptType === type}
-          onChange={() => setEptType(type)}
-        />
-        {type}
-      </label>
-    ))}
-  </div>
+
+<Select value={eptType} onValueChange={setEptType}>
+  <SelectTrigger className="w-full md:w-80">
+    <SelectValue placeholder="Select English Proficiency" />
+  </SelectTrigger>
+
+  <SelectContent>
+    <SelectItem value="IELTS">IELTS</SelectItem>
+    <SelectItem value="PTE">PTE</SelectItem>
+    <SelectItem value="TOEFL">TOEFL</SelectItem>
+    <SelectItem value="Duolingo">Duolingo</SelectItem>
+    <SelectItem value="EPT Waiver">EPT Waiver</SelectItem>
+    <SelectItem value="Will Provide Later">
+      Will Provide Later
+    </SelectItem>
+  </SelectContent>
+</Select>
 </div>
 
     {["IELTS", "PTE", "TOEFL", "Duolingo"].includes(eptType) && (
