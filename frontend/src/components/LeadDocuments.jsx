@@ -340,7 +340,7 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
 </Select>
   
     {["IELTS", "PTE", "TOEFL", "Duolingo"].includes(eptType) && (
-  <div className="border border-stone-200 rounded-xl p-4 bg-white">
+  <div className="mt-4 border border-stone-200 rounded-xl p-4 bg-white">
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
       <div>
