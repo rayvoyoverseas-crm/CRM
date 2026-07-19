@@ -313,10 +313,12 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
 
   
 
-<div className="border border-stone-200 rounded-xl p-4 bg-white">
-  <div className="text-sm font-semibold text-stone-800 mb-3">
-    English Proficiency <span className="text-red-500">*</span>
-  </div>
+<DocumentDropdown title="English Proficiency">
+  <div className="mb-3">
+  <Label>
+    Select Test <span className="text-red-500">*</span>
+  </Label>
+</div>
 
 
 <Select value={eptType} onValueChange={setEptType}>
@@ -335,8 +337,7 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
     </SelectItem>
   </SelectContent>
 </Select>
-</div>
-
+  
     {["IELTS", "PTE", "TOEFL", "Duolingo"].includes(eptType) && (
   <div className="border border-stone-200 rounded-xl p-4 bg-white">
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -373,7 +374,7 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
   </div>
 )}
 
-{eptType === "EPT Waiver" && (
+  {eptType === "EPT Waiver" && (
   <div className="border border-stone-200 rounded-xl p-4 bg-white">
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
@@ -408,6 +409,8 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
     </div>
   </div>
 )}
+  
+</DocumentDropdown>
     
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
       {docsFor
