@@ -318,32 +318,6 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
     English Proficiency <span className="text-red-500">*</span>
   </div>
 
-  {docsFor.some((cfg) =>
-  ["ept_ielts", "ept_toefl", "ept_pte", "ept_duolingo"].includes(cfg.key)
-) && (
-  <DocumentDropdown title="EPT">
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-      {docsFor
-        .filter((cfg) =>
-          ["ept_ielts", "ept_toefl", "ept_pte", "ept_duolingo"].includes(cfg.key)
-        )
-        .map((cfg) => {
-          const existing = docs.find((d) => d.doc_type === cfg.key);
-
-          return (
-            <DocSlot
-              key={cfg.key}
-              leadId={lead.id}
-              cfg={cfg}
-              existing={existing}
-              onChange={load}
-            />
-          );
-        })}
-    </div>
-  </DocumentDropdown>
-)}
-
   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
     {[
       "IELTS",
@@ -370,9 +344,77 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
   </div>
 </div>
 
-    
-    
+    {["IELTS", "PTE", "TOEFL", "Duolingo"].includes(eptType) && (
+  <div className="border border-stone-200 rounded-xl p-4 bg-white">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
+      <div>
+        <label className="text-xs font-medium text-stone-600">
+          Overall Score <span className="text-red-500">*</span>
+        </label>
+
+        <Input
+          className="mt-1"
+          placeholder="Enter Overall Score"
+          value={eptScore}
+          onChange={(e) => setEptScore(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label className="text-xs font-medium text-stone-600">
+          Upload Report <span className="text-red-500">*</span>
+        </label>
+
+        <div className="mt-1">
+          <DocSlot
+            leadId={lead.id}
+            cfg={docsFor.find((d) => d.key === "ept")}
+            existing={docs.find((d) => d.doc_type === "ept")}
+            onChange={load}
+          />
+        </div>
+      </div>
+
+    </div>
+  </div>
+)}
+
+{eptType === "EPT Waiver" && (
+  <div className="border border-stone-200 rounded-xl p-4 bg-white">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+      <div>
+        <label className="text-xs font-medium text-stone-600">
+          12th English Score <span className="text-red-500">*</span>
+        </label>
+
+        <Input
+          className="mt-1"
+          placeholder="Enter 12th English Score"
+          value={eptScore}
+          onChange={(e) => setEptScore(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <label className="text-xs font-medium text-stone-600">
+          Upload 12th Marksheet <span className="text-red-500">*</span>
+        </label>
+
+        <div className="mt-1">
+          <DocSlot
+            leadId={lead.id}
+            cfg={docsFor.find((d) => d.key === "ept")}
+            existing={docs.find((d) => d.doc_type === "ept")}
+            onChange={load}
+          />
+        </div>
+      </div>
+
+    </div>
+  </div>
+)}
     
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
       {docsFor
@@ -385,10 +427,7 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
       "ug_transcript",
       "ug_degree",
       "passport",
-      "ept_ielts",
-      "ept_toefl",
-      "ept_pte",
-      "ept_duolingo",
+      "ept",
       "ug_grading",
     ].includes(cfg.key)
 )
