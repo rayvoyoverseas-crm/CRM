@@ -293,3 +293,6 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
 
   </div>
 )}
+          </div>
+  );
+}
