@@ -72,6 +72,10 @@ const BASE_DOCS = [
     { key: "overall_score", label: "Overall Score", type: "text" },
     { key: "test_date", label: "Test Date", type: "date" },
   ] },
+  { key: "ept_pte", label: "EPT · PTE", qual: ["12th", "UG", "PG"], meta: [
+  { key: "overall_score", label: "Overall Score", type: "text" },
+  { key: "test_date", label: "Test Date", type: "date" },
+] },
   { key: "ept_duolingo", label: "EPT · Duolingo", qual: ["12th", "UG", "PG"], meta: [
     { key: "overall_score", label: "Overall Score", type: "text" },
     { key: "test_date", label: "Test Date", type: "date" },
@@ -175,6 +179,26 @@ function DocSlot({ leadId, cfg, existing, onChange }) {
   );
 }
 
+function DocumentDropdown({ title, children }) {
+  return (
+    <details className="group border border-stone-200 rounded-xl bg-white overflow-hidden">
+      <summary className="cursor-pointer list-none flex items-center justify-between px-4 py-4 hover:bg-stone-50">
+        <span className="font-display font-semibold text-base text-stone-800">
+          {title}
+        </span>
+
+        <span className="text-stone-500 text-sm transition-transform group-open:rotate-180">
+          ▼
+        </span>
+      </summary>
+
+      <div className="border-t border-stone-200 p-4">
+        {children}
+      </div>
+    </details>
+  );
+}
+
 export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
   const [docs, setDocs] = useState([]);
   const [qual, setQual] = useState(lead.highest_qualification || "");
@@ -211,14 +235,61 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
         )}
       </div>
       {!isLoan && !qual && <div className="text-sm text-stone-400 py-8 text-center border-2 border-dashed border-stone-200 rounded-xl">Select highest qualification to unlock the document checklist.</div>}
+
       {docsFor.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {docsFor.map((cfg) => {
-            const existing = docs.find((d) => d.doc_type === cfg.key);
-            return <DocSlot key={cfg.key} leadId={lead.id} cfg={cfg} existing={existing} onChange={load} />;
-          })}
-        </div>
-      )}
+  <div className="space-y-3">
+
+    {docsFor
+      .filter((cfg) => cfg.key === "10th")
+      .map((cfg) => {
+        const existing = docs.find((d) => d.doc_type === cfg.key);
+
+        return (
+          <DocumentDropdown key={cfg.key} title="10th Certificate">
+            <DocSlot
+              leadId={lead.id}
+              cfg={cfg}
+              existing={existing}
+              onChange={load}
+            />
+          </DocumentDropdown>
+        );
+      })}
+
+    {docsFor
+  .filter((cfg) => cfg.key === "12th")
+  .map((cfg) => {
+    const existing = docs.find((d) => d.doc_type === cfg.key);
+
+    return (
+      <DocumentDropdown key={cfg.key} title="12th / Diploma Certificate">
+        <DocSlot
+          leadId={lead.id}
+          cfg={cfg}
+          existing={existing}
+          onChange={load}
+        />
+      </DocumentDropdown>
+    );
+  })}
+
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      {docsFor
+        .filter((cfg) => !["10th", "12th"].includes(cfg.key))
+        .map((cfg) => {
+          const existing = docs.find((d) => d.doc_type === cfg.key);
+
+          return (
+            <DocSlot
+              key={cfg.key}
+              leadId={lead.id}
+              cfg={cfg}
+              existing={existing}
+              onChange={load}
+            />
+          );
+        })}
     </div>
-  );
-}
+
+  </div>
+)}
