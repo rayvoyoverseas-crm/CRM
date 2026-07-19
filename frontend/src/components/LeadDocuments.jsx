@@ -231,36 +231,7 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
       {docsFor.length > 0 && (
   <div className="space-y-3">
 
-    <div className="border border-stone-200 rounded-xl p-4 bg-white">
-  <div className="text-sm font-semibold text-stone-800 mb-3">
-    English Proficiency <span className="text-red-500">*</span>
-  </div>
-
-  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-    {[
-      "IELTS",
-      "PTE",
-      "TOEFL",
-      "Duolingo",
-      "EPT Waiver",
-      "Will Provide Later",
-    ].map((type) => (
-      <label
-        key={type}
-        className="flex items-center gap-2 cursor-pointer text-sm"
-      >
-        <input
-          type="radio"
-          name="english-test"
-          value={type}
-          checked={eptType === type}
-          onChange={() => setEptType(type)}
-        />
-        {type}
-      </label>
-    ))}
-  </div>
-</div>
+    
 
     {docsFor
       .filter((cfg) => cfg.key === "10th")
@@ -340,8 +311,14 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
     );
   })}
 
+  
 
-{docsFor.some((cfg) =>
+<div className="border border-stone-200 rounded-xl p-4 bg-white">
+  <div className="text-sm font-semibold text-stone-800 mb-3">
+    English Proficiency <span className="text-red-500">*</span>
+  </div>
+
+  {docsFor.some((cfg) =>
   ["ept_ielts", "ept_toefl", "ept_pte", "ept_duolingo"].includes(cfg.key)
 ) && (
   <DocumentDropdown title="EPT">
@@ -366,6 +343,34 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
     </div>
   </DocumentDropdown>
 )}
+
+  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+    {[
+      "IELTS",
+      "PTE",
+      "TOEFL",
+      "Duolingo",
+      "EPT Waiver",
+      "Will Provide Later",
+    ].map((type) => (
+      <label
+        key={type}
+        className="flex items-center gap-2 cursor-pointer text-sm"
+      >
+        <input
+          type="radio"
+          name="english-test"
+          value={type}
+          checked={eptType === type}
+          onChange={() => setEptType(type)}
+        />
+        {type}
+      </label>
+    ))}
+  </div>
+</div>
+
+    
     
 
     
