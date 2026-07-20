@@ -462,6 +462,13 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
           />
         );
       })}
+<Button
+  type="button"
+  className="w-full mt-4"
+>
+  + Add Referee
+</Button>
+    
   </DocumentDropdown>
 )}
     
