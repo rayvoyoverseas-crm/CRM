@@ -207,6 +207,7 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
 
   const [eptType, setEptType] = useState("");
   const [eptScore, setEptScore] = useState("");
+  const [refereeCount, setRefereeCount] = useState(1);
 
   const load = async () => { const { data } = await api.get(`/leads/${lead.id}/documents`); setDocs(data); };
   useEffect(() => { load(); }, [lead.id]);
