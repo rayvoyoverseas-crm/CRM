@@ -466,6 +466,7 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
 <Button
   type="button"
   className="w-full mt-4"
+  onClick={() => setRefereeCount((count) => count + 1)}
 >
   + Add Referee
 </Button>
