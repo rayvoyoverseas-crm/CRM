@@ -71,6 +71,7 @@ const BASE_DOCS = [
   qual: ["12th", "UG", "PG"],
 },
   { key: "sop", label: "SOP", qual: ["12th", "UG", "PG"] },
+  { key: "lor", label: "LOR", qual: ["12th", "UG", "PG"] },
   { key: "aps", label: "APS", qual: ["12th", "UG", "PG"] },
   { key: "other_1", label: "Other Document 1", qual: ["12th", "UG", "PG"] },
   { key: "other_2", label: "Other Document 2", qual: ["12th", "UG", "PG"] },
