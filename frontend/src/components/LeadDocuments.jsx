@@ -116,9 +116,11 @@ function DocSlot({ leadId, cfg, existing, onChange }) {
       const fd = new FormData();
       fd.append("file", file);
       await api.post(`/leads/${leadId}/documents`, fd, {
-        params: { doc_type: cfg.key, meta: JSON.stringify(meta) },
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+  params: {
+    doc_type: cfg.key,
+    meta: JSON.stringify(meta),
+  },
+});
       toast.success(`${cfg.label} uploaded`);
       onChange();
     } catch (e) { toast.error("Upload failed"); }
