@@ -212,7 +212,10 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
   const [refereeCount, setRefereeCount] = useState(1);
 
   const load = async () => { const { data } = await api.get(`/leads/${lead.id}/documents`); setDocs(data); };
-  useEffect(() => { load(); }, [lead.id]);
+  useEffect(() => {
+  load();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+}, [leadId]);
 
   const saveQual = async (v) => {
     setQual(v);
