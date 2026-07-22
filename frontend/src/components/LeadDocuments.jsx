@@ -215,7 +215,7 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
   useEffect(() => {
   load();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [leadId]);
+}, [lead.id]);
 
   const saveQual = async (v) => {
     setQual(v);
