@@ -39,9 +39,21 @@ ROLE_PERMS = {
     "team_lead": {**DEFAULT_PERMS, "see_all_leads": True, "see_analytics": True, "see_website_leads": True, "manage_tasks_for_others": True},
     "counsellor": DEFAULT_PERMS,
 }
-STORAGE_URL = "https://integrations.emergentagent.com/objstore/api/v1/storage"
 APP_NAME = os.environ.get("APP_NAME", "rayvoy-crm")
-_storage_key = None
+
+R2_ACCOUNT_ID = os.environ["R2_ACCOUNT_ID"]
+R2_ACCESS_KEY_ID = os.environ["R2_ACCESS_KEY_ID"]
+R2_SECRET_ACCESS_KEY = os.environ["R2_SECRET_ACCESS_KEY"]
+R2_BUCKET_NAME = os.environ["R2_BUCKET_NAME"]
+R2_ENDPOINT = os.environ["R2_ENDPOINT"]
+
+s3 = boto3.client(
+    "s3",
+    endpoint_url=R2_ENDPOINT,
+    aws_access_key_id=R2_ACCESS_KEY_ID,
+    aws_secret_access_key=R2_SECRET_ACCESS_KEY,
+    region_name="auto",
+)
 
 mongo_url = os.environ["MONGO_URL"]
 client = AsyncIOMotorClient(mongo_url)
@@ -1034,30 +1046,34 @@ async def read_one(nid: str, user: dict = Depends(get_current_user)):
     return {"ok": True}
 
 # --- Documents (Object Storage) --------------------------------------------
-
-def init_storage():
-    global _storage_key
-    if _storage_key:
-        return _storage_key
-    key = os.environ.get("EMERGENT_LLM_KEY")
-    if not key:
-        raise HTTPException(500, "Object storage not configured")
-    resp = httpreq.post(f"{STORAGE_URL}/init", json={"emergent_key": key}, timeout=30)
-    resp.raise_for_status()
-    _storage_key = resp.json()["storage_key"]
-    return _storage_key
-
 def put_object(path: str, data: bytes, content_type: str):
-    key = init_storage()
-    resp = httpreq.put(f"{STORAGE_URL}/objects/{path}", headers={"X-Storage-Key": key, "Content-Type": content_type}, data=data, timeout=120)
-    resp.raise_for_status()
-    return resp.json()
+    try:
+        s3.put_object(
+            Bucket=R2_BUCKET_NAME,
+            Key=path,
+            Body=data,
+            ContentType=content_type,
+        )
+        return {
+            "path": path,
+            "size": len(data),
+        }
+    except (BotoCoreError, ClientError) as e:
+        raise HTTPException(500, f"Failed to upload to Cloudflare R2: {str(e)}")
+
 
 def get_object(path: str):
-    key = init_storage()
-    resp = httpreq.get(f"{STORAGE_URL}/objects/{path}", headers={"X-Storage-Key": key}, timeout=60)
-    resp.raise_for_status()
-    return resp.content, resp.headers.get("Content-Type", "application/octet-stream")
+    try:
+        obj = s3.get_object(
+            Bucket=R2_BUCKET_NAME,
+            Key=path,
+        )
+        return (
+            obj["Body"].read(),
+            obj.get("ContentType", "application/octet-stream"),
+        )
+    except (BotoCoreError, ClientError) as e:
+        raise HTTPException(404, f"Document not found: {str(e)}")
 
 @api.post("/leads/{lead_id}/documents")
 async def upload_doc(lead_id: str, doc_type: str = Query(...), meta: str = Query("{}"), file: UploadFile = File(...), user: dict = Depends(get_current_user)):
