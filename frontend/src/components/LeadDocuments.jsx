@@ -453,29 +453,40 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
 
     {docsFor.some((cfg) => cfg.key === "lor") && (
   <DocumentDropdown title="LOR">
-    {docsFor
-      .filter((cfg) => cfg.key === "lor")
-      .map((cfg) => {
-        const existing = docs.find((d) => d.doc_type === cfg.key);
+    {Array.from({ length: refereeCount }).map((_, index) => {
+      const originalCfg = docsFor.find((cfg) => cfg.key === "lor");
 
-        return (
+      const docType = index === 0 ? "lor" : `lor_${index + 1}`;
+
+      const refereeCfg = {
+        ...originalCfg,
+        key: docType,
+        label: `LOR - Referee ${index + 1}`,
+      };
+
+      const existing = docs.find(
+        (document) => document.doc_type === docType
+      );
+
+      return (
+        <div key={docType} className={index > 0 ? "mt-4" : ""}>
           <DocSlot
-            key={cfg.key}
             leadId={lead.id}
-            cfg={cfg}
+            cfg={refereeCfg}
             existing={existing}
             onChange={load}
           />
-        );
-      })}
-<Button
-  type="button"
-  className="w-full mt-4"
-  onClick={() => setRefereeCount((count) => count + 1)}
->
-  + Add Referee
-</Button>
-    
+        </div>
+      );
+    })}
+
+    <Button
+      type="button"
+      className="w-full mt-4"
+      onClick={() => setRefereeCount((count) => count + 1)}
+    >
+      + Add Referee
+    </Button>
   </DocumentDropdown>
 )}
     
