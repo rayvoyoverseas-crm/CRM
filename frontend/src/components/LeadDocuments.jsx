@@ -260,6 +260,15 @@ function DocSlot({ leadId, cfg, existing, onChange }) {
         </div>
       ))}
 
+      {meta.referees?.length < 3 && (
+  <Button
+    type="button"
+    className="w-full h-8 text-xs"
+    onClick={addReferee}
+  >
+    + Add Referee
+  </Button>
+)}
      
     </div>
   ) : (
