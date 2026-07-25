@@ -107,7 +107,23 @@ const LOAN_DOCS = [
 
 function DocSlot({ leadId, cfg, existing, onChange }) {
   const [uploading, setUploading] = useState(false);
-  const [meta, setMeta] = useState(existing?.meta || {});
+  const [meta, setMeta] = useState(() => {
+  if (cfg.key === "lor") {
+    return existing?.meta || {
+      referees: [
+        {
+          name: "",
+          profession: "",
+          relationship: "",
+          contact_no: "",
+          email: "",
+        },
+      ],
+    };
+  }
+
+  return existing?.meta || {};
+});
   const inp = useRef(null);
 
   const upload = async (file) => {
@@ -164,11 +180,90 @@ function DocSlot({ leadId, cfg, existing, onChange }) {
           </div>
         )}
       </div>
+      
       {cfg.meta && (
-        <div className="mt-2 grid grid-cols-1 gap-1.5">
-          {cfg.meta.map((f) => <div key={f.key}><div className="text-[10px] text-stone-500 mb-0.5">{f.label}</div>{renderField(f)}</div>)}
+  cfg.key === "lor" ? (
+    <div className="mt-3 space-y-4">
+      {(meta.referees || []).map((referee, refereeIndex) => (
+        <div
+          key={refereeIndex}
+          className="border border-stone-200 rounded-lg p-3"
+        >
+          <div className="text-sm font-semibold text-stone-700 mb-3">
+            Referee {refereeIndex + 1}
+          </div>
+
+          <div className="grid grid-cols-1 gap-2">
+            {cfg.meta.map((field) => (
+              <div key={field.key}>
+                <div className="text-[10px] text-stone-500 mb-0.5">
+                  {field.label}
+                </div>
+
+                <Input
+                  type={field.type}
+                  placeholder={field.label}
+                  className="h-8 text-xs"
+                  value={referee[field.key] || ""}
+                  onChange={(e) => {
+                    const updatedReferees = [...meta.referees];
+
+                    updatedReferees[refereeIndex] = {
+                      ...updatedReferees[refereeIndex],
+                      [field.key]: e.target.value,
+                    };
+
+                    setMeta({
+                      ...meta,
+                      referees: updatedReferees,
+                    });
+                  }}
+                />
+              </div>
+            ))}
+          </div>
         </div>
+      ))}
+
+      {meta.referees?.length < 3 && (
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full h-8 text-xs"
+          onClick={() =>
+            setMeta({
+              ...meta,
+              referees: [
+                ...meta.referees,
+                {
+                  name: "",
+                  profession: "",
+                  relationship: "",
+                  contact_no: "",
+                  email: "",
+                },
+              ],
+            })
+          }
+        >
+          + Add Referee
+        </Button>
       )}
+    </div>
+  ) : (
+    <div className="mt-2 grid grid-cols-1 gap-1.5">
+      {cfg.meta.map((f) => (
+        <div key={f.key}>
+          <div className="text-[10px] text-stone-500 mb-0.5">
+            {f.label}
+          </div>
+          {renderField(f)}
+        </div>
+      ))}
+    </div>
+  )
+)}
+      
       {existing ? (
         <div className="mt-2 text-[11px] text-stone-500 truncate">📎 {existing.original_filename}</div>
       ) : (
