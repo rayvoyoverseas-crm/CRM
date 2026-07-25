@@ -225,30 +225,7 @@ function DocSlot({ leadId, cfg, existing, onChange }) {
         </div>
       ))}
 
-      {meta.referees?.length < 3 && (
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full h-8 text-xs"
-          onClick={() =>
-            setMeta({
-              ...meta,
-              referees: [
-                ...meta.referees,
-                {
-                  name: "",
-                  profession: "",
-                  relationship: "",
-                  contact_no: "",
-                  email: "",
-                },
-              ],
-            })
-          }
-        >
-          + Add Referee
-        </Button>
-      )}
+     
     </div>
   ) : (
     <div className="mt-2 grid grid-cols-1 gap-1.5">
@@ -580,16 +557,6 @@ const addReferee = () => {
         </div>
       );
     })}
-
-    {refereeCount < 3 && (
-  <Button
-    type="button"
-    className="w-full mt-4"
-    onClick={addReferee}
-  >
-    + Add Referee
-  </Button>
-)}
   </DocumentDropdown>
 )}
     
