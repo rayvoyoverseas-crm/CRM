@@ -224,9 +224,31 @@ function DocSlot({ leadId, cfg, existing, onChange }) {
           key={refereeIndex}
           className="border border-stone-200 rounded-lg p-3"
         >
-          <div className="text-sm font-semibold text-stone-700 mb-3">
-            Referee {refereeIndex + 1}
-          </div>
+          <div className="flex items-center justify-between mb-3">
+  <div className="text-sm font-semibold text-stone-700">
+    Referee {refereeIndex + 1}
+  </div>
+
+  {refereeIndex > 0 && (
+    <button
+      type="button"
+      onClick={() => {
+        const updatedReferees = meta.referees.filter(
+          (_, index) => index !== refereeIndex
+        );
+
+        setMeta({
+          ...meta,
+          referees: updatedReferees,
+        });
+      }}
+      className="text-rose-500 hover:text-rose-700"
+      title="Delete Referee"
+    >
+      <Trash2 className="w-4 h-4" />
+    </button>
+  )}
+</div>
 
           <div className="grid grid-cols-1 gap-2">
             {cfg.meta.map((field) => (
