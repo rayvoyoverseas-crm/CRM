@@ -595,6 +595,26 @@ const addReferee = () => {
   </DocumentDropdown>
 )}
 
+    {docsFor.some((cfg) => cfg.key === "aps") && (
+  <DocumentDropdown title="APS">
+    {docsFor
+      .filter((cfg) => cfg.key === "aps")
+      .map((cfg) => {
+        const existing = docs.find((d) => d.doc_type === cfg.key);
+
+        return (
+          <DocSlot
+            key={cfg.key}
+            leadId={lead.id}
+            cfg={cfg}
+            existing={existing}
+            onChange={load}
+          />
+        );
+      })}
+  </DocumentDropdown>
+)}
+
     {docsFor.some((cfg) => cfg.key === "lor") && (
   <DocumentDropdown title="LOR">
     {(() => {
