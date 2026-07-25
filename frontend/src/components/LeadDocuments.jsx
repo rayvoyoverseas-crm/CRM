@@ -126,6 +126,41 @@ function DocSlot({ leadId, cfg, existing, onChange }) {
 });
   const inp = useRef(null);
 
+  const addReferee = () => {
+  const referees = meta.referees || [];
+  const current = referees[referees.length - 1];
+
+  // Validate required fields
+  if (
+    !current.name?.trim() ||
+    !current.profession?.trim() ||
+    !current.relationship?.trim() ||
+    !current.contact_no?.trim() ||
+    !current.email?.trim()
+  ) {
+    toast.error(
+      `Please complete all required details for Referee ${referees.length} before adding another referee.`
+    );
+    return;
+  }
+
+  if (referees.length >= 3) return;
+
+  setMeta({
+    ...meta,
+    referees: [
+      ...referees,
+      {
+        name: "",
+        profession: "",
+        relationship: "",
+        contact_no: "",
+        email: "",
+      },
+    ],
+  });
+};
+
   const upload = async (file) => {
     setUploading(true);
     try {
