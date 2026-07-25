@@ -211,6 +211,12 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
   const [eptScore, setEptScore] = useState("");
   const [refereeCount, setRefereeCount] = useState(1);
 
+const addReferee = () => {
+  if (refereeCount < 3) {
+    setRefereeCount(refereeCount + 1);
+  }
+};
+
   const load = async () => { const { data } = await api.get(`/leads/${lead.id}/documents`); setDocs(data); };
   useEffect(() => {
   load();
@@ -480,13 +486,15 @@ export default function LeadDocuments({ lead, onUpdate, mode = "study" }) {
       );
     })}
 
-    <Button
-      type="button"
-      className="w-full mt-4"
-      onClick={() => setRefereeCount((count) => count + 1)}
-    >
-      + Add Referee
-    </Button>
+    {refereeCount < 3 && (
+  <Button
+    type="button"
+    className="w-full mt-4"
+    onClick={addReferee}
+  >
+    + Add Referee
+  </Button>
+)}
   </DocumentDropdown>
 )}
     
