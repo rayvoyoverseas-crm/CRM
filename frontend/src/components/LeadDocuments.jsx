@@ -531,32 +531,22 @@ const addReferee = () => {
 
     {docsFor.some((cfg) => cfg.key === "lor") && (
   <DocumentDropdown title="LOR">
-    {Array.from({ length: refereeCount }).map((_, index) => {
-      const originalCfg = docsFor.find((cfg) => cfg.key === "lor");
+    {(() => {
+      const lorCfg = docsFor.find((cfg) => cfg.key === "lor");
 
-      const docType = index === 0 ? "lor" : `lor_${index + 1}`;
-
-      const refereeCfg = {
-        ...originalCfg,
-        key: docType,
-        label: `LOR - Referee ${index + 1}`,
-      };
-
-      const existing = docs.find(
-        (document) => document.doc_type === docType
+      const existingLor = docs.find(
+        (document) => document.doc_type === "lor"
       );
 
       return (
-        <div key={docType} className={index > 0 ? "mt-4" : ""}>
-          <DocSlot
-            leadId={lead.id}
-            cfg={refereeCfg}
-            existing={existing}
-            onChange={load}
-          />
-        </div>
+        <DocSlot
+          leadId={lead.id}
+          cfg={lorCfg}
+          existing={existingLor}
+          onChange={load}
+        />
       );
-    })}
+    })()}
   </DocumentDropdown>
 )}
     
