@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import api from "@/lib/api";
 import { Plus, Check, X, Clock, Calendar as CalIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,8 +12,17 @@ export default function LeadTasks({ leadId }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ title: "", description: "", due_at: "", remind_at: "" });
 
-  const load = async () => { const { data } = await api.get("/tasks", { params: { lead_id: leadId } }); setTasks(data); };
-  useEffect(() => { load(); }, [leadId]);
+  const load = useCallback(async () => {
+  const { data } = await api.get("/tasks", {
+    params: { lead_id: leadId },
+  });
+
+  setTasks(data);
+}, [leadId]);
+
+useEffect(() => {
+  load();
+}, [load]);
 
   const submit = async (e) => {
     e.preventDefault();
