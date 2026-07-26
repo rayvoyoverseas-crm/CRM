@@ -576,7 +576,6 @@ const addReferee = () => {
 </DocumentDropdown>
 
     {docsFor.some((cfg) => cfg.key === "sop") && (
-  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
   <DocumentDropdown title="SOP">
     {docsFor
       .filter((cfg) => cfg.key === "sop")
@@ -670,8 +669,6 @@ const addReferee = () => {
     </div>
   </DocumentDropdown>
 )}
-
-</div>
 
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
       
