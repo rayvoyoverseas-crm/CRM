@@ -576,7 +576,7 @@ const addReferee = () => {
 </DocumentDropdown>
 
 
-<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
 
   {docsFor.some((cfg) => cfg.key === "sop") && (
     <DocumentDropdown title="SOP">
