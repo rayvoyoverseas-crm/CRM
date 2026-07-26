@@ -108,7 +108,9 @@ const LOAN_DOCS = [
 function DocSlot({ leadId, cfg, existing, onChange }) {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [meta, setMeta] = useState(() => {
+
+
+const [meta, setMeta] = useState(() => {
   if (cfg.key === "lor") {
     return existing?.meta || {
       referees: [
@@ -123,7 +125,10 @@ function DocSlot({ leadId, cfg, existing, onChange }) {
     };
   }
 
-    useEffect(() => {
+  return existing?.meta || {};
+});
+
+useEffect(() => {
   if (existing?.meta) {
     setMeta(existing.meta);
     return;
@@ -147,9 +152,9 @@ function DocSlot({ leadId, cfg, existing, onChange }) {
   setMeta({});
 }, [existing, cfg.key]);
 
-  return existing?.meta || {};
-});
-  const inp = useRef(null);
+const inp = useRef(null);
+
+  
   const requiredDetailDocumentKeys = [
   "10th",
   "12th",
@@ -230,11 +235,33 @@ const detailsAreRequired = requiredDetailDocumentKeys.includes(cfg.key);
 };
 
   const upload = async (file) => {
-    const requiredDetailDocumentKeys = [
-  "10th",
-  "12th",
-  "passport",
-];
+
+ const upload = async (file) => {
+  if (
+    requiredDetailDocumentKeys.includes(cfg.key) &&
+    Array.isArray(cfg.meta)
+  ) {
+    const missingField = cfg.meta.find((field) => {
+      const value = meta[field.key];
+
+      return (
+        value === undefined ||
+        value === null ||
+        String(value).trim() === ""
+      );
+    });
+
+    if (missingField) {
+      toast.error(`${missingField.label} is required.`);
+      return;
+    }
+  }
+
+  setUploading(true);
+
+  // keep the rest of your upload code here
+};
+    
 
 if (
   requiredDetailDocumentKeys.includes(cfg.key) &&
