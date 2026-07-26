@@ -576,6 +576,7 @@ const addReferee = () => {
 </DocumentDropdown>
 
     {docsFor.some((cfg) => cfg.key === "sop") && (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
   <DocumentDropdown title="SOP">
     {docsFor
       .filter((cfg) => cfg.key === "sop")
@@ -636,10 +637,8 @@ const addReferee = () => {
       })}
   </DocumentDropdown>
 )}
-    
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
 
-    {docsFor.some((cfg) =>
+{docsFor.some((cfg) =>
   ["other_1", "other_2", "other_3"].includes(cfg.key)
 ) && (
   <DocumentDropdown title="Other Documents">
@@ -671,6 +670,10 @@ const addReferee = () => {
     </div>
   </DocumentDropdown>
 )}
+
+</div>
+
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
       
       {docsFor
         .filter(
