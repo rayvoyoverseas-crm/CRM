@@ -1111,6 +1111,70 @@ async def list_docs(lead_id: str, user: dict = Depends(get_current_user)):
              "size": d.get("size", 0), "meta": d.get("meta", {}),
              "created_at": d["created_at"].isoformat() if isinstance(d.get("created_at"), datetime) else d.get("created_at")} for d in docs]
 
+@api.put("/leads/{lead_id}/documents/{doc_type}/meta")
+async def save_document_meta(
+    lead_id: str,
+    doc_type: str,
+    payload: dict,
+    user: dict = Depends(get_current_user),
+):
+    lead = await db.leads.find_one({"_id": ObjectId(lead_id)})
+
+    if not lead:
+        raise HTTPException(404, "Lead not found")
+
+    now = datetime.now(timezone.utc)
+
+    existing_doc = await db.documents.find_one({
+        "lead_id": lead_id,
+        "doc_type": doc_type,
+        "is_deleted": False,
+    })
+
+    if existing_doc:
+        await db.documents.update_one(
+            {"_id": existing_doc["_id"]},
+            {
+                "$set": {
+                    "meta": payload,
+                    "updated_at": now,
+                }
+            },
+        )
+
+        return {
+            "id": str(existing_doc["_id"]),
+            "doc_type": doc_type,
+            "original_filename": existing_doc.get("original_filename"),
+            "size": existing_doc.get("size", 0),
+            "meta": payload,
+        }
+
+    document = {
+        "lead_id": lead_id,
+        "doc_type": doc_type,
+        "storage_path": None,
+        "original_filename": None,
+        "content_type": None,
+        "size": 0,
+        "is_deleted": False,
+        "meta": payload,
+        "uploaded_by": user.get("name", ""),
+        "created_at": now,
+        "updated_at": now,
+    }
+
+    result = await db.documents.insert_one(document)
+
+    return {
+        "id": str(result.inserted_id),
+        "doc_type": doc_type,
+        "original_filename": None,
+        "size": 0,
+        "meta": payload,
+    }
+
+
 @api.get("/documents/{doc_id}/download")
 async def download_doc(doc_id: str, user: dict = Depends(get_current_user)):
     d = await db.documents.find_one({"_id": ObjectId(doc_id), "is_deleted": False})
