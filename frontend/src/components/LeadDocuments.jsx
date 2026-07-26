@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import api from "@/lib/api";
-import { Upload, FileText, Trash2, Download, Loader2 } from "lucide-react";
+import { Upload, FileText, Trash2, Download, Loader2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -329,9 +329,7 @@ function DocumentDropdown({ title, children }) {
           {title}
         </span>
 
-        <span className="text-stone-500 text-sm transition-transform group-open:rotate-180">
-          ▼
-        </span>
+        <ChevronDown className="h-5 w-5 text-stone-500 transition-transform duration-200 group-open:rotate-180" />
       </summary>
 
       <div className="border-t border-stone-200 p-4">
