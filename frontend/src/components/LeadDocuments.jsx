@@ -575,101 +575,111 @@ const addReferee = () => {
   
 </DocumentDropdown>
 
-    {docsFor.some((cfg) => cfg.key === "sop") && (
-  <DocumentDropdown title="SOP">
-    {docsFor
-      .filter((cfg) => cfg.key === "sop")
-      .map((cfg) => {
-        const existing = docs.find((d) => d.doc_type === cfg.key);
 
-        return (
-          <DocSlot
-            key={cfg.key}
-            leadId={lead.id}
-            cfg={cfg}
-            existing={existing}
-            onChange={load}
-          />
-        );
-      })}
-  </DocumentDropdown>
-)}
+<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-      {docsFor.some((cfg) => cfg.key === "lor") && (
-  <DocumentDropdown title="LOR">
-    {(() => {
-      const lorCfg = docsFor.find((cfg) => cfg.key === "lor");
-
-      const existingLor = docs.find(
-        (document) => document.doc_type === "lor"
-      );
-
-      return (
-        <DocSlot
-          leadId={lead.id}
-          cfg={lorCfg}
-          existing={existingLor}
-          onChange={load}
-        />
-      );
-    })()}
-  </DocumentDropdown>
-)}
-
-
-{docsFor.some((cfg) => cfg.key === "aps") && (
-  <DocumentDropdown title="APS">
-    {docsFor
-      .filter((cfg) => cfg.key === "aps")
-      .map((cfg) => {
-        const existing = docs.find((d) => d.doc_type === cfg.key);
-
-        return (
-          <DocSlot
-            key={cfg.key}
-            leadId={lead.id}
-            cfg={cfg}
-            existing={existing}
-            onChange={load}
-          />
-        );
-      })}
-  </DocumentDropdown>
-)}
-
-{docsFor.some((cfg) =>
-  ["other_1", "other_2", "other_3"].includes(cfg.key)
-) && (
-  <DocumentDropdown title="Other Documents">
-    <div className="grid grid-cols-1 gap-3">
+  {docsFor.some((cfg) => cfg.key === "sop") && (
+    <DocumentDropdown title="SOP">
       {docsFor
-        .filter((cfg) =>
-          ["other_1", "other_2", "other_3"].includes(cfg.key)
-        )
-        .map((cfg, index) => {
+        .filter((cfg) => cfg.key === "sop")
+        .map((cfg) => {
           const existing = docs.find(
-            (document) => document.doc_type === cfg.key
+            (d) => d.doc_type === cfg.key
           );
-
-          const otherCfg = {
-            ...cfg,
-            label: `Document ${index + 1}`,
-          };
 
           return (
             <DocSlot
               key={cfg.key}
               leadId={lead.id}
-              cfg={otherCfg}
+              cfg={cfg}
               existing={existing}
               onChange={load}
             />
           );
         })}
-    </div>
-  </DocumentDropdown>
-)}
+    </DocumentDropdown>
+  )}
 
+  {docsFor.some((cfg) => cfg.key === "lor") && (
+    <DocumentDropdown title="LOR">
+      {(() => {
+        const lorCfg = docsFor.find(
+          (cfg) => cfg.key === "lor"
+        );
+
+        const existingLor = docs.find(
+          (document) => document.doc_type === "lor"
+        );
+
+        return (
+          <DocSlot
+            leadId={lead.id}
+            cfg={lorCfg}
+            existing={existingLor}
+            onChange={load}
+          />
+        );
+      })()}
+    </DocumentDropdown>
+  )}
+
+  {docsFor.some((cfg) => cfg.key === "aps") && (
+    <DocumentDropdown title="APS">
+      {docsFor
+        .filter((cfg) => cfg.key === "aps")
+        .map((cfg) => {
+          const existing = docs.find(
+            (d) => d.doc_type === cfg.key
+          );
+
+          return (
+            <DocSlot
+              key={cfg.key}
+              leadId={lead.id}
+              cfg={cfg}
+              existing={existing}
+              onChange={load}
+            />
+          );
+        })}
+    </DocumentDropdown>
+  )}
+
+  {docsFor.some((cfg) =>
+    ["other_1", "other_2", "other_3"].includes(cfg.key)
+  ) && (
+    <DocumentDropdown title="Other Documents">
+      <div className="grid grid-cols-1 gap-3">
+        {docsFor
+          .filter((cfg) =>
+            ["other_1", "other_2", "other_3"].includes(cfg.key)
+          )
+          .map((cfg, index) => {
+            const existing = docs.find(
+              (document) => document.doc_type === cfg.key
+            );
+
+            const otherCfg = {
+              ...cfg,
+              label: `Document ${index + 1}`,
+            };
+
+            return (
+              <DocSlot
+                key={cfg.key}
+                leadId={lead.id}
+                cfg={otherCfg}
+                existing={existing}
+                onChange={load}
+              />
+            );
+          })}
+      </div>
+    </DocumentDropdown>
+  )}
+
+</div>
+    
 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
       
       {docsFor
