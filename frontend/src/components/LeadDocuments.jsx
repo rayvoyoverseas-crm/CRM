@@ -613,9 +613,6 @@ const addReferee = () => {
   </DocumentDropdown>
 )}
 
-    {docsFor.some((cfg) => cfg.key === "lor") && (
-  ...
-)}
 
 {docsFor.some((cfg) => cfg.key === "aps") && (
   <DocumentDropdown title="APS">
