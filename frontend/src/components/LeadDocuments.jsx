@@ -472,6 +472,32 @@ const addReferee = () => {
     );
   })}
 
+    {docsFor.some((cfg) =>
+  ["pg_sem", "pg_transcript", "pg_degree", "pg_grading"].includes(cfg.key)
+) && (
+  <DocumentDropdown title="PG">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      {docsFor
+        .filter((cfg) =>
+          ["pg_sem", "pg_transcript", "pg_degree", "pg_grading"].includes(cfg.key)
+        )
+        .map((cfg) => {
+          const existing = docs.find((d) => d.doc_type === cfg.key);
+
+          return (
+            <DocSlot
+              key={cfg.key}
+              leadId={lead.id}
+              cfg={cfg}
+              existing={existing}
+              onChange={load}
+            />
+          );
+        })}
+    </div>
+  </DocumentDropdown>
+)}
+
   
 
 <DocumentDropdown title="English Proficiency">
@@ -689,6 +715,10 @@ const addReferee = () => {
       "ug_sem",
       "ug_transcript",
       "ug_degree",
+      "pg_sem",
+      "pg_transcript",
+      "pg_degree",
+      "pg_grading",
       "passport",
       "ept",
       "sop",
