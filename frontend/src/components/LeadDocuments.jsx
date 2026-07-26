@@ -659,8 +659,6 @@ const addReferee = () => {
       })}
   </DocumentDropdown>
 )}
-
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
     
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
       {docsFor
@@ -676,6 +674,7 @@ const addReferee = () => {
       "ept",
       "sop",
       "lor",
+      "aps",
       "ug_grading",
     ].includes(cfg.key)
 )
