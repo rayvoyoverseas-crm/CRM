@@ -107,6 +107,7 @@ const LOAN_DOCS = [
 
 function DocSlot({ leadId, cfg, existing, onChange }) {
   const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [meta, setMeta] = useState(() => {
   if (cfg.key === "lor") {
     return existing?.meta || {
@@ -125,6 +126,13 @@ function DocSlot({ leadId, cfg, existing, onChange }) {
   return existing?.meta || {};
 });
   const inp = useRef(null);
+  const requiredDetailDocumentKeys = [
+  "10th",
+  "12th",
+  "passport",
+];
+
+const detailsAreRequired = requiredDetailDocumentKeys.includes(cfg.key);
 
   const addReferee = () => {
   const referees = meta.referees || [];
@@ -159,6 +167,35 @@ function DocSlot({ leadId, cfg, existing, onChange }) {
       },
     ],
   });
+};
+  const saveDetails = async () => {
+  if (!Array.isArray(cfg.meta)) return;
+
+  if (detailsAreRequired) {
+    const missingField = cfg.meta.find((field) => {
+      const value = meta[field.key];
+
+      return (
+        value === undefined ||
+        value === null ||
+        String(value).trim() === ""
+      );
+    });
+
+    if (missingField) {
+      toast.error(`${missingField.label} is required.`);
+      return;
+    }
+  }
+
+  setSaving(true);
+
+  try {
+    // The backend saving request will be added in the next step.
+    toast.success("All required details are complete.");
+  } finally {
+    setSaving(false);
+  }
 };
 
   const upload = async (file) => {
@@ -318,18 +355,43 @@ if (
 )}
      
     </div>
-  ) : (
-    <div className="mt-2 grid grid-cols-1 gap-1.5">
+
+    ) : (
+  <div className="mt-2">
+    <div className="grid grid-cols-1 gap-1.5">
       {cfg.meta.map((f) => (
         <div key={f.key}>
           <div className="text-[10px] text-stone-500 mb-0.5">
             {f.label}
+
+            {detailsAreRequired && (
+              <span className="text-rose-600 ml-0.5">*</span>
+            )}
           </div>
+
           {renderField(f)}
         </div>
       ))}
     </div>
-  )
+
+    <Button
+      type="button"
+      size="sm"
+      className="w-full mt-3 h-8 text-xs"
+      onClick={saveDetails}
+      disabled={saving}
+    >
+      {saving ? (
+        <>
+          <Loader2 className="w-3 h-3 animate-spin mr-1" />
+          Saving...
+        </>
+      ) : (
+        "Save Details"
+      )}
+    </Button>
+  </div>
+)
 )}
       
       {existing ? (
