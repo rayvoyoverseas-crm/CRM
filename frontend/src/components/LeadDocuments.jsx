@@ -123,6 +123,30 @@ function DocSlot({ leadId, cfg, existing, onChange }) {
     };
   }
 
+    useEffect(() => {
+  if (existing?.meta) {
+    setMeta(existing.meta);
+    return;
+  }
+
+  if (cfg.key === "lor") {
+    setMeta({
+      referees: [
+        {
+          name: "",
+          profession: "",
+          relationship: "",
+          contact_no: "",
+          email: "",
+        },
+      ],
+    });
+    return;
+  }
+
+  setMeta({});
+}, [existing, cfg.key]);
+
   return existing?.meta || {};
 });
   const inp = useRef(null);
