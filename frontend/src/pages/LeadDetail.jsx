@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Layout from "@/components/Layout";
 import api, { PIPELINE_STAGES, STAGE_MAP, PIPELINE_LABELS, COUNTRIES } from "@/lib/api";
 import { useParams, Link } from "react-router-dom";
@@ -23,16 +23,27 @@ export default function LeadDetail() {
   const [note, setNote] = useState("");
   const [edit, setEdit] = useState({ name: "", email: "", phone: "", country_interest: "", course_interest: "" });
 
-  const load = async () => {
-    const { data } = await api.get(`/leads/${id}`);
-    setLead(data);
-    setEdit({
-      name: data.name, email: data.email, phone: data.phone,
-      country_interest: data.country_interest, course_interest: data.course_interest,
-    });
-  };
+const load = useCallback(async () => {
+  const { data } = await api.get(`/leads/${id}`);
 
-  useEffect(() => { load(); if (user?.role === "admin") api.get("/users").then((r) => setUsers(r.data)); }, [id, user]);
+  setLead(data);
+
+  setEdit({
+    name: data.name,
+    email: data.email,
+    phone: data.phone,
+    country_interest: data.country_interest,
+    course_interest: data.course_interest,
+  });
+}, [id]);
+
+useEffect(() => {
+  load();
+
+  if (user?.role === "admin") {
+    api.get("/users").then((r) => setUsers(r.data));
+  }
+}, [load, user]);
 
   if (!lead) return <Layout title="Lead"><div className="text-sm text-stone-500">Loading…</div></Layout>;
 
