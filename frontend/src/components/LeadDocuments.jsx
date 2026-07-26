@@ -277,7 +277,7 @@ if (
           <FileText className="w-4 h-4 text-stone-400 shrink-0" />
           <div className="text-sm font-semibold text-stone-800 truncate">{cfg.label}</div>
         </div>
-        {existing && (
+        {existing?.original_filename && (
           <div className="flex items-center gap-1">
             <button onClick={download} className="p-1 text-stone-500 hover:text-stone-800"><Download className="w-3.5 h-3.5" /></button>
             <button onClick={remove} className="p-1 text-stone-500 hover:text-rose-600"><Trash2 className="w-3.5 h-3.5" /></button>
