@@ -638,6 +638,40 @@ const addReferee = () => {
 )}
     
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+
+    {docsFor.some((cfg) =>
+  ["other_1", "other_2", "other_3"].includes(cfg.key)
+) && (
+  <DocumentDropdown title="Other Documents">
+    <div className="grid grid-cols-1 gap-3">
+      {docsFor
+        .filter((cfg) =>
+          ["other_1", "other_2", "other_3"].includes(cfg.key)
+        )
+        .map((cfg, index) => {
+          const existing = docs.find(
+            (document) => document.doc_type === cfg.key
+          );
+
+          const otherCfg = {
+            ...cfg,
+            label: `Document ${index + 1}`,
+          };
+
+          return (
+            <DocSlot
+              key={cfg.key}
+              leadId={lead.id}
+              cfg={otherCfg}
+              existing={existing}
+              onChange={load}
+            />
+          );
+        })}
+    </div>
+  </DocumentDropdown>
+)}
+      
       {docsFor
         .filter(
   (cfg) =>
@@ -652,6 +686,9 @@ const addReferee = () => {
       "sop",
       "lor",
       "aps",
+      "other_1",
+      "other_2",
+      "other_3",
       "ug_grading",
     ].includes(cfg.key)
 )
