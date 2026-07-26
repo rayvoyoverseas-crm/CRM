@@ -168,31 +168,38 @@ const detailsAreRequired = requiredDetailDocumentKeys.includes(cfg.key);
     ],
   });
 };
+
+
   const saveDetails = async () => {
   if (!Array.isArray(cfg.meta)) return;
 
-  if (detailsAreRequired) {
-    const missingField = cfg.meta.find((field) => {
-      const value = meta[field.key];
+  const missingField = cfg.meta.find((field) => {
+    const value = meta[field.key];
 
-      return (
-        value === undefined ||
-        value === null ||
-        String(value).trim() === ""
-      );
-    });
+    return (
+      value === undefined ||
+      value === null ||
+      String(value).trim() === ""
+    );
+  });
 
-    if (missingField) {
-      toast.error(`${missingField.label} is required.`);
-      return;
-    }
+  if (missingField) {
+    toast.error(`${missingField.label} is required.`);
+    return;
   }
 
   setSaving(true);
 
   try {
-    // The backend saving request will be added in the next step.
-    toast.success("All required details are complete.");
+    await api.put(
+      `/leads/${leadId}/documents/${cfg.key}/meta`,
+      meta
+    );
+
+    toast.success(`${cfg.label} details saved successfully`);
+    await onChange();
+  } catch (error) {
+    toast.error("Failed to save details");
   } finally {
     setSaving(false);
   }
@@ -394,7 +401,7 @@ if (
 )
 )}
       
-      {existing ? (
+      {existing?.original_filename ? (
         <div className="mt-2 text-[11px] text-stone-500 truncate">📎 {existing.original_filename}</div>
       ) : (
         <>
