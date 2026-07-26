@@ -595,6 +595,9 @@ const addReferee = () => {
   </DocumentDropdown>
 )}
 
+      {docsFor.some((cfg) => cfg.key === "lor") && (
+  <DocumentDropdown title="LOR">
+    {(() => {
       const lorCfg = docsFor.find((cfg) => cfg.key === "lor");
 
       const existingLor = docs.find(
