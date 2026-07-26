@@ -162,6 +162,31 @@ function DocSlot({ leadId, cfg, existing, onChange }) {
 };
 
   const upload = async (file) => {
+    const requiredDetailDocumentKeys = [
+  "10th",
+  "12th",
+  "passport",
+];
+
+if (
+  requiredDetailDocumentKeys.includes(cfg.key) &&
+  Array.isArray(cfg.meta)
+) {
+  const missingField = cfg.meta.find((field) => {
+    const value = meta[field.key];
+
+    return (
+      value === undefined ||
+      value === null ||
+      String(value).trim() === ""
+    );
+  });
+
+  if (missingField) {
+    toast.error(`${missingField.label} is required.`);
+    return;
+  }
+}
     setUploading(true);
     try {
       const fd = new FormData();
