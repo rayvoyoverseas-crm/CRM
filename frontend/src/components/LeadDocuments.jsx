@@ -309,78 +309,137 @@ if (
     await api.delete(`/documents/${existing.id}`); toast.success("Deleted"); onChange();
   };
 
+  
   const renderField = (f) => {
-    if (f.type === "select") {
-      return (
-        <Select value={meta[f.key] || ""} onValueChange={(v) => setMeta({ ...meta, [f.key]: v })}>
-          <SelectTrigger className="h-8 text-xs"><SelectValue placeholder={f.label} /></SelectTrigger>
-          <SelectContent>{f.options.map((o) => <SelectItem key={o} value={o}>{o}</SelectItem>)}</SelectContent>
-        </Select>
-      );
-    }
-    const isScoreField =
-  f.key === "score" ||
-  f.key === "marks" ||
-  f.key === "percentage" ||
-  f.key === "cgpa";
+  const gradingField = cfg.meta?.find((field) => {
+    const label = String(field.label || "").toLowerCase();
 
-const gradingType =
-  meta.grading_type ||
-  meta.score_type ||
-  meta.marks_type ||
-  meta.result_type;
+    return (
+      field.type === "select" &&
+      label.includes("cgpa") &&
+      label.includes("percentage")
+    );
+  });
 
-const minValue =
-  isScoreField && gradingType === "Percentage"
-    ? 40
-    : isScoreField && gradingType === "CGPA"
-      ? 1
-      : undefined;
+  const scoreField = cfg.meta?.find((field) => {
+    const label = String(field.label || "").toLowerCase();
+    const key = String(field.key || "").toLowerCase();
 
-const maxValue =
-  isScoreField && gradingType === "Percentage"
-    ? 100
-    : isScoreField && gradingType === "CGPA"
-      ? 10
-      : undefined;
+    return label === "score" || key === "score";
+  });
 
-return (
-  <Input
-    type={f.type}
-    placeholder={f.label}
-    className="h-8 text-xs"
-    value={meta[f.key] || ""}
-    min={minValue}
-    max={maxValue}
-    onChange={(e) => {
-      let value = e.target.value;
+  const gradingType = String(
+    meta[gradingField?.key] || ""
+  ).toLowerCase();
 
-      if (isScoreField && value !== "") {
-        const numericValue = Number(value);
+  const isPercentage = gradingType.includes("percentage");
+  const isCGPA = gradingType.includes("cgpa");
 
-        if (
-          gradingType === "Percentage" &&
-          numericValue > 100
-        ) {
-          value = "100";
-        }
+  const isScoreField = f.key === scoreField?.key;
 
-        if (
-          gradingType === "CGPA" &&
-          numericValue > 10
-        ) {
-          value = "10";
-        }
+  if (f.type === "select") {
+    return (
+      <Select
+        value={meta[f.key] || ""}
+        onValueChange={(value) => {
+          const updatedMeta = {
+            ...meta,
+            [f.key]: value,
+          };
+
+          if (f.key === gradingField?.key && scoreField) {
+            updatedMeta[scoreField.key] = "";
+          }
+
+          setMeta(updatedMeta);
+        }}
+      >
+        <SelectTrigger className="h-8 text-xs">
+          <SelectValue placeholder={f.label} />
+        </SelectTrigger>
+
+        <SelectContent>
+          {f.options.map((option) => (
+            <SelectItem key={option} value={option}>
+              {option}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  }
+
+  return (
+    <Input
+      type={f.type}
+      placeholder={f.label}
+      className="h-8 text-xs"
+      value={meta[f.key] || ""}
+      min={
+        isScoreField && isPercentage
+          ? 40
+          : isScoreField && isCGPA
+            ? 1
+            : undefined
       }
+      max={
+        isScoreField && isPercentage
+          ? 100
+          : isScoreField && isCGPA
+            ? 10
+            : undefined
+      }
+      step={isScoreField && isCGPA ? "0.01" : "1"}
+      onChange={(e) => {
+        const value = e.target.value;
 
-      setMeta({
-        ...meta,
-        [f.key]: value,
-      });
-    }}
-  />
-);
-  };
+        if (isScoreField && value !== "") {
+          const numericValue = Number(value);
+
+          if (isPercentage && numericValue > 100) {
+            toast.error("Percentage cannot be more than 100.");
+            return;
+          }
+
+          if (isCGPA && numericValue > 10) {
+            toast.error("CGPA cannot be more than 10.");
+            return;
+          }
+        }
+
+        setMeta({
+          ...meta,
+          [f.key]: value,
+        });
+      }}
+      onBlur={(e) => {
+        if (!isScoreField || e.target.value === "") return;
+
+        const numericValue = Number(e.target.value);
+
+        if (isPercentage && numericValue < 40) {
+          toast.error("Percentage must be between 40 and 100.");
+
+          setMeta({
+            ...meta,
+            [f.key]: "",
+          });
+
+          return;
+        }
+
+        if (isCGPA && numericValue < 1) {
+          toast.error("CGPA must be between 1 and 10.");
+
+          setMeta({
+            ...meta,
+            [f.key]: "",
+          });
+        }
+      }}
+    />
+  );
+};
 
   return (
     <div className="border border-stone-200 rounded-xl p-3 bg-white">
