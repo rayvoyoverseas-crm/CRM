@@ -11,6 +11,21 @@ import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/context/AuthContext";
 
+const STAGE_TRANSITIONS = {
+  NL: ["CC"],
+  CC: ["SL"],
+  SL: ["DR"],
+  DR: ["PR"],
+  PR: ["RA"],
+  RA: ["AP"],
+  AP: ["OL"],
+  OL: ["RD"],
+  RD: ["DP"],
+  DP: ["VS"],
+  VS: ["EN"],
+  EN: [],
+};
+
 function LeadCard({ lead, pipeline, onStageChange, users, onDelete, canDelete }) {
   const stages = PIPELINE_STAGES[pipeline];
   return (
@@ -35,10 +50,12 @@ function LeadCard({ lead, pipeline, onStageChange, users, onDelete, canDelete })
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {stages.map((s) => (
-              <SelectItem key={s} value={s}>{s} · {STAGE_MAP[pipeline][s].label}</SelectItem>
-            ))}
-          </SelectContent>
+  {(STAGE_TRANSITIONS[lead.stage] || []).map((s) => (
+    <SelectItem key={s} value={s}>
+      {s} · {STAGE_MAP[pipeline][s].label}
+    </SelectItem>
+  ))}
+</SelectContent>
         </Select>
       </div>
       {lead.assigned_to_name && (
