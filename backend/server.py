@@ -685,6 +685,21 @@ async def get_lead(lead_id: str, user: dict = Depends(get_current_user)):
         raise HTTPException(404, "Lead not found")
     return serialize_lead(l)
 
+STAGE_TRANSITIONS = {
+    "NL": ["CC"],
+    "CC": ["SL"],
+    "SL": ["DR"],
+    "DR": ["PR"],
+    "PR": ["RA"],
+    "RA": ["AP"],
+    "AP": ["OL"],
+    "OL": ["RD"],
+    "RD": ["DP"],
+    "DP": ["VS"],
+    "VS": ["EN"],
+    "EN": [],
+}
+
 @api.patch("/leads/{lead_id}")
 async def update_lead(lead_id: str, payload: LeadUpdateIn, user: dict = Depends(get_current_user)):
     q = {"_id": ObjectId(lead_id)}
@@ -697,6 +712,18 @@ async def update_lead(lead_id: str, payload: LeadUpdateIn, user: dict = Depends(
     update = payload.model_dump(exclude_none=True)
     activity_entries = []
     now = datetime.now(timezone.utc)
+
+    if "stage" in update and update["stage"] != existing.get("stage"):
+    current_stage = existing.get("stage")
+    requested_stage = update["stage"]
+
+    allowed_stages = STAGE_TRANSITIONS.get(current_stage, [])
+
+    if requested_stage not in allowed_stages:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Stage cannot move from {current_stage} to {requested_stage}",
+        )
 
     if "stage" in update and update["stage"] != existing.get("stage"):
         activity_entries.append({
