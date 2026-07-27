@@ -318,7 +318,68 @@ if (
         </Select>
       );
     }
-    return <Input type={f.type} placeholder={f.label} className="h-8 text-xs" value={meta[f.key] || ""} onChange={(e) => setMeta({ ...meta, [f.key]: e.target.value })} />;
+    const isScoreField =
+  f.key === "score" ||
+  f.key === "marks" ||
+  f.key === "percentage" ||
+  f.key === "cgpa";
+
+const gradingType =
+  meta.grading_type ||
+  meta.score_type ||
+  meta.marks_type ||
+  meta.result_type;
+
+const minValue =
+  isScoreField && gradingType === "Percentage"
+    ? 40
+    : isScoreField && gradingType === "CGPA"
+      ? 1
+      : undefined;
+
+const maxValue =
+  isScoreField && gradingType === "Percentage"
+    ? 100
+    : isScoreField && gradingType === "CGPA"
+      ? 10
+      : undefined;
+
+return (
+  <Input
+    type={f.type}
+    placeholder={f.label}
+    className="h-8 text-xs"
+    value={meta[f.key] || ""}
+    min={minValue}
+    max={maxValue}
+    onChange={(e) => {
+      let value = e.target.value;
+
+      if (isScoreField && value !== "") {
+        const numericValue = Number(value);
+
+        if (
+          gradingType === "Percentage" &&
+          numericValue > 100
+        ) {
+          value = "100";
+        }
+
+        if (
+          gradingType === "CGPA" &&
+          numericValue > 10
+        ) {
+          value = "10";
+        }
+      }
+
+      setMeta({
+        ...meta,
+        [f.key]: value,
+      });
+    }}
+  />
+);
   };
 
   return (
