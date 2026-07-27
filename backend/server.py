@@ -701,11 +701,20 @@ STAGE_TRANSITIONS = {
 }
 
 @api.patch("/leads/{lead_id}")
-async def update_lead(lead_id: str, payload: LeadUpdateIn, user: dict = Depends(get_current_user)):
+async def update_lead(
+    lead_id: str,
+    payload: LeadUpdateIn,
+    user: dict = Depends(get_current_user),
+):
     q = {"_id": ObjectId(lead_id)}
-    if user.get("role") != "admin" and not (user.get("permissions") or {}).get("see_all_leads"):
+
+    if user.get("role") != "admin" and not (
+        user.get("permissions") or {}
+    ).get("see_all_leads"):
         q["assigned_to"] = str(user["_id"])
+
     existing = await db.leads.find_one(q)
+
     if not existing:
         raise HTTPException(404, "Lead not found")
 
@@ -713,17 +722,17 @@ async def update_lead(lead_id: str, payload: LeadUpdateIn, user: dict = Depends(
     activity_entries = []
     now = datetime.now(timezone.utc)
 
-   if "stage" in update and update["stage"] != existing.get("stage"):
-    current_stage = existing.get("stage")
-    requested_stage = update["stage"]
+    if "stage" in update and update["stage"] != existing.get("stage"):
+        current_stage = existing.get("stage")
+        requested_stage = update["stage"]
 
-    allowed_stages = STAGE_TRANSITIONS.get(current_stage, [])
+        allowed_stages = STAGE_TRANSITIONS.get(current_stage, [])
 
-    if requested_stage not in allowed_stages:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Stage cannot move from {current_stage} to {requested_stage}",
-        )
+        if requested_stage not in allowed_stages:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Stage cannot move from {current_stage} to {requested_stage}",
+            )
 
     if "stage" in update and update["stage"] != existing.get("stage"):
         activity_entries.append({
@@ -732,9 +741,20 @@ async def update_lead(lead_id: str, payload: LeadUpdateIn, user: dict = Depends(
             "at": now.isoformat(),
             "by": user.get("name", ""),
         })
+
     if "assigned_to" in update and update["assigned_to"] != existing.get("assigned_to"):
-        assignee = await db.users.find_one({"_id": ObjectId(update["assigned_to"])}) if update["assigned_to"] else None
-        update["assigned_to_name"] = assignee.get("name", "") if assignee else ""
+        assignee = (
+            await db.users.find_one(
+                {"_id": ObjectId(update["assigned_to"])}
+            )
+            if update["assigned_to"]
+            else None
+        )
+
+        update["assigned_to_name"] = (
+            assignee.get("name", "") if assignee else ""
+        )
+
         activity_entries.append({
             "type": "assignment",
             "text": f"Assigned to {update.get('assigned_to_name') or 'unassigned'}",
@@ -742,13 +762,27 @@ async def update_lead(lead_id: str, payload: LeadUpdateIn, user: dict = Depends(
             "by": user.get("name", ""),
         })
 
-update["updated_at"] = now
+    update["updated_at"] = now
+
     op = {"$set": update}
+
     if activity_entries:
-        op["$push"] = {"activity": {"$each": activity_entries}}
-    await db.leads.update_one({"_id": ObjectId(lead_id)}, op)
-    l = await db.leads.find_one({"_id": ObjectId(lead_id)})
-    return serialize_lead(l)
+        op["$push"] = {
+            "activity": {
+                "$each": activity_entries
+            }
+        }
+
+    await db.leads.update_one(
+        {"_id": ObjectId(lead_id)},
+        op,
+    )
+
+    lead = await db.leads.find_one(
+        {"_id": ObjectId(lead_id)}
+    )
+
+    return serialize_lead(lead)
 
 @api.post("/leads/{lead_id}/notes")
 async def add_note(lead_id: str, payload: NoteIn, user: dict = Depends(get_current_user)):
