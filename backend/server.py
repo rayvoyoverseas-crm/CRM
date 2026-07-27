@@ -713,7 +713,7 @@ async def update_lead(lead_id: str, payload: LeadUpdateIn, user: dict = Depends(
     activity_entries = []
     now = datetime.now(timezone.utc)
 
-    if "stage" in update and update["stage"] != existing.get("stage"):
+   if "stage" in update and update["stage"] != existing.get("stage"):
     current_stage = existing.get("stage")
     requested_stage = update["stage"]
 
@@ -742,7 +742,7 @@ async def update_lead(lead_id: str, payload: LeadUpdateIn, user: dict = Depends(
             "by": user.get("name", ""),
         })
 
-    update["updated_at"] = now
+update["updated_at"] = now
     op = {"$set": update}
     if activity_entries:
         op["$push"] = {"activity": {"$each": activity_entries}}
