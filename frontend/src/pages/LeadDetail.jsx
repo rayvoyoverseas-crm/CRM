@@ -15,6 +15,21 @@ import LeadTasks from "@/components/LeadTasks";
 import { LeadReferees, LeadLoanInfo } from "@/components/LeadExtras";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
+const STAGE_TRANSITIONS = {
+  NL: ["CC"],
+  CC: ["SL"],
+  SL: ["DR"],
+  DR: ["PR"],
+  PR: ["RA"],
+  RA: ["AP"],
+  AP: ["OL"],
+  OL: ["RD"],
+  RD: ["DP"],
+  DP: ["VS"],
+  VS: ["EN"],
+  EN: [],
+};
+
 export default function LeadDetail() {
   const { user } = useAuth();
   const { id } = useParams();
@@ -300,17 +315,19 @@ useEffect(() => {
                 Move to
               </label>
               
-              <Select value={lead.stage} onValueChange={(v) => updateField({ stage: v })}
-                >
-                
-                <SelectTrigger data-testid="detail-stage-select">
-                  <SelectValue />
-                </SelectTrigger>
-                
-                <SelectContent>
-                  {stages.map((s) => <SelectItem key={s} value={s}>{s} · {STAGE_MAP[lead.pipeline][s].label}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Select onValueChange={(v) => updateField({ stage: v })}>
+  <SelectTrigger data-testid="detail-stage-select">
+    <SelectValue placeholder="Move to next stage" />
+  </SelectTrigger>
+
+  <SelectContent>
+    {(STAGE_TRANSITIONS[lead.stage] || []).map((s) => (
+      <SelectItem key={s} value={s}>
+        {s} · {STAGE_MAP[lead.pipeline][s].label}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
             </div>
           </div>
 
