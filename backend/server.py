@@ -812,6 +812,57 @@ async def add_note(lead_id: str, payload: NoteIn, user: dict = Depends(get_curre
     await db.leads.update_one({"_id": ObjectId(lead_id)}, {"$push": {"activity": entry}, "$set": {"updated_at": now}})
     return {"ok": True, "entry": entry}
 
+@api.post("/leads/{lead_id}/call-history")
+async def add_call_history(
+    lead_id: str,
+    payload: CallHistoryIn,
+    user: dict = Depends(get_current_user),
+):
+    q = {"_id": ObjectId(lead_id)}
+
+    if user.get("role") != "admin":
+        q["assigned_to"] = str(user["_id"])
+
+    lead = await db.leads.find_one(q)
+
+    if not lead:
+        raise HTTPException(404, "Lead not found")
+
+    if not payload.call_date.strip():
+        raise HTTPException(400, "Call date is required")
+
+    if not payload.call_time.strip():
+        raise HTTPException(400, "Call time is required")
+
+    if not payload.notes.strip():
+        raise HTTPException(400, "Call notes are required")
+
+    now = datetime.now(timezone.utc)
+
+    entry = {
+        "type": "call_history",
+        "call_date": payload.call_date,
+        "call_time": payload.call_time,
+        "outcome": payload.outcome,
+        "notes": payload.notes.strip(),
+        "at": now.isoformat(),
+        "by": user.get("name", ""),
+        "by_user_id": str(user["_id"]),
+    }
+
+    await db.leads.update_one(
+        {"_id": ObjectId(lead_id)},
+        {
+            "$push": {
+                "call_history": entry,
+                "activity": entry,
+            },
+            "$set": {"updated_at": now},
+        },
+    )
+
+    return {"ok": True, "entry": entry}
+
 @api.delete("/leads/{lead_id}")
 async def delete_lead(lead_id: str, admin: dict = Depends(require_admin)):
     # Soft-delete → move to Bin
