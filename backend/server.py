@@ -181,6 +181,21 @@ class LeadUpdateIn(BaseModel):
 class NoteIn(BaseModel):
     text: str
 
+class CallHistoryIn(BaseModel):
+    call_date: str
+    call_time: str
+    outcome: Literal[
+        "Call Made",
+        "No Answer",
+        "Busy",
+        "Switched Off",
+        "Wrong Number",
+        "Call Back Requested",
+    ]
+    notes: str
+
+
+
 class WebhookLeadIn(BaseModel):
     name: str
     email: Optional[str] = ""
