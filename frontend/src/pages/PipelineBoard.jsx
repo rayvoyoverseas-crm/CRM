@@ -45,9 +45,9 @@ function LeadCard({ lead, pipeline, onStageChange, users, onDelete, canDelete })
       <div className="text-[13px] text-stone-500 mt-1 truncate">{lead.country_interest || "—"} · {lead.course_interest || "TBD"}</div>
       <div className="text-xs text-stone-400 mt-2 truncate">{lead.phone || lead.email || "no contact"}</div>
       <div className="mt-3 flex items-center gap-1.5">
-        <Select value={lead.stage} onValueChange={(v) => onStageChange(lead, v)}>
+        <Select onValueChange={(v) => onStageChange(lead, v)}>
           <SelectTrigger className="h-7 text-[11px] flex-1" data-testid={`stage-change-${lead.id}`}>
-            <SelectValue />
+            <SelectValue placeholder="Move to next stage" />
           </SelectTrigger>
           <SelectContent>
   {(STAGE_TRANSITIONS[lead.stage] || []).map((s) => (
