@@ -744,6 +744,24 @@ async def update_lead(
 
         allowed_stages = STAGE_TRANSITIONS.get(current_stage, [])
 
+        if current_stage == "NL" and requested_stage == "CC":
+    call_history = existing.get("call_history", [])
+
+    has_successful_call = any(
+        call.get("outcome") == "Call Made"
+        for call in call_history
+    )
+
+    if not has_successful_call:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Please record a successful call "
+                "(Outcome: Call Made) before moving this lead "
+                "to Counselling Completed."
+            ),
+        )
+
         if requested_stage not in allowed_stages:
             raise HTTPException(
                 status_code=400,
