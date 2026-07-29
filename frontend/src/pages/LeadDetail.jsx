@@ -36,6 +36,14 @@ export default function LeadDetail() {
   const [lead, setLead] = useState(null);
   const [users, setUsers] = useState([]);
   const [note, setNote] = useState("");
+  const [callForm, setCallForm] = useState({
+  call_date: "",
+  call_time: "",
+  outcome: "",
+  notes: "",
+});
+
+const [savingCall, setSavingCall] = useState(false);
   const [edit, setEdit] = useState({ name: "", email: "", phone: "", country_interest: "", course_interest: "" });
 
 const load = useCallback(async () => {
