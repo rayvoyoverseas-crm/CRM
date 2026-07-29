@@ -411,6 +411,38 @@ useEffect(() => {
     >
       {savingCall ? "Saving..." : "Save Call"}
     </Button>
+
+{lead.call_history && lead.call_history.length > 0 && (
+  <div className="mt-6 space-y-3">
+    <h4 className="text-sm font-semibold text-stone-700">
+      Previous Calls
+    </h4>
+
+    {[...lead.call_history].reverse().map((call, index) => (
+      <div
+        key={index}
+        className="border rounded-lg p-3 bg-stone-50"
+      >
+        <div className="text-xs text-stone-500">
+          📅 {call.call_date} &nbsp; 🕒 {call.call_time}
+        </div>
+
+        <div className="mt-1">
+          <span className="font-semibold">Outcome:</span> {call.outcome}
+        </div>
+
+        <div className="mt-1 text-sm text-stone-700">
+          {call.notes}
+        </div>
+
+        <div className="mt-2 text-xs text-stone-400">
+          By {call.by}
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+    
   </div>
 </div>
 
