@@ -342,6 +342,78 @@ useEffect(() => {
     </Button>
   </div>
 
+          {/* Call History */}
+<div className="bg-white border border-stone-200 rounded-2xl p-6">
+  <div className="flex items-center gap-2 mb-4">
+    <Phone className="w-4 h-4 text-[#C05B43]" />
+    <div>
+      <h3 className="font-display font-semibold text-lg">
+        Call History
+      </h3>
+      <p className="text-xs text-stone-400 mt-0.5">
+        Record every call made to this lead
+      </p>
+    </div>
+  </div>
+
+  <div className="space-y-3">
+    <Input
+      type="date"
+      value={callForm.call_date}
+      onChange={(e) =>
+        setCallForm({ ...callForm, call_date: e.target.value })
+      }
+    />
+
+    <Input
+      type="time"
+      value={callForm.call_time}
+      onChange={(e) =>
+        setCallForm({ ...callForm, call_time: e.target.value })
+      }
+    />
+
+    <Select
+      value={callForm.outcome}
+      onValueChange={(v) =>
+        setCallForm({ ...callForm, outcome: v })
+      }
+    >
+      <SelectTrigger>
+        <SelectValue placeholder="Select outcome" />
+      </SelectTrigger>
+
+      <SelectContent>
+        <SelectItem value="Call Made">Call Made</SelectItem>
+        <SelectItem value="No Answer">No Answer</SelectItem>
+        <SelectItem value="Busy">Busy</SelectItem>
+        <SelectItem value="Switched Off">Switched Off</SelectItem>
+        <SelectItem value="Wrong Number">Wrong Number</SelectItem>
+        <SelectItem value="Call Back Requested">
+          Call Back Requested
+        </SelectItem>
+      </SelectContent>
+    </Select>
+
+    <Textarea
+      rows={4}
+      placeholder="Call notes..."
+      value={callForm.notes}
+      onChange={(e) =>
+        setCallForm({ ...callForm, notes: e.target.value })
+      }
+    />
+
+    <Button
+      onClick={saveCallHistory}
+      disabled={savingCall}
+      className="w-full bg-[#C05B43] hover:bg-[#A64D37]"
+    >
+      {savingCall ? "Saving..." : "Save Call"}
+    </Button>
+  </div>
+</div>
+
           {/* Current Stage*/}
           <div className="bg-white border border-stone-200 rounded-2xl p-6">
             <div className="text-[11px] uppercase tracking-widest text-stone-400 font-semibold">
