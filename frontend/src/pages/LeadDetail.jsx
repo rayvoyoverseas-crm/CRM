@@ -90,6 +90,40 @@ useEffect(() => {
     } catch (e) { toast.error("Failed"); }
   };
 
+  const saveCallHistory = async () => {
+  if (
+    !callForm.call_date ||
+    !callForm.call_time ||
+    !callForm.outcome ||
+    !callForm.notes.trim()
+  ) {
+    toast.error("Please complete all call history fields");
+    return;
+  }
+
+  try {
+    setSavingCall(true);
+
+    await api.post(`/leads/${id}/call-history`, callForm);
+
+    setCallForm({
+      call_date: "",
+      call_time: "",
+      outcome: "",
+      notes: "",
+    });
+
+    toast.success("Call history saved");
+    load();
+  } catch (e) {
+    toast.error(
+      e?.response?.data?.detail || "Failed to save call history"
+    );
+  } finally {
+    setSavingCall(false);
+  }
+};
+
   const saveEdit = async () => {
     await updateField(edit);
   };
