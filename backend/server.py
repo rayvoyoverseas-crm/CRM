@@ -738,11 +738,11 @@ async def update_lead(
     activity_entries = []
     now = datetime.now(timezone.utc)
 
-  if "stage" in update and update["stage"] != existing.get("stage"):
-      current_stage = existing.get("stage")
-      requested_stage = update["stage"]
+        if "stage" in update and update["stage"] != existing.get("stage"):
+        current_stage = existing.get("stage")
+        requested_stage = update["stage"]
 
-      allowed_stages = STAGE_TRANSITIONS.get(current_stage, [])
+        allowed_stages = STAGE_TRANSITIONS.get(current_stage, [])
 
         if current_stage == "NL" and requested_stage == "CC":
             call_history = existing.get("call_history", [])
@@ -767,8 +767,6 @@ async def update_lead(
                 status_code=400,
                 detail=f"Stage cannot move from {current_stage} to {requested_stage}",
             )
-
-
 
     
     if "stage" in update and update["stage"] != existing.get("stage"):
