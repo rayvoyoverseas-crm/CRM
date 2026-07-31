@@ -736,6 +736,7 @@ async def update_lead(
 
     update = payload.model_dump(exclude_none=True)
     activity_entries = []
+
     now = datetime.now(timezone.utc)
 
 if "stage" in update and update["stage"] != existing.get("stage"):
@@ -745,7 +746,7 @@ if "stage" in update and update["stage"] != existing.get("stage"):
     allowed_stages = STAGE_TRANSITIONS.get(current_stage, [])
 
     if current_stage == "NL" and requested_stage == "CC":
-       call_history = existing.get("call_history", [])
+        call_history = existing.get("call_history", [])
 
         has_successful_call = any(
             call.get("outcome") == "Call Made"
@@ -769,7 +770,7 @@ if "stage" in update and update["stage"] != existing.get("stage"):
             )
 
     
-    if "stage" in update and update["stage"] != existing.get("stage"):
+if "stage" in update and update["stage"] != existing.get("stage"):
         activity_entries.append({
             "type": "stage_change",
             "text": f"Stage changed: {existing.get('stage')} → {update['stage']}",
