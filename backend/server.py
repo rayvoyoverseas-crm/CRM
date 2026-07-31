@@ -739,10 +739,10 @@ async def update_lead(
     now = datetime.now(timezone.utc)
 
         if "stage" in update and update["stage"] != existing.get("stage"):
-        current_stage = existing.get("stage")
-        requested_stage = update["stage"]
+            current_stage = existing.get("stage")
+            requested_stage = update["stage"]
 
-        allowed_stages = STAGE_TRANSITIONS.get(current_stage, [])
+            allowed_stages = STAGE_TRANSITIONS.get(current_stage, [])
 
         if current_stage == "NL" and requested_stage == "CC":
             call_history = existing.get("call_history", [])
