@@ -736,56 +736,76 @@ async def update_lead(
 
     update = payload.model_dump(exclude_none=True)
     activity_entries = []
-
     now = datetime.now(timezone.utc)
 
-if "stage" in update and update["stage"] != existing.get("stage"):
-    current_stage = existing.get("stage")
-    requested_stage = update["stage"]
+    # Validate stage movement
+    if "stage" in update and update["stage"] != existing.get("stage"):
+        current_stage = existing.get("stage")
+        requested_stage = update["stage"]
 
-    allowed_stages = STAGE_TRANSITIONS.get(current_stage, [])
+        allowed_stages = STAGE_TRANSITIONS.get(current_stage, [])
 
-    if current_stage == "NL" and requested_stage == "CC":
-        call_history = existing.get("call_history", [])
+        # NL → CC requires at least one successful call
+        if current_stage == "NL" and requested_stage == "CC":
+            call_history = existing.get("call_history", [])
 
-        has_successful_call = any(
-            call.get("outcome") == "Call Made"
-            for call in call_history
-        )
-
-        if not has_successful_call:
-            raise HTTPException(
-                status_code=400,
-                detail=(
-                    "Please record a successful call "
-                    "(Outcome: Call Made) before moving this lead "
-                    "to Counselling Completed."
-                ),
+            has_successful_call = any(
+                call.get("outcome") == "Call Made"
+                for call in call_history
             )
+
+            if not has_successful_call:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        "Please record a successful call "
+                        "(Outcome: Call Made) before moving this lead "
+                        "to Counsellor Contacted."
+                    ),
+                )
 
         if requested_stage not in allowed_stages:
             raise HTTPException(
                 status_code=400,
-                detail=f"Stage cannot move from {current_stage} to {requested_stage}",
+                detail=(
+                    f"Stage cannot move from "
+                    f"{current_stage} to {requested_stage}"
+                ),
             )
 
-    
-if "stage" in update and update["stage"] != existing.get("stage"):
         activity_entries.append({
             "type": "stage_change",
-            "text": f"Stage changed: {existing.get('stage')} → {update['stage']}",
+            "text": (
+                f"Stage changed: "
+                f"{current_stage} → {requested_stage}"
+            ),
             "at": now.isoformat(),
             "by": user.get("name", ""),
         })
 
-    if "assigned_to" in update and update["assigned_to"] != existing.get("assigned_to"):
-        assignee = (
-            await db.users.find_one(
-                {"_id": ObjectId(update["assigned_to"])}
-            )
-            if update["assigned_to"]
-            else None
-        )
+    # Handle counsellor assignment
+    if (
+        "assigned_to" in update
+        and update["assigned_to"] != existing.get("assigned_to")
+    ):
+        assignee = None
+
+        if update["assigned_to"]:
+            if not ObjectId.is_valid(update["assigned_to"]):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid counsellor ID",
+                )
+
+            assignee = await db.users.find_one({
+                "_id": ObjectId(update["assigned_to"])
+            })
+
+            if not assignee:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Counsellor not found",
+                )
 
         update["assigned_to_name"] = (
             assignee.get("name", "") if assignee else ""
@@ -793,17 +813,20 @@ if "stage" in update and update["stage"] != existing.get("stage"):
 
         activity_entries.append({
             "type": "assignment",
-            "text": f"Assigned to {update.get('assigned_to_name') or 'unassigned'}",
+            "text": (
+                f"Assigned to "
+                f"{update.get('assigned_to_name') or 'unassigned'}"
+            ),
             "at": now.isoformat(),
             "by": user.get("name", ""),
         })
 
     update["updated_at"] = now
 
-    op = {"$set": update}
+    operation = {"$set": update}
 
     if activity_entries:
-        op["$push"] = {
+        operation["$push"] = {
             "activity": {
                 "$each": activity_entries
             }
@@ -811,12 +834,12 @@ if "stage" in update and update["stage"] != existing.get("stage"):
 
     await db.leads.update_one(
         {"_id": ObjectId(lead_id)},
-        op,
+        operation,
     )
 
-    lead = await db.leads.find_one(
-        {"_id": ObjectId(lead_id)}
-    )
+    lead = await db.leads.find_one({
+        "_id": ObjectId(lead_id)
+    })
 
     return serialize_lead(lead)
 
