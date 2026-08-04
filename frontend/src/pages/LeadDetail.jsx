@@ -674,17 +674,30 @@ const saveShortlist = async (index) => {
             <Label className="text-xs">
               Level of Study *
             </Label>
-            <Input
-              value={form.level_of_study}
-              onChange={(e) =>
-                updateShortlistField(
-                  index,
-                  "level_of_study",
-                  e.target.value
-                )
-              }
-              placeholder="UG / PG / Diploma"
-            />
+            <Select
+  value={form.level_of_study}
+  onValueChange={(value) =>
+    updateShortlistField(
+      index,
+      "level_of_study",
+      value
+    )
+  }
+>
+  <SelectTrigger>
+    <SelectValue placeholder="Select Level of Study" />
+  </SelectTrigger>
+
+  <SelectContent>
+    <SelectItem value="UG">
+      UG
+    </SelectItem>
+
+    <SelectItem value="PG">
+      PG
+    </SelectItem>
+  </SelectContent>
+</Select>
           </div>
 
           <div>
