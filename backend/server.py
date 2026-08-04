@@ -748,14 +748,13 @@ async def update_lead(
     activity_entries = []
     now = datetime.now(timezone.utc)
 
-    # Validate stage movement
     if "stage" in update and update["stage"] != existing.get("stage"):
         current_stage = existing.get("stage")
         requested_stage = update["stage"]
 
         allowed_stages = STAGE_TRANSITIONS.get(current_stage, [])
 
-        # NL → CC requires at least one successful call
+        # NL → CC requires a successful call
         if current_stage == "NL" and requested_stage == "CC":
             call_history = existing.get("call_history", [])
 
@@ -774,23 +773,26 @@ async def update_lead(
                     ),
                 )
 
-            if current_stage == "CC" and requested_stage == "SL":
+        # CC → SL requires three complete shortlist entries
+        if current_stage == "CC" and requested_stage == "SL":
             shortlists = existing.get("shortlists", [])
+
+            required_shortlist_fields = [
+                "country",
+                "intake",
+                "level_of_study",
+                "university_name",
+                "course",
+                "course_link",
+                "shortlist_status",
+            ]
 
             complete_shortlists = [
                 shortlist
                 for shortlist in shortlists
                 if all(
                     str(shortlist.get(field, "")).strip()
-                    for field in [
-                        "country",
-                        "intake",
-                        "level_of_study",
-                        "university_name",
-                        "course",
-                        "course_link",
-                        "shortlist_status",
-                    ]
+                    for field in required_shortlist_fields
                 )
             ]
 
@@ -802,7 +804,7 @@ async def update_lead(
                         "before moving this lead to Shortlisting."
                     ),
                 )
-        
+
         if requested_stage not in allowed_stages:
             raise HTTPException(
                 status_code=400,
@@ -822,7 +824,6 @@ async def update_lead(
             "by": user.get("name", ""),
         })
 
-    # Handle counsellor assignment
     if (
         "assigned_to" in update
         and update["assigned_to"] != existing.get("assigned_to")
