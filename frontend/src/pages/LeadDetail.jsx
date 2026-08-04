@@ -44,6 +44,26 @@ export default function LeadDetail() {
 });
 
 const [savingCall, setSavingCall] = useState(false);
+  const emptyShortlist = {
+  country: "",
+  intake: "",
+  level_of_study: "",
+  university_name: "",
+  course: "",
+  course_link: "",
+  shortlist_status: "",
+  tuition_fee: "",
+  application_fee: "",
+  counsellor_remarks: "",
+};
+
+const [shortlistForms, setShortlistForms] = useState([
+  { ...emptyShortlist },
+  { ...emptyShortlist },
+  { ...emptyShortlist },
+]);
+
+const [savingShortlistIndex, setSavingShortlistIndex] = useState(null);
   const [edit, setEdit] = useState({ name: "", email: "", phone: "", country_interest: "", course_interest: "" });
 
 const load = useCallback(async () => {
@@ -121,6 +141,43 @@ useEffect(() => {
     );
   } finally {
     setSavingCall(false);
+  }
+};
+
+  const updateShortlistField = (index, field, value) => {
+  const updated = [...shortlistForms];
+  updated[index][field] = value;
+  setShortlistForms(updated);
+};
+
+const addMoreShortlist = () => {
+  if (shortlistForms.length >= 10) return;
+
+  setShortlistForms([
+    ...shortlistForms,
+    { ...emptyShortlist },
+  ]);
+};
+
+const saveShortlist = async (index) => {
+  try {
+    setSavingShortlistIndex(index);
+
+    const { data } = await api.post(
+      `/leads/${id}/shortlists`,
+      shortlistForms[index]
+    );
+
+    toast.success("Shortlist saved");
+
+    await load();
+  } catch (err) {
+    toast.error(
+      err?.response?.data?.detail ||
+      "Unable to save shortlist."
+    );
+  } finally {
+    setSavingShortlistIndex(null);
   }
 };
 
@@ -444,6 +501,254 @@ useEffect(() => {
 )}
     
   </div>
+</div>
+
+          {/* Shortlisting */}
+<div className="bg-white border border-stone-200 rounded-2xl p-6">
+  <div className="mb-5">
+    <h3 className="font-display font-semibold text-lg">
+      Shortlisting
+    </h3>
+
+    <p className="text-xs text-stone-400 mt-1">
+      Save at least 3 complete shortlist entries before moving this lead to SL.
+    </p>
+  </div>
+
+  <div className="space-y-6">
+    {shortlistForms.map((form, index) => (
+      <div
+        key={index}
+        className="border border-stone-200 rounded-xl p-4"
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h4 className="font-semibold text-sm">
+            Shortlist {index + 1}
+            {index < 3 && (
+              <span className="text-red-500 ml-1">*</span>
+            )}
+          </h4>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <Label className="text-xs">
+              Country *
+            </Label>
+            <Input
+              value={form.country}
+              onChange={(e) =>
+                updateShortlistField(
+                  index,
+                  "country",
+                  e.target.value
+                )
+              }
+              placeholder="Enter country"
+            />
+          </div>
+
+          <div>
+            <Label className="text-xs">
+              Intake *
+            </Label>
+            <Input
+              value={form.intake}
+              onChange={(e) =>
+                updateShortlistField(
+                  index,
+                  "intake",
+                  e.target.value
+                )
+              }
+              placeholder="Example: September 2026"
+            />
+          </div>
+
+          <div>
+            <Label className="text-xs">
+              Level of Study *
+            </Label>
+            <Input
+              value={form.level_of_study}
+              onChange={(e) =>
+                updateShortlistField(
+                  index,
+                  "level_of_study",
+                  e.target.value
+                )
+              }
+              placeholder="UG / PG / Diploma"
+            />
+          </div>
+
+          <div>
+            <Label className="text-xs">
+              University Name *
+            </Label>
+            <Input
+              value={form.university_name}
+              onChange={(e) =>
+                updateShortlistField(
+                  index,
+                  "university_name",
+                  e.target.value
+                )
+              }
+              placeholder="Enter university name"
+            />
+          </div>
+
+          <div>
+            <Label className="text-xs">
+              Course *
+            </Label>
+            <Input
+              value={form.course}
+              onChange={(e) =>
+                updateShortlistField(
+                  index,
+                  "course",
+                  e.target.value
+                )
+              }
+              placeholder="Enter course"
+            />
+          </div>
+
+          <div>
+            <Label className="text-xs">
+              Course Link *
+            </Label>
+            <Input
+              value={form.course_link}
+              onChange={(e) =>
+                updateShortlistField(
+                  index,
+                  "course_link",
+                  e.target.value
+                )
+              }
+              placeholder="Paste course URL"
+            />
+          </div>
+
+          <div>
+            <Label className="text-xs">
+              Shortlist Status *
+            </Label>
+
+            <Select
+              value={form.shortlist_status}
+              onValueChange={(value) =>
+                updateShortlistField(
+                  index,
+                  "shortlist_status",
+                  value
+                )
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="Recommended">
+                  Recommended
+                </SelectItem>
+
+                <SelectItem value="Student Approved">
+                  Student Approved
+                </SelectItem>
+
+                <SelectItem value="Student Rejected">
+                  Student Rejected
+                </SelectItem>
+
+                <SelectItem value="Application Planned">
+                  Application Planned
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label className="text-xs">
+              Tuition Fee
+            </Label>
+            <Input
+              value={form.tuition_fee}
+              onChange={(e) =>
+                updateShortlistField(
+                  index,
+                  "tuition_fee",
+                  e.target.value
+                )
+              }
+              placeholder="Enter tuition fee"
+            />
+          </div>
+
+          <div>
+            <Label className="text-xs">
+              Application Fee
+            </Label>
+            <Input
+              value={form.application_fee}
+              onChange={(e) =>
+                updateShortlistField(
+                  index,
+                  "application_fee",
+                  e.target.value
+                )
+              }
+              placeholder="Enter application fee"
+            />
+          </div>
+        </div>
+
+        <div className="mt-3">
+          <Label className="text-xs">
+            Counsellor Remarks
+          </Label>
+
+          <Textarea
+            rows={3}
+            value={form.counsellor_remarks}
+            onChange={(e) =>
+              updateShortlistField(
+                index,
+                "counsellor_remarks",
+                e.target.value
+              )
+            }
+            placeholder="Add remarks"
+          />
+        </div>
+
+        <Button
+          onClick={() => saveShortlist(index)}
+          disabled={savingShortlistIndex === index}
+          className="w-full mt-4 bg-[#1B365D] hover:bg-[#152a4a]"
+        >
+          {savingShortlistIndex === index
+            ? "Saving..."
+            : `Save Shortlist ${index + 1}`}
+        </Button>
+      </div>
+    ))}
+  </div>
+
+  {shortlistForms.length < 10 && (
+    <Button
+      type="button"
+      variant="outline"
+      onClick={addMoreShortlist}
+      className="w-full mt-4"
+    >
+      + Add More
+    </Button>
+  )}
 </div>
 
           {/* Current Stage*/}
