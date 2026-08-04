@@ -102,11 +102,6 @@ if (loadedShortlists.length === 0) {
   setShortlistForms([
     { ...emptyShortlist },
   ]);
-} else if (loadedShortlists.length < 10) {
-  setShortlistForms([
-    ...loadedShortlists,
-    { ...emptyShortlist },
-  ]);
 } else {
   setShortlistForms(loadedShortlists);
 }
@@ -787,7 +782,7 @@ const saveShortlist = async (index) => {
     ))}
   </div>
 
-  {(lead?.shortlists?.length || 0) >= 2 &&
+  (lead?.shortlists?.length || 0) >= 1 &&
   shortlistForms.length < 10 && (
     <Button
       type="button"
