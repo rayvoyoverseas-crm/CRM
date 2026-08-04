@@ -636,17 +636,38 @@ const saveShortlist = async (index) => {
             <Label className="text-xs">
               Intake *
             </Label>
-            <Input
-              value={form.intake}
-              onChange={(e) =>
-                updateShortlistField(
-                  index,
-                  "intake",
-                  e.target.value
-                )
-              }
-              placeholder="Example: September 2026"
-            />
+            <Select
+  value={form.intake}
+  onValueChange={(value) =>
+    updateShortlistField(index, "intake", value)
+  }
+>
+  <SelectTrigger>
+    <SelectValue placeholder="Select Intake" />
+  </SelectTrigger>
+
+  <SelectContent>
+    <SelectItem value="September 2026">
+      September 2026
+    </SelectItem>
+
+    <SelectItem value="January 2027">
+      January 2027
+    </SelectItem>
+
+    <SelectItem value="September 2027">
+      September 2027
+    </SelectItem>
+
+    <SelectItem value="January 2028">
+      January 2028
+    </SelectItem>
+
+    <SelectItem value="September 2028">
+      September 2028
+    </SelectItem>
+  </SelectContent>
+</Select>
           </div>
 
           <div>
