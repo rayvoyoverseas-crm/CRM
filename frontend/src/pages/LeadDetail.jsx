@@ -531,16 +531,24 @@ const saveShortlist = async (index) => {
 </div>
 
           {/* Shortlisting */}
-<div className="bg-white border border-stone-200 rounded-2xl p-6">
-  <div className="mb-5">
-    <h3 className="font-display font-semibold text-lg">
-      Shortlisting
-    </h3>
+<details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
+  <summary className="cursor-pointer list-none flex items-center justify-between px-6 py-5 hover:bg-stone-50">
+    <div>
+      <h3 className="font-display font-semibold text-lg">
+        Shortlisting
+      </h3>
 
-    <p className="text-xs text-stone-400 mt-1">
-      Save at least 2 complete shortlist entries before moving this lead to SL.
-    </p>
-  </div>
+      <p className="text-xs text-stone-400 mt-1">
+        Save at least 2 complete shortlist entries before moving this lead to SL.
+      </p>
+    </div>
+
+    <span className="text-stone-500 text-sm transition-transform group-open:rotate-180">
+      ▼
+    </span>
+  </summary>
+
+  <div className="border-t border-stone-200 p-6">
 
   <div className="space-y-6">
     {shortlistForms.map((form, index) => (
@@ -782,18 +790,19 @@ const saveShortlist = async (index) => {
     ))}
   </div>
 
-  (lead?.shortlists?.length || 0) >= 1 &&
-  shortlistForms.length < 10 && (
-    <Button
-      type="button"
-      variant="outline"
-      onClick={addMoreShortlist}
-      className="w-full mt-4"
-    >
-      + Add More
-    </Button>
-)}
-</div>
+    {(lead?.shortlists?.length || 0) >= 1 &&
+    shortlistForms.length < 10 && (
+      <Button
+        type="button"
+        variant="outline"
+        onClick={addMoreShortlist}
+        className="w-full mt-4"
+      >
+        + Add More
+      </Button>
+    )}
+  </div>
+</details>
 
           {/* Current Stage*/}
           <div className="bg-white border border-stone-200 rounded-2xl p-6">
