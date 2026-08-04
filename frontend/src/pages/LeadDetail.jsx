@@ -185,8 +185,25 @@ const addMoreShortlist = () => {
     { ...emptyShortlist },
   ]);
 };
-
+  
+const isValidUrl = (value) => {
+  try {
+    new URL(value);
+    return true;
+  } catch {
+    return false;
+  }
+};
+  
 const saveShortlist = async (index) => {
+  const shortlist = shortlistForms[index];
+
+if (!isValidUrl(shortlist.course_link)) {
+  toast.error(
+    "Please enter a valid course link."
+  );
+  return;
+}
   try {
     setSavingShortlistIndex(index);
 
