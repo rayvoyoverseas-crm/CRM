@@ -60,8 +60,6 @@ const [savingCall, setSavingCall] = useState(false);
 
 const [shortlistForms, setShortlistForms] = useState([
   { ...emptyShortlist },
-  { ...emptyShortlist },
-  { ...emptyShortlist },
 ]);
 
 const [savingShortlistIndex, setSavingShortlistIndex] = useState(null);
@@ -84,25 +82,34 @@ const load = useCallback(async () => {
     ? data.shortlists
     : [];
 
-  if (savedShortlists.length > 0) {
-    setShortlistForms(
-      savedShortlists.map((shortlist) => ({
-        country: shortlist.country || "",
-        intake: shortlist.intake || "",
-        level_of_study: shortlist.level_of_study || "",
-        university_name: shortlist.university_name || "",
-        course: shortlist.course || "",
-        course_link: shortlist.course_link || "",
-        shortlist_status: shortlist.shortlist_status || "",
-        tuition_fee: shortlist.tuition_fee || "",
-        application_fee: shortlist.application_fee || "",
-        counsellor_remarks: shortlist.counsellor_remarks || "",
-        id: shortlist.id,
-        saved_at: shortlist.saved_at,
-        saved_by: shortlist.saved_by,
-      }))
-    );
-  }
+  const loadedShortlists = savedShortlists.map((shortlist) => ({
+  country: shortlist.country || "",
+  intake: shortlist.intake || "",
+  level_of_study: shortlist.level_of_study || "",
+  university_name: shortlist.university_name || "",
+  course: shortlist.course || "",
+  course_link: shortlist.course_link || "",
+  shortlist_status: shortlist.shortlist_status || "",
+  tuition_fee: shortlist.tuition_fee || "",
+  application_fee: shortlist.application_fee || "",
+  counsellor_remarks: shortlist.counsellor_remarks || "",
+  id: shortlist.id,
+  saved_at: shortlist.saved_at,
+  saved_by: shortlist.saved_by,
+}));
+
+if (loadedShortlists.length === 0) {
+  setShortlistForms([
+    { ...emptyShortlist },
+  ]);
+} else if (loadedShortlists.length === 1) {
+  setShortlistForms([
+    ...loadedShortlists,
+    { ...emptyShortlist },
+  ]);
+} else {
+  setShortlistForms(loadedShortlists);
+}
 }, [id]);
 
 useEffect(() => {
@@ -542,18 +549,33 @@ const saveShortlist = async (index) => {
 
   <div className="space-y-6">
     {shortlistForms.map((form, index) => (
-      <div
-        key={index}
-        className="border border-stone-200 rounded-xl p-4"
-      >
-        <div className="flex items-center justify-between mb-4">
-          <h4 className="font-semibold text-sm">
-            Shortlist {index + 1}
-            {index < 3 && (
-              <span className="text-red-500 ml-1">*</span>
-            )}
-          </h4>
-        </div>
+      <details
+  key={form.id || index}
+  open={!form.id}
+  className="group border border-stone-200 rounded-xl overflow-hidden"
+>
+  <summary className="cursor-pointer list-none flex items-center justify-between px-4 py-4 bg-stone-50 hover:bg-stone-100">
+    <div>
+      <h4 className="font-semibold text-sm">
+        Shortlist {index + 1}
+        {index < 2 && (
+          <span className="text-red-500 ml-1">*</span>
+        )}
+      </h4>
+
+      {form.id && (
+        <p className="text-xs text-stone-500 mt-1">
+          {form.university_name} · {form.course}
+        </p>
+      )}
+    </div>
+
+    <span className="text-stone-500 text-sm transition-transform group-open:rotate-180">
+      ▼
+    </span>
+  </summary>
+
+  <div className="p-4">
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
@@ -761,10 +783,12 @@ const saveShortlist = async (index) => {
             : `Save Shortlist ${index + 1}`}
         </Button>
       </div>
+        </details>
     ))}
   </div>
 
-  {shortlistForms.length < 10 && (
+  {(lead?.shortlists?.length || 0) >= 2 &&
+  shortlistForms.length < 10 && (
     <Button
       type="button"
       variant="outline"
@@ -773,7 +797,7 @@ const saveShortlist = async (index) => {
     >
       + Add More
     </Button>
-  )}
+)}
 </div>
 
           {/* Current Stage*/}
