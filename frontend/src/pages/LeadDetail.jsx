@@ -585,17 +585,51 @@ const saveShortlist = async (index) => {
             <Label className="text-xs">
               Country *
             </Label>
-            <Input
-              value={form.country}
-              onChange={(e) =>
-                updateShortlistField(
-                  index,
-                  "country",
-                  e.target.value
-                )
-              }
-              placeholder="Enter country"
-            />
+            <Select
+  value={form.country}
+  onValueChange={(value) =>
+    updateShortlistField(index, "country", value)
+  }
+>
+  <SelectTrigger>
+    <SelectValue placeholder="Select Country" />
+  </SelectTrigger>
+
+  <SelectContent>
+    <SelectItem value="UK">UK</SelectItem>
+    <SelectItem value="USA">USA</SelectItem>
+    <SelectItem value="Australia">Australia</SelectItem>
+    <SelectItem value="Ireland">Ireland</SelectItem>
+    <SelectItem value="Germany">Germany</SelectItem>
+    <SelectItem value="France">France</SelectItem>
+    <SelectItem value="Italy">Italy</SelectItem>
+    <SelectItem value="Spain">Spain</SelectItem>
+    <SelectItem value="Singapore">Singapore</SelectItem>
+    <SelectItem value="Korea">Korea</SelectItem>
+    <SelectItem value="Japan">Japan</SelectItem>
+    <SelectItem value="China">China</SelectItem>
+    <SelectItem value="Georgia">Georgia</SelectItem>
+    <SelectItem value="Sweden">Sweden</SelectItem>
+    <SelectItem value="Other Country">
+      Other Country
+    </SelectItem>
+  </SelectContent>
+</Select>
+
+{form.country === "Other Country" && (
+  <Input
+    className="mt-2"
+    placeholder="Enter Country Name"
+    value={form.other_country || ""}
+    onChange={(e) =>
+      updateShortlistField(
+        index,
+        "other_country",
+        e.target.value
+      )
+    }
+  />
+)}
           </div>
 
           <div>
