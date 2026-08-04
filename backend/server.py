@@ -774,6 +774,35 @@ async def update_lead(
                     ),
                 )
 
+            if current_stage == "CC" and requested_stage == "SL":
+            shortlists = existing.get("shortlists", [])
+
+            complete_shortlists = [
+                shortlist
+                for shortlist in shortlists
+                if all(
+                    str(shortlist.get(field, "")).strip()
+                    for field in [
+                        "country",
+                        "intake",
+                        "level_of_study",
+                        "university_name",
+                        "course",
+                        "course_link",
+                        "shortlist_status",
+                    ]
+                )
+            ]
+
+            if len(complete_shortlists) < 3:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        "Please save at least 3 complete shortlist entries "
+                        "before moving this lead to Shortlisting."
+                    ),
+                )
+        
         if requested_stage not in allowed_stages:
             raise HTTPException(
                 status_code=400,
