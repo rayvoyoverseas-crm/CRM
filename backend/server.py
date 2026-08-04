@@ -335,6 +335,7 @@ def serialize_lead(l: dict) -> dict:
         "updated_at": l["updated_at"].isoformat() if isinstance(l.get("updated_at"), datetime) else l.get("updated_at"),
         "activity": l.get("activity", []),
         "call_history": l.get("call_history", []),
+        "shortlists": l.get("shortlists", []),
         "reviewed": l.get("reviewed", True),
         "highest_qualification": l.get("highest_qualification"),
         "profile": l.get("profile", {}),
