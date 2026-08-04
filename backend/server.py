@@ -947,6 +947,106 @@ async def add_call_history(
 
     return {"ok": True, "entry": entry}
 
+@api.post("/leads/{lead_id}/shortlists")
+async def add_shortlist(
+    lead_id: str,
+    payload: ShortlistIn,
+    user: dict = Depends(get_current_user),
+):
+    q = {"_id": ObjectId(lead_id)}
+
+    if user.get("role") != "admin" and not (
+        user.get("permissions") or {}
+    ).get("see_all_leads"):
+        q["assigned_to"] = str(user["_id"])
+
+    lead = await db.leads.find_one(q)
+
+    if not lead:
+        raise HTTPException(404, "Lead not found")
+
+    required_fields = {
+        "country": payload.country,
+        "intake": payload.intake,
+        "level_of_study": payload.level_of_study,
+        "university_name": payload.university_name,
+        "course": payload.course,
+        "course_link": payload.course_link,
+        "shortlist_status": payload.shortlist_status,
+    }
+
+    missing_fields = [
+        field_name
+        for field_name, value in required_fields.items()
+        if not value or not value.strip()
+    ]
+
+    if missing_fields:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Please complete all compulsory shortlist fields: "
+                + ", ".join(missing_fields)
+            ),
+        )
+
+    existing_shortlists = lead.get("shortlists", [])
+
+    if len(existing_shortlists) >= 10:
+        raise HTTPException(
+            status_code=400,
+            detail="A maximum of 10 shortlist entries is allowed.",
+        )
+
+    now = datetime.now(timezone.utc)
+
+    entry = {
+        "id": str(uuid.uuid4()),
+        "country": payload.country.strip(),
+        "intake": payload.intake.strip(),
+        "level_of_study": payload.level_of_study.strip(),
+        "university_name": payload.university_name.strip(),
+        "course": payload.course.strip(),
+        "course_link": payload.course_link.strip(),
+        "shortlist_status": payload.shortlist_status.strip(),
+        "tuition_fee": (payload.tuition_fee or "").strip(),
+        "application_fee": (payload.application_fee or "").strip(),
+        "counsellor_remarks": (
+            payload.counsellor_remarks or ""
+        ).strip(),
+        "saved_at": now.isoformat(),
+        "saved_by": user.get("name", ""),
+        "saved_by_user_id": str(user["_id"]),
+    }
+
+    activity_entry = {
+        "type": "shortlist",
+        "text": (
+            f"Shortlist saved: "
+            f"{entry['university_name']} · {entry['course']}"
+        ),
+        "at": now.isoformat(),
+        "by": user.get("name", ""),
+    }
+
+    await db.leads.update_one(
+        {"_id": ObjectId(lead_id)},
+        {
+            "$push": {
+                "shortlists": entry,
+                "activity": activity_entry,
+            },
+            "$set": {
+                "updated_at": now,
+            },
+        },
+    )
+
+    return {
+        "ok": True,
+        "entry": entry,
+    }
+
 @api.delete("/leads/{lead_id}")
 async def delete_lead(lead_id: str, admin: dict = Depends(require_admin)):
     # Soft-delete → move to Bin
