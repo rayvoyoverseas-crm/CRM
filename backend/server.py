@@ -797,11 +797,11 @@ async def update_lead(
                 )
             ]
 
-            if len(complete_shortlists) < 3:
+            if len(complete_shortlists) < 2:
                 raise HTTPException(
                     status_code=400,
                     detail=(
-                        "Please save at least 3 complete shortlist entries "
+                        "Please save at least 2 complete shortlist entries "
                         "before moving this lead to Shortlisting."
                     ),
                 )
