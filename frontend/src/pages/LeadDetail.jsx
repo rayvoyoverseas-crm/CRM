@@ -79,6 +79,30 @@ const load = useCallback(async () => {
     country_interest: data.country_interest,
     course_interest: data.course_interest,
   });
+
+  const savedShortlists = Array.isArray(data.shortlists)
+    ? data.shortlists
+    : [];
+
+  if (savedShortlists.length > 0) {
+    setShortlistForms(
+      savedShortlists.map((shortlist) => ({
+        country: shortlist.country || "",
+        intake: shortlist.intake || "",
+        level_of_study: shortlist.level_of_study || "",
+        university_name: shortlist.university_name || "",
+        course: shortlist.course || "",
+        course_link: shortlist.course_link || "",
+        shortlist_status: shortlist.shortlist_status || "",
+        tuition_fee: shortlist.tuition_fee || "",
+        application_fee: shortlist.application_fee || "",
+        counsellor_remarks: shortlist.counsellor_remarks || "",
+        id: shortlist.id,
+        saved_at: shortlist.saved_at,
+        saved_by: shortlist.saved_by,
+      }))
+    );
+  }
 }, [id]);
 
 useEffect(() => {
