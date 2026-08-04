@@ -194,7 +194,17 @@ class CallHistoryIn(BaseModel):
     ]
     notes: str
 
-
+class ShortlistIn(BaseModel):
+    country: str
+    intake: str
+    level_of_study: str
+    university_name: str
+    course: str
+    course_link: str
+    shortlist_status: str
+    tuition_fee: Optional[str] = ""
+    application_fee: Optional[str] = ""
+    counsellor_remarks: Optional[str] = ""
 
 class WebhookLeadIn(BaseModel):
     name: str
