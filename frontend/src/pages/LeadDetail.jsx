@@ -102,7 +102,7 @@ if (loadedShortlists.length === 0) {
   setShortlistForms([
     { ...emptyShortlist },
   ]);
-} else if (loadedShortlists.length === 1) {
+} else if (loadedShortlists.length < 10) {
   setShortlistForms([
     ...loadedShortlists,
     { ...emptyShortlist },
