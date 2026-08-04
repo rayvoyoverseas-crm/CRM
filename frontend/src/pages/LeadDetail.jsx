@@ -538,7 +538,7 @@ const saveShortlist = async (index) => {
     </h3>
 
     <p className="text-xs text-stone-400 mt-1">
-      Save at least 3 complete shortlist entries before moving this lead to SL.
+      Save at least 2 complete shortlist entries before moving this lead to SL.
     </p>
   </div>
 
