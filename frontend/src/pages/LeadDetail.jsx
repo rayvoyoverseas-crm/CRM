@@ -198,21 +198,29 @@ const isValidUrl = (value) => {
 const saveShortlist = async (index) => {
   const shortlist = shortlistForms[index];
 
-if (!isValidUrl(shortlist.course_link)) {
-  toast.error(
-    "Please enter a valid course link."
-  );
-  return;
-}
+  if (!isValidUrl(shortlist.course_link)) {
+    toast.error("Please enter a valid course link.");
+    return;
+  }
+
   try {
     setSavingShortlistIndex(index);
 
-    const { data } = await api.post(
-      `/leads/${id}/shortlists`,
-      shortlistForms[index]
-    );
+    if (shortlist.id) {
+      await api.patch(
+        `/leads/${id}/shortlists/${shortlist.id}`,
+        shortlist
+      );
 
-    toast.success("Shortlist saved");
+      toast.success(`Shortlist ${index + 1} updated`);
+    } else {
+      await api.post(
+        `/leads/${id}/shortlists`,
+        shortlist
+      );
+
+      toast.success(`Shortlist ${index + 1} saved`);
+    }
 
     await load();
   } catch (err) {
@@ -224,7 +232,6 @@ if (!isValidUrl(shortlist.course_link)) {
     setSavingShortlistIndex(null);
   }
 };
-
   const saveEdit = async () => {
     await updateField(edit);
   };
@@ -868,7 +875,9 @@ if (!isValidUrl(shortlist.course_link)) {
         >
           {savingShortlistIndex === index
             ? "Saving..."
-            : `Save Shortlist ${index + 1}`}
+            : form.id
+  ? `Update Shortlist ${index + 1}`
+  : `Save Shortlist ${index + 1}`}
         </Button>
       </div>
         </details>
