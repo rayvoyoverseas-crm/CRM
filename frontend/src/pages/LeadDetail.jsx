@@ -642,9 +642,9 @@ const cancelEditingShortlist = async () => {
 
   <div className="space-y-6">
     {shortlistForms.map((form, index) => (
-      <details
-  id={form.id ? `shortlist-${form.id}` : undefined}
-  key={form.id || index}
+  <React.Fragment key={form.id || index}>
+    <details
+      id={form.id ? `shortlist-${form.id}` : undefined}
   open={!form.id}
   className="group border border-stone-200 rounded-xl overflow-hidden"
 >
@@ -979,10 +979,22 @@ const cancelEditingShortlist = async () => {
         Cancel
       </Button>
     </>
-  )}
+   )}
 </div>
       </div>
         </details>
+
+        {form.id && shortlistForms.length < 10 && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={addMoreShortlist}
+            className="w-full mt-3"
+          >
+            + Add More
+          </Button>
+        )}
+      </React.Fragment>
     ))}
   </div>
   </div>
