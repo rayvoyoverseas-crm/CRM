@@ -948,13 +948,17 @@ async def add_call_history(
 
     return {"ok": True, "entry": entry}
 
-@api.post("/leads/{lead_id}/shortlists")
-async def add_shortlist(
+@api.patch("/leads/{lead_id}/shortlists/{shortlist_id}")
+async def edit_shortlist(
     lead_id: str,
+    shortlist_id: str,
     payload: ShortlistIn,
     user: dict = Depends(get_current_user),
 ):
-    q = {"_id": ObjectId(lead_id)}
+    q = {
+        "_id": ObjectId(lead_id),
+        "shortlists.id": shortlist_id,
+    }
 
     if user.get("role") != "admin" and not (
         user.get("permissions") or {}
@@ -964,7 +968,10 @@ async def add_shortlist(
     lead = await db.leads.find_one(q)
 
     if not lead:
-        raise HTTPException(404, "Lead not found")
+        raise HTTPException(
+            status_code=404,
+            detail="Shortlist entry not found",
+        )
 
     required_fields = {
         "country": payload.country,
@@ -991,18 +998,10 @@ async def add_shortlist(
             ),
         )
 
-    existing_shortlists = lead.get("shortlists", [])
-
-    if len(existing_shortlists) >= 10:
-        raise HTTPException(
-            status_code=400,
-            detail="A maximum of 10 shortlist entries is allowed.",
-        )
-
     now = datetime.now(timezone.utc)
 
-    entry = {
-        "id": str(uuid.uuid4()),
+    updated_entry = {
+        "id": shortlist_id,
         "country": payload.country.strip(),
         "intake": payload.intake.strip(),
         "level_of_study": payload.level_of_study.strip(),
@@ -1015,39 +1014,40 @@ async def add_shortlist(
         "counsellor_remarks": (
             payload.counsellor_remarks or ""
         ).strip(),
-        "saved_at": now.isoformat(),
-        "saved_by": user.get("name", ""),
-        "saved_by_user_id": str(user["_id"]),
+        "updated_at": now.isoformat(),
+        "updated_by": user.get("name", ""),
+        "updated_by_user_id": str(user["_id"]),
     }
 
     activity_entry = {
-        "type": "shortlist",
+        "type": "shortlist_update",
         "text": (
-            f"Shortlist saved: "
-            f"{entry['university_name']} · {entry['course']}"
+            f"Shortlist updated: "
+            f"{updated_entry['university_name']} · "
+            f"{updated_entry['course']}"
         ),
         "at": now.isoformat(),
         "by": user.get("name", ""),
     }
 
     await db.leads.update_one(
-        {"_id": ObjectId(lead_id)},
+        q,
         {
-            "$push": {
-                "shortlists": entry,
-                "activity": activity_entry,
-            },
             "$set": {
+                "shortlists.$": updated_entry,
                 "updated_at": now,
+            },
+            "$push": {
+                "activity": activity_entry,
             },
         },
     )
 
     return {
         "ok": True,
-        "entry": entry,
+        "entry": updated_entry,
     }
-
+    
 @api.delete("/leads/{lead_id}")
 async def delete_lead(lead_id: str, admin: dict = Depends(require_admin)):
     # Soft-delete → move to Bin
