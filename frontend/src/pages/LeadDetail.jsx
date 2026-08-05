@@ -63,6 +63,7 @@ const [shortlistForms, setShortlistForms] = useState([
 ]);
 
 const [savingShortlistIndex, setSavingShortlistIndex] = useState(null);
+  const [editingShortlistId, setEditingShortlistId] = useState(null);
   const [edit, setEdit] = useState({ name: "", email: "", phone: "", country_interest: "", course_interest: "" });
 
 const load = useCallback(async () => {
@@ -231,6 +232,71 @@ const saveShortlist = async (index) => {
   } finally {
     setSavingShortlistIndex(null);
   }
+};
+
+const deleteShortlist = async (index) => {
+  const shortlist = shortlistForms[index];
+
+  // If it hasn't been saved yet, just remove it from the screen
+  if (!shortlist?.id) {
+    const updated = shortlistForms.filter(
+      (_, shortlistIndex) => shortlistIndex !== index
+    );
+
+    setShortlistForms(
+      updated.length > 0
+        ? updated
+        : [{ ...emptyShortlist }]
+    );
+
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Are you sure you want to delete Shortlist ${index + 1}?`
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await api.delete(
+      `/leads/${id}/shortlists/${shortlist.id}`
+    );
+
+    toast.success(
+      `Shortlist ${index + 1} deleted successfully`
+    );
+
+    await load();
+  } catch (err) {
+    toast.error(
+      err?.response?.data?.detail ||
+      "Unable to delete shortlist."
+    );
+  }
+};
+
+  const startEditingShortlist = (shortlistId) => {
+  setEditingShortlistId(shortlistId);
+
+  setTimeout(() => {
+    const shortlistElement = document.getElementById(
+      `shortlist-${shortlistId}`
+    );
+
+    if (shortlistElement) {
+      shortlistElement.open = true;
+      shortlistElement.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, 0);
+};
+
+const cancelEditingShortlist = async () => {
+  setEditingShortlistId(null);
+  await load();
 };
   const saveEdit = async () => {
     await updateField(edit);
@@ -577,6 +643,7 @@ const saveShortlist = async (index) => {
   <div className="space-y-6">
     {shortlistForms.map((form, index) => (
       <details
+  id={form.id ? `shortlist-${form.id}` : undefined}
   key={form.id || index}
   open={!form.id}
   className="group border border-stone-200 rounded-xl overflow-hidden"
