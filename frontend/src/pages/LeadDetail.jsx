@@ -935,17 +935,61 @@ const cancelEditingShortlist = async () => {
           />
         </div>
 
-        <Button
-          onClick={() => saveShortlist(index)}
-          disabled={savingShortlistIndex === index}
-          className="w-full mt-4 bg-[#1B365D] hover:bg-[#152a4a]"
-        >
-          {savingShortlistIndex === index
-            ? "Saving..."
-            : form.id
-  ? `Update Shortlist ${index + 1}`
-  : `Save Shortlist ${index + 1}`}
-        </Button>
+        <div className="flex flex-wrap gap-2 mt-4">
+  {!form.id && (
+    <Button
+      onClick={() => saveShortlist(index)}
+      disabled={savingShortlistIndex === index}
+      className="flex-1 bg-[#1B365D] hover:bg-[#152a4a]"
+    >
+      {savingShortlistIndex === index
+        ? "Saving..."
+        : `Save Shortlist ${index + 1}`}
+    </Button>
+  )}
+
+  {form.id && editingShortlistId !== form.id && (
+    <Button
+      type="button"
+      variant="outline"
+      onClick={() => startEditingShortlist(form.id)}
+      className="flex-1"
+    >
+      Edit
+    </Button>
+  )}
+
+  {form.id && editingShortlistId === form.id && (
+    <>
+      <Button
+        onClick={() => saveShortlist(index)}
+        disabled={savingShortlistIndex === index}
+        className="flex-1 bg-[#1B365D] hover:bg-[#152a4a]"
+      >
+        {savingShortlistIndex === index
+          ? "Updating..."
+          : `Update Shortlist ${index + 1}`}
+      </Button>
+
+      <Button
+        type="button"
+        variant="outline"
+        onClick={cancelEditingShortlist}
+      >
+        Cancel
+      </Button>
+    </>
+  )}
+
+  <Button
+    type="button"
+    variant="outline"
+    onClick={() => deleteShortlist(index)}
+    className="border-red-200 text-red-600 hover:bg-red-50"
+  >
+    Delete
+  </Button>
+</div>
       </div>
         </details>
     ))}
