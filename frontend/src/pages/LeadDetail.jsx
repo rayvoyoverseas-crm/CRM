@@ -226,7 +226,7 @@ const saveShortlist = async (index) => {
   } catch (err) {
     toast.error(
       err?.response?.data?.detail ||
-      "Unable to save shortlist."
+        "Unable to save shortlist."
     );
   } finally {
     setSavingShortlistIndex(null);
