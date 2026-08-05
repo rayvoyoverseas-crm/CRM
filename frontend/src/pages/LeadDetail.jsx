@@ -980,15 +980,6 @@ const cancelEditingShortlist = async () => {
       </Button>
     </>
   )}
-
-  <Button
-    type="button"
-    variant="outline"
-    onClick={() => deleteShortlist(index)}
-    className="border-red-200 text-red-600 hover:bg-red-50"
-  >
-    Delete
-  </Button>
 </div>
       </div>
         </details>
