@@ -1047,6 +1047,68 @@ async def edit_shortlist(
         "ok": True,
         "entry": updated_entry,
     }
+
+@api.delete("/leads/{lead_id}/shortlists/{shortlist_id}")
+async def delete_shortlist(
+    lead_id: str,
+    shortlist_id: str,
+    user: dict = Depends(get_current_user),
+):
+    q = {"_id": ObjectId(lead_id)}
+
+    if user.get("role") != "admin" and not (
+        user.get("permissions") or {}
+    ).get("see_all_leads"):
+        q["assigned_to"] = str(user["_id"])
+
+    lead = await db.leads.find_one(q)
+
+    if not lead:
+        raise HTTPException(404, "Lead not found")
+
+    shortlist = next(
+        (
+            item
+            for item in lead.get("shortlists", [])
+            if item.get("id") == shortlist_id
+        ),
+        None,
+    )
+
+    if not shortlist:
+        raise HTTPException(404, "Shortlist entry not found")
+
+    now = datetime.now(timezone.utc)
+
+    activity_entry = {
+        "type": "shortlist_delete",
+        "text": (
+            f"Shortlist deleted: "
+            f"{shortlist.get('university_name', '')} · "
+            f"{shortlist.get('course', '')}"
+        ),
+        "at": now.isoformat(),
+        "by": user.get("name", ""),
+    }
+
+    await db.leads.update_one(
+        {"_id": ObjectId(lead_id)},
+        {
+            "$pull": {
+                "shortlists": {
+                    "id": shortlist_id
+                }
+            },
+            "$push": {
+                "activity": activity_entry
+            },
+            "$set": {
+                "updated_at": now
+            },
+        },
+    )
+
+    return {"ok": True}
     
 @api.delete("/leads/{lead_id}")
 async def delete_lead(lead_id: str, admin: dict = Depends(require_admin)):
