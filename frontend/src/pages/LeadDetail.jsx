@@ -985,18 +985,6 @@ const cancelEditingShortlist = async () => {
         </details>
     ))}
   </div>
-
-    {(lead?.shortlists?.length || 0) >= 1 &&
-    shortlistForms.length < 10 && (
-      <Button
-        type="button"
-        variant="outline"
-        onClick={addMoreShortlist}
-        className="w-full mt-4"
-      >
-        + Add More
-      </Button>
-    )}
   </div>
 </details>
 
