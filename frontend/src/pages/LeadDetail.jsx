@@ -322,6 +322,43 @@ const cancelEditingShortlist = async () => {
     await updateField(edit);
   };
 
+  const has10th = leadDocs.some(
+  (doc) =>
+    doc.doc_type === "10th" &&
+    doc.original_filename
+);
+
+const has12th = leadDocs.some(
+  (doc) =>
+    doc.doc_type === "12th" &&
+    doc.original_filename
+);
+
+const hasCV = leadDocs.some(
+  (doc) =>
+    doc.doc_type === "cv" &&
+    doc.original_filename
+);
+
+const completeShortlists = (lead?.shortlists || []).filter(
+  (shortlist) =>
+    [
+      "country",
+      "intake",
+      "level_of_study",
+      "university_name",
+      "course",
+      "course_link",
+      "shortlist_status",
+    ].every(
+      (field) =>
+        String(shortlist?.[field] || "").trim()
+    )
+);
+
+const hasTwoShortlists =
+  completeShortlists.length >= 2;
+  
   return (
     <Layout
       title={lead.name}
