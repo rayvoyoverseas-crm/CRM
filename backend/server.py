@@ -806,6 +806,49 @@ async def update_lead(
                     ),
                 )
 
+        if current_stage == "SL" and requested_stage == "DR":
+            required_doc_types = ["10th", "12th", "cv"]
+
+            uploaded_docs = await db.documents.find(
+                {
+                    "lead_id": lead_id,
+                    "doc_type": {"$in": required_doc_types},
+                    "is_deleted": False,
+                }
+            ).to_list(20)
+
+            uploaded_doc_types = {
+                doc.get("doc_type")
+                for doc in uploaded_docs
+            }
+
+            missing_docs = [
+                doc_type
+                for doc_type in required_doc_types
+                if doc_type not in uploaded_doc_types
+            ]
+
+            if missing_docs:
+                document_labels = {
+                    "10th": "10th Certificate",
+                    "12th": "12th / Diploma Certificate",
+                    "cv": "CV / Resume",
+                }
+
+                missing_labels = [
+                    document_labels.get(doc, doc)
+                    for doc in missing_docs
+                ]
+
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        "Please upload the required documents before "
+                        "moving this lead to Docs Received: "
+                        + ", ".join(missing_labels)
+                    ),
+                )
+
         if requested_stage not in allowed_stages:
             raise HTTPException(
                 status_code=400,
