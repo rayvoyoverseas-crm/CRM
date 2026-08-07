@@ -596,29 +596,29 @@ if (
 
     <div className="flex gap-2 mt-3">
 
-      <Button
+    <Button
   size="sm"
   variant="outline"
   onClick={view}
 >
-  View
+  👁 View
 </Button>
-      
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={download}
-      >
-        Download
-      </Button>
 
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={() => inp.current?.click()}
-      >
-        Replace
-      </Button>
+<Button
+  size="sm"
+  variant="outline"
+  onClick={download}
+>
+  ⬇ Download
+</Button>
+
+<Button
+  size="sm"
+  variant="outline"
+  onClick={() => inp.current?.click()}
+>
+  🔄 Replace
+</Button>
 
     </div>
 
