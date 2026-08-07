@@ -659,7 +659,29 @@ const addReferee = () => {
   }
 };
 
-  const load = async () => { const { data } = await api.get(`/leads/${lead.id}/documents`); setDocs(data); };
+  const load = async () => {
+  const { data } = await api.get(`/leads/${lead.id}/documents`);
+
+  const uniqueDocs = Object.values(
+    data.reduce((acc, doc) => {
+      const existing = acc[doc.doc_type];
+
+      if (!existing) {
+        acc[doc.doc_type] = doc;
+        return acc;
+      }
+
+      // Prefer the record that actually has an uploaded file
+      if (!existing.original_filename && doc.original_filename) {
+        acc[doc.doc_type] = doc;
+      }
+
+      return acc;
+    }, {})
+  );
+
+  setDocs(uniqueDocs);
+};
   useEffect(() => {
   load();
   // eslint-disable-next-line react-hooks/exhaustive-deps
