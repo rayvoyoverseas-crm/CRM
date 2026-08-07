@@ -573,18 +573,27 @@ if (
 )
 )}
       
-      {existing?.original_filename ? (
-  <div className="mt-3 border border-green-200 bg-green-50 rounded-lg p-3">
+{existing?.original_filename ? (
+  <div className="mt-3">
 
-    <div className="text-sm font-semibold text-green-700">
-      ✅ Uploaded Successfully
-    </div>
-
-    <div className="text-xs text-stone-600 mt-2 break-all">
+    <div className="text-sm break-all text-stone-700">
       📄 {existing.original_filename}
     </div>
 
     <div className="flex gap-2 mt-3">
+
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() =>
+          window.open(
+            `${api.defaults.baseURL.replace("/api", "")}/documents/${existing.id}/download`,
+            "_blank"
+          )
+        }
+      >
+        View
+      </Button>
 
       <Button
         size="sm"
