@@ -694,6 +694,24 @@ const addReferee = () => {
     );
   })}
 
+ {docsFor
+  .filter((cfg) => cfg.key === "cv")
+  .map((cfg) => {
+    const existing = docs.find((d) => d.doc_type === cfg.key);
+
+    return (
+      <DocumentDropdown key={cfg.key} title="CV">
+        <DocSlot
+          leadId={lead.id}
+          cfg={cfg}
+          existing={existing}
+          onChange={load}
+        />
+      </DocumentDropdown>
+    );
+  })}
+
+
 {docsFor.some((cfg) =>
   ["ug_sem", "ug_transcript", "ug_degree", "ug_grading"].includes(cfg.key)
 ) && (
