@@ -996,20 +996,21 @@ const cancelEditingShortlist = async () => {
 </div>
       </div>
         </details>
-
-        {form.id && shortlistForms.length < 10 && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={addMoreShortlist}
-            className="w-full mt-3"
-          >
-            + Add More
-          </Button>
-        )}
       </React.Fragment>
     ))}
   </div>
+    
+  {shortlistForms.length < 10 && (
+   <Button
+     type="button"
+     variant="outline"
+     onClick={addMoreShortlist}
+     className="w-full mt-4"
+   >
+    + Add More
+  </Button>
+)}
+    
   </div>
 </details>
 
