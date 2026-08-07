@@ -593,19 +593,6 @@ if (
 
     <div className="flex gap-2 mt-3">
 
-      <Button
-        size="sm"
-        variant="outline"
-        onClick={() =>
-          window.open(
-            `${api.defaults.baseURL.replace("/api", "")}/documents/${existing.id}/download`,
-            "_blank"
-          )
-        }
-      >
-        View
-      </Button>
-
 <Button
   size="sm"
   variant="outline"
