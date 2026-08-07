@@ -379,8 +379,9 @@ const uploadedDocumentCount = new Set(
     >
   {/* Stage Checklist Summary */}
 {lead.pipeline === "study_abroad" && (
-  <div className="mb-5 bg-white border border-stone-200 rounded-2xl px-6 py-4">
-    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+  <div className="mb-5 bg-white border border-stone-200 rounded-2xl px-6 py-5">
+
+    <div className="space-y-2">
 
       <div className="font-display font-semibold text-base">
         ✔ Stage Checklist
@@ -410,6 +411,7 @@ const uploadedDocumentCount = new Set(
       </div>
 
     </div>
+
   </div>
 )}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
