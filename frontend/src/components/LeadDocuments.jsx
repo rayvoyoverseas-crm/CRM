@@ -574,8 +574,48 @@ if (
 )}
       
       {existing?.original_filename ? (
-        <div className="mt-2 text-[11px] text-stone-500 truncate">📎 {existing.original_filename}</div>
-      ) : (
+  <div className="mt-3 border border-green-200 bg-green-50 rounded-lg p-3">
+
+    <div className="text-sm font-semibold text-green-700">
+      ✅ Uploaded Successfully
+    </div>
+
+    <div className="text-xs text-stone-600 mt-2 break-all">
+      📄 {existing.original_filename}
+    </div>
+
+    <div className="flex gap-2 mt-3">
+
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={download}
+      >
+        Download
+      </Button>
+
+      <Button
+        size="sm"
+        variant="outline"
+        onClick={() => inp.current?.click()}
+      >
+        Replace
+      </Button>
+
+    </div>
+
+    <input
+      ref={inp}
+      type="file"
+      className="hidden"
+      onChange={(e) =>
+        e.target.files?.[0] &&
+        upload(e.target.files[0])
+      }
+    />
+
+  </div>
+) : (
         <>
           <input ref={inp} type="file" className="hidden" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
           <Button size="sm" variant="outline" className="w-full mt-3 h-8 text-xs" onClick={() => inp.current?.click()} disabled={uploading} data-testid={`upload-${cfg.key}`}>
