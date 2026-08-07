@@ -314,6 +314,9 @@ if (
   const url = URL.createObjectURL(res.data);
 
   window.open(url, "_blank");
+  setTimeout(() => {
+    URL.revokeObjectURL(url);
+  }, 60000);
 };
 
   const remove = async () => {
