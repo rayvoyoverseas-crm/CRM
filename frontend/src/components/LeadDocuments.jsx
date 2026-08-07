@@ -593,33 +593,6 @@ if (
 
     <div className="flex gap-2 mt-3">
 
-<Button
-  size="sm"
-  variant="outline"
-  onClick={async () => {
-    try {
-      const res = await api.get(
-        `/documents/${existing.id}/download`,
-        {
-          responseType: "blob",
-        }
-      );
-
-      const url = URL.createObjectURL(res.data);
-
-      window.open(url, "_blank");
-
-      setTimeout(() => {
-        URL.revokeObjectURL(url);
-      }, 60000);
-    } catch (error) {
-      toast.error("Unable to open document");
-    }
-  }}
->
-  View
-</Button>
-
       <Button
   size="sm"
   variant="outline"
