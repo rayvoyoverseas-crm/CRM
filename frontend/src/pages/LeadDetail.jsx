@@ -179,7 +179,20 @@ useEffect(() => {
 };
 
 const addMoreShortlist = () => {
-  if (shortlistForms.length >= 10) return;
+  if (shortlistForms.length >= 10) {
+    toast.error("Maximum 10 shortlists are allowed.");
+    return;
+  }
+
+  const lastShortlist =
+    shortlistForms[shortlistForms.length - 1];
+
+  if (!lastShortlist.id) {
+    toast.error(
+      "Please save the current shortlist before adding another."
+    );
+    return;
+  }
 
   setShortlistForms([
     ...shortlistForms,
