@@ -1593,34 +1593,104 @@ def get_object(path: str):
         raise HTTPException(404, f"Document not found: {str(e)}")
 
 @api.post("/leads/{lead_id}/documents")
-async def upload_doc(lead_id: str, doc_type: str = Query(...), meta: str = Query("{}"), file: UploadFile = File(...), user: dict = Depends(get_current_user)):
+async def upload_doc(
+    lead_id: str,
+    doc_type: str = Query(...),
+    meta: str = Query("{}"),
+    file: UploadFile = File(...),
+    user: dict = Depends(get_current_user),
+):
     lead = await db.leads.find_one({"_id": ObjectId(lead_id)})
+
     if not lead:
         raise HTTPException(404, "Lead not found")
-    ext = file.filename.rsplit(".", 1)[-1].lower() if "." in file.filename else "bin"
-    path = f"{APP_NAME}/leads/{lead_id}/{doc_type}/{uuid.uuid4()}.{ext}"
+
+    ext = (
+        file.filename.rsplit(".", 1)[-1].lower()
+        if "." in file.filename
+        else "bin"
+    )
+
+    path = (
+        f"{APP_NAME}/leads/{lead_id}/"
+        f"{doc_type}/{uuid.uuid4()}.{ext}"
+    )
+
     data = await file.read()
-    result = put_object(path, data, file.content_type or "application/octet-stream")
+
+    result = put_object(
+        path,
+        data,
+        file.content_type or "application/octet-stream",
+    )
+
     import json as _json
+
     try:
         meta_obj = _json.loads(meta) if meta else {}
     except Exception:
         meta_obj = {}
-    doc = {
-        "lead_id": lead_id, "doc_type": doc_type, "storage_path": result["path"],
-        "original_filename": file.filename, "content_type": file.content_type,
-        "size": result.get("size", 0), "is_deleted": False, "meta": meta_obj,
-        "uploaded_by": user.get("name", ""),
-        "created_at": datetime.now(timezone.utc),
-    }
-    res = await db.documents.insert_one(doc)
-    doc["_id"] = res.inserted_id
-    await db.leads.update_one({"_id": ObjectId(lead_id)}, {
-        "$push": {"activity": {"type": "document", "text": f"Uploaded {doc_type}: {file.filename}", "at": datetime.now(timezone.utc).isoformat(), "by": user.get("name", "")}},
-        "$set": {"updated_at": datetime.now(timezone.utc)},
-    })
-    return {"id": str(doc["_id"]), "doc_type": doc_type, "original_filename": file.filename, "size": doc["size"], "meta": meta_obj}
 
+    now = datetime.now(timezone.utc)
+
+    existing_doc = await db.documents.find_one({
+        "lead_id": lead_id,
+        "doc_type": doc_type,
+        "is_deleted": False,
+    })
+
+    document_data = {
+        "lead_id": lead_id,
+        "doc_type": doc_type,
+        "storage_path": result["path"],
+        "original_filename": file.filename,
+        "content_type": file.content_type,
+        "size": result.get("size", 0),
+        "is_deleted": False,
+        "meta": meta_obj,
+        "uploaded_by": user.get("name", ""),
+        "updated_at": now,
+    }
+
+    if existing_doc:
+        await db.documents.update_one(
+            {"_id": existing_doc["_id"]},
+            {"$set": document_data},
+        )
+
+        document_id = existing_doc["_id"]
+
+    else:
+        document_data["created_at"] = now
+
+        res = await db.documents.insert_one(document_data)
+
+        document_id = res.inserted_id
+
+    await db.leads.update_one(
+        {"_id": ObjectId(lead_id)},
+        {
+            "$push": {
+                "activity": {
+                    "type": "document",
+                    "text": f"Uploaded {doc_type}: {file.filename}",
+                    "at": now.isoformat(),
+                    "by": user.get("name", ""),
+                }
+            },
+            "$set": {
+                "updated_at": now,
+            },
+        },
+    )
+
+    return {
+        "id": str(document_id),
+        "doc_type": doc_type,
+        "original_filename": file.filename,
+        "size": result.get("size", 0),
+        "meta": meta_obj,
+    }
 @api.get("/leads/{lead_id}/documents")
 async def list_docs(lead_id: str, user: dict = Depends(get_current_user)):
     docs = await db.documents.find({"lead_id": lead_id, "is_deleted": False}).to_list(500)
