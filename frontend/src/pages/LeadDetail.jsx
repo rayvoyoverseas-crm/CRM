@@ -377,6 +377,41 @@ const uploadedDocumentCount = new Set(
         </Link>
       }
     >
+  {/* Stage Checklist Summary */}
+{lead.pipeline === "study_abroad" && (
+  <div className="mb-5 bg-white border border-stone-200 rounded-2xl px-6 py-4">
+    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+
+      <div className="font-display font-semibold text-base">
+        ✔ Stage Checklist
+      </div>
+
+      <div className="text-sm text-stone-600">
+        Shortlists:{" "}
+        <span className="font-semibold text-stone-900">
+          {shortlistCount} / 10
+        </span>
+
+        {hasTwoShortlists && (
+          <span className="ml-1 text-green-600">
+            ✓
+          </span>
+        )}
+
+        <span className="mx-2 text-stone-300">
+          •
+        </span>
+
+        Documents:{" "}
+        <span className="font-semibold text-stone-900">
+          {uploadedDocumentCount} / 10
+        </span>{" "}
+        Uploaded
+      </div>
+
+    </div>
+  </div>
+)}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 space-y-5">
           <Tabs defaultValue="overview">
