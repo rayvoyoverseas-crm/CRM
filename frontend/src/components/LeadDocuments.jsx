@@ -305,6 +305,17 @@ if (
     const a = document.createElement("a"); a.href = url; a.download = existing.original_filename; a.click();
   };
 
+  const view = async () => {
+  const res = await api.get(
+    `/documents/${existing.id}/download`,
+    { responseType: "blob" }
+  );
+
+  const url = URL.createObjectURL(res.data);
+
+  window.open(url, "_blank");
+};
+
   const remove = async () => {
     if (!window.confirm(`Delete ${cfg.label}?`)) return;
     await api.delete(`/documents/${existing.id}`); toast.success("Deleted"); onChange();
@@ -595,6 +606,41 @@ if (
         View
       </Button>
 
+<Button
+  size="sm"
+  variant="outline"
+  onClick={async () => {
+    try {
+      const res = await api.get(
+        `/documents/${existing.id}/download`,
+        {
+          responseType: "blob",
+        }
+      );
+
+      const url = URL.createObjectURL(res.data);
+
+      window.open(url, "_blank");
+
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 60000);
+    } catch (error) {
+      toast.error("Unable to open document");
+    }
+  }}
+>
+  View
+</Button>
+
+      <Button
+  size="sm"
+  variant="outline"
+  onClick={view}
+>
+  View
+</Button>
+      
       <Button
         size="sm"
         variant="outline"
