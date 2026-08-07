@@ -358,6 +358,14 @@ const completeShortlists = (lead?.shortlists || []).filter(
 
 const hasTwoShortlists =
   completeShortlists.length >= 2;
+
+  const shortlistCount = completeShortlists.length;
+
+const uploadedDocumentCount = new Set(
+  leadDocs
+    .filter((doc) => doc.original_filename)
+    .map((doc) => doc.doc_type)
+).size;
   
   return (
     <Layout
