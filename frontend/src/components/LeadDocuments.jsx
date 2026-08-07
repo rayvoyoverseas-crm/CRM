@@ -1076,6 +1076,7 @@ const addReferee = () => {
     ![
       "10th",
       "12th",
+      "cv",
       "ug_sem",
       "ug_transcript",
       "ug_degree",
