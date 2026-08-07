@@ -72,6 +72,12 @@ const load = useCallback(async () => {
 
   setLead(data);
 
+  const docsResponse = await api.get(
+  `/leads/${id}/documents`
+);
+
+setLeadDocs(docsResponse.data || []);
+
   setEdit({
     name: data.name,
     email: data.email,
