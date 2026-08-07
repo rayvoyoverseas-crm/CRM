@@ -35,6 +35,7 @@ export default function LeadDetail() {
   const { user } = useAuth();
   const { id } = useParams();
   const [lead, setLead] = useState(null);
+  const [leadDocs, setLeadDocs] = useState([]);
   const [users, setUsers] = useState([]);
   const [note, setNote] = useState("");
   const [callForm, setCallForm] = useState({
