@@ -50,6 +50,7 @@ const ACADEMIC_META = {
 const BASE_DOCS = [
   { key: "10th", label: "10th Certificate", qual: ["12th", "UG", "PG"], meta: ACADEMIC_META["10th"] },
   { key: "12th", label: "12th / Diploma Certificate", qual: ["12th", "UG", "PG"], meta: ACADEMIC_META["12th"] },
+  { key: "cv", label: "CV", qual: ["12th", "UG", "PG"] },
   { key: "ug_sem", label: "UG · Semester Marksheets", qual: ["UG", "PG"], meta: ACADEMIC_META["UG"] },
   { key: "ug_transcript", label: "UG · Transcript", qual: ["UG", "PG"] },
   { key: "ug_degree", label: "UG · Degree Certificate", qual: ["UG", "PG"] },
