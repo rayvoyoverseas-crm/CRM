@@ -177,6 +177,7 @@ class LeadUpdateIn(BaseModel):
     notes: Optional[str] = None
     assigned_to: Optional[str] = None
     source: Optional[str] = None
+    selected_shortlist_id: Optional[str] = None
 
 class NoteIn(BaseModel):
     text: str
