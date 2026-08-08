@@ -1102,57 +1102,6 @@ const uploadedDocumentCount = new Set(
     
   </div>
 </details>
-
-{/* Stage Checklist */}
-<div className="bg-white border border-stone-200 rounded-2xl p-6">
-
-  <details open>
-
-    <summary className="cursor-pointer font-display font-semibold text-lg">
-      Stage Checklist
-    </summary>
-
-    <div className="mt-5 space-y-3">
-
-      <div className="flex justify-between">
-        <span>2 Complete Shortlists</span>
-        <span>{hasTwoShortlists ? "✅" : "⬜"}</span>
-      </div>
-
-      <div className="flex justify-between">
-        <span>10th Certificate</span>
-        <span>{has10th ? "✅" : "⬜"}</span>
-      </div>
-
-      <div className="flex justify-between">
-        <span>12th / Diploma Certificate</span>
-        <span>{has12th ? "✅" : "⬜"}</span>
-      </div>
-
-      <div className="flex justify-between">
-        <span>CV / Resume</span>
-        <span>{hasCV ? "✅" : "⬜"}</span>
-      </div>
-
-      <div className="pt-4 border-t border-stone-200 text-sm text-stone-500">
-        Progress{" "}
-        {
-          [
-            hasTwoShortlists,
-            has10th,
-            has12th,
-            hasCV,
-          ].filter(Boolean).length
-        }
-        /4
-      </div>
-
-    </div>
-
-  </details>
-
-</div>
-
           
           {/* Current Stage*/}
           <div className="bg-white border border-stone-200 rounded-2xl p-6">
