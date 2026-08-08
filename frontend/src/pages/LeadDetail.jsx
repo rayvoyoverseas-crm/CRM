@@ -751,9 +751,41 @@ const uploadedDocumentCount = new Set(
   className="group border border-stone-200 rounded-xl overflow-hidden"
 >
   <summary className="cursor-pointer list-none flex items-center justify-between px-4 py-4 bg-stone-50 hover:bg-stone-100">
-    <div>
-      <h4 className="font-semibold text-sm">
-        Shortlist {index + 1}
+    <div className="flex items-start">
+
+  {lead.stage === "DR" && form.id && (
+    <input
+      type="radio"
+      name="selectedShortlist"
+      checked={lead.selected_shortlist_id === form.id}
+      onChange={async () => {
+        try {
+          const { data } = await api.patch(
+            `/leads/${id}`,
+            {
+              selected_shortlist_id: form.id,
+            }
+          );
+
+          setLead(data);
+
+          toast.success(
+            `Shortlist ${index + 1} selected for application`
+          );
+        } catch (error) {
+          toast.error(
+            error?.response?.data?.detail ||
+              "Unable to select shortlist."
+          );
+        }
+      }}
+      className="mr-3 mt-1 h-4 w-4 cursor-pointer"
+    />
+  )}
+
+  <div>
+    <h4 className="font-semibold text-sm">
+      Shortlist {index + 1}
         {index < 2 && (
           <span className="text-red-500 ml-1">*</span>
         )}
@@ -765,6 +797,8 @@ const uploadedDocumentCount = new Set(
         </p>
       )}
     </div>
+    </div>
+      
 
     <span className="text-stone-500 text-sm transition-transform group-open:rotate-180">
       ▼
