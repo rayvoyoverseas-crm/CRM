@@ -797,9 +797,7 @@ const uploadedDocumentCount = new Set(
         </p>
       )}
     </div>
-    </div>
       
-
     <span className="text-stone-500 text-sm transition-transform group-open:rotate-180">
       ▼
     </span>
