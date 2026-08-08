@@ -19,7 +19,6 @@ export const STAGE_MAP = {
     DNP: { label: "Did Not Respond", classes: "bg-rose-50 text-rose-700 ring-rose-600/20" },
     SL: { label: "Shortlisting", classes: "bg-slate-100 text-slate-700 ring-slate-600/20" },
     DR: { label: "Docs Received", classes: "bg-stone-100 text-stone-800 ring-stone-600/20" },
-    PR: { label: "Prospect", classes: "bg-emerald-50 text-emerald-700 ring-emerald-600/20" },
     RA: { label: "Ready to Application", classes: "bg-amber-50 text-amber-800 ring-amber-600/20" },
     AP: { label: "Application", classes: "bg-orange-50 text-orange-800 ring-orange-600/20" },
     OL: { label: "Offer Letter", classes: "bg-green-50 text-green-800 ring-green-600/20" },
@@ -47,7 +46,7 @@ export const STAGE_MAP = {
 };
 
 export const PIPELINE_STAGES = {
-  study_abroad: ["NL", "CC", "DNP", "SL", "DR", "PR", "RA", "AP", "OL", "RD", "DP", "VS", "EN", "LO", "DF"],
+  study_abroad: ["NL", "CC", "DNP", "SL", "DR", "RA", "AP", "OL", "RD", "DP", "VS", "EN", "LO", "DF"],
   accommodation: ["IN", "OS", "VS", "BK", "CF"],
   loan: ["AS", "DS", "PR", "AP", "DB"],
 };
