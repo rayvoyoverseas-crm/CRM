@@ -754,50 +754,56 @@ const uploadedDocumentCount = new Set(
   <div className="flex items-start gap-3">
 
     {lead.stage === "DR" && form.id && (
-      <input
-        type="radio"
-        name="selectedShortlist"
-       checked={lead.selected_shortlist_id === form.id}
-onClick={async (e) => {
-  e.stopPropagation();
+  <button
+    type="button"
+    onClick={async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-  try {
-    const isAlreadySelected =
-      lead.selected_shortlist_id === form.id;
+      try {
+        const isAlreadySelected =
+          lead.selected_shortlist_id === form.id;
 
-    const newSelectedId = isAlreadySelected
-      ? null
-      : form.id;
+        const newSelectedId = isAlreadySelected
+          ? null
+          : form.id;
 
-    const { data } = await api.patch(
-      `/leads/${id}`,
-      {
-        selected_shortlist_id: newSelectedId,
+        const { data } = await api.patch(
+          `/leads/${id}`,
+          {
+            selected_shortlist_id: newSelectedId,
+          }
+        );
+
+        setLead(data);
+
+        if (isAlreadySelected) {
+          toast.success(
+            `Shortlist ${index + 1} unselected`
+          );
+        } else {
+          toast.success(
+            `Shortlist ${index + 1} selected for application`
+          );
+        }
+      } catch (error) {
+        toast.error(
+          error?.response?.data?.detail ||
+            "Unable to update shortlist selection."
+        );
       }
-    );
-
-    setLead(data);
-
-    if (isAlreadySelected) {
-      toast.success(
-        `Shortlist ${index + 1} unselected`
-      );
-    } else {
-      toast.success(
-        `Shortlist ${index + 1} selected for application`
-      );
-    }
-  } catch (error) {
-    toast.error(
-      error?.response?.data?.detail ||
-        "Unable to update shortlist selection."
-    );
-  }
-}}
-onChange={() => {}}
-        className="mt-1 h-4 w-4 cursor-pointer accent-green-600"
-      />
+    }}
+    className={`mt-1 h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+      lead.selected_shortlist_id === form.id
+        ? "border-green-600"
+        : "border-stone-400"
+    }`}
+  >
+    {lead.selected_shortlist_id === form.id && (
+      <span className="h-2.5 w-2.5 rounded-full bg-green-600" />
     )}
+  </button>
+)}
 
     <div>
       <h4 className="font-semibold text-sm">
