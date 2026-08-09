@@ -780,7 +780,7 @@ const uploadedDocumentCount = new Set(
             );
           }
         }}
-        className="mt-1 h-4 w-4 cursor-pointer"
+        className="mt-1 h-4 w-4 cursor-pointer accent-green-600"
       />
     )}
 
