@@ -178,6 +178,7 @@ class LeadUpdateIn(BaseModel):
     assigned_to: Optional[str] = None
     source: Optional[str] = None
     selected_shortlist_id: Optional[str] = None
+    selected_shortlist_ids: Optional[List[str]] = None
 
 class NoteIn(BaseModel):
     text: str
@@ -338,6 +339,12 @@ def serialize_lead(l: dict) -> dict:
         "call_history": l.get("call_history", []),
         "shortlists": l.get("shortlists", []),
         "selected_shortlist_id": l.get("selected_shortlist_id"),
+        "selected_shortlist_ids": l.get(
+            "selected_shortlist_ids",
+            [l.get("selected_shortlist_id")]
+            if l.get("selected_shortlist_id")
+            else [],
+        ),
         "reviewed": l.get("reviewed", True),
         "highest_qualification": l.get("highest_qualification"),
         "profile": l.get("profile", {}),
@@ -854,42 +861,55 @@ async def update_lead(
                     ),
                 )
 
-        # DR → RA requires one selected shortlist
+                # DR → RA requires at least one selected shortlist
         if current_stage == "DR" and requested_stage == "RA":
-            selected_shortlist_id = existing.get(
-                "selected_shortlist_id"
+            selected_shortlist_ids = existing.get(
+                "selected_shortlist_ids",
+                [],
             )
 
-            if not selected_shortlist_id:
+            # Backward compatibility for old leads
+            if (
+                not selected_shortlist_ids
+                and existing.get("selected_shortlist_id")
+            ):
+                selected_shortlist_ids = [
+                    existing.get("selected_shortlist_id")
+                ]
+
+            if not selected_shortlist_ids:
                 raise HTTPException(
                     status_code=400,
                     detail=(
-                        "Please select one shortlist for application "
-                        "before moving this lead to Ready to Application."
+                        "Please select at least one shortlist for "
+                        "application before moving this lead to "
+                        "Ready to Application."
                     ),
                 )
 
             shortlists = existing.get("shortlists", [])
 
-            selected_shortlist = next(
-                (
-                    shortlist
-                    for shortlist in shortlists
-                    if shortlist.get("id")
-                    == selected_shortlist_id
-                ),
-                None,
-            )
+            valid_shortlist_ids = {
+                shortlist.get("id")
+                for shortlist in shortlists
+            }
 
-            if not selected_shortlist:
+            invalid_selected_ids = [
+                shortlist_id
+                for shortlist_id in selected_shortlist_ids
+                if shortlist_id not in valid_shortlist_ids
+            ]
+
+            if invalid_selected_ids:
                 raise HTTPException(
                     status_code=400,
                     detail=(
-                        "The selected shortlist could not be found. "
-                        "Please select a valid shortlist before continuing."
+                        "One or more selected shortlists could not "
+                        "be found. Please review the selected "
+                        "shortlists before continuing."
                     ),
                 )
-
+                
         if requested_stage not in allowed_stages:
             raise HTTPException(
                 status_code=400,
