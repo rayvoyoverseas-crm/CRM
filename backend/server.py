@@ -337,6 +337,7 @@ def serialize_lead(l: dict) -> dict:
         "activity": l.get("activity", []),
         "call_history": l.get("call_history", []),
         "shortlists": l.get("shortlists", []),
+        "selected_shortlist_id": l.get("selected_shortlist_id"),
         "reviewed": l.get("reviewed", True),
         "highest_qualification": l.get("highest_qualification"),
         "profile": l.get("profile", {}),
