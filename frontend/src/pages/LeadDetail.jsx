@@ -765,7 +765,7 @@ const uploadedDocumentCount = new Set(
           lead.selected_shortlist_id === form.id;
 
         const newSelectedId = isAlreadySelected
-          ? null
+          ? ""
           : form.id;
 
         const { data } = await api.patch(
