@@ -850,8 +850,8 @@ async def update_lead(
                     ),
                 )
 
-        if current_stage == "DR" and requested_stage == "RA":
-            selected_shortlist_id = existing.get("selected_shortlist_id")
+    if current_stage == "DR" and requested_stage == "RA":
+        selected_shortlist_id = existing.get("selected_shortlist_id")
 
         if not selected_shortlist_id:
             raise HTTPException(
