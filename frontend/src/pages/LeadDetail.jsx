@@ -751,43 +751,48 @@ const uploadedDocumentCount = new Set(
   className="group border border-stone-200 rounded-xl overflow-hidden"
 >
   <summary className="cursor-pointer list-none flex items-center justify-between px-4 py-4 bg-stone-50 hover:bg-stone-100">
-    <div className="flex items-start">
 
-  {lead.stage === "DR" && form.id && (
-    <input
-      type="radio"
-      name="selectedShortlist"
-      checked={lead.selected_shortlist_id === form.id}
-      onChange={async () => {
-        try {
-          const { data } = await api.patch(
-            `/leads/${id}`,
-            {
-              selected_shortlist_id: form.id,
-            }
-          );
+  <div className="flex items-start gap-3">
 
-          setLead(data);
+    {lead.stage === "DR" && form.id && (
+      <input
+        type="radio"
+        name="selectedShortlist"
+        checked={lead.selected_shortlist_id === form.id}
+        onClick={(e) => e.stopPropagation()}
+        onChange={async () => {
+          try {
+            const { data } = await api.patch(
+              `/leads/${id}`,
+              {
+                selected_shortlist_id: form.id,
+              }
+            );
 
-          toast.success(
-            `Shortlist ${index + 1} selected for application`
-          );
-        } catch (error) {
-          toast.error(
-            error?.response?.data?.detail ||
-              "Unable to select shortlist."
-          );
-        }
-      }}
-      className="mr-3 mt-1 h-4 w-4 cursor-pointer"
-    />
-  )}
+            setLead(data);
 
-  <div>
-    <h4 className="font-semibold text-sm">
-      Shortlist {index + 1}
+            toast.success(
+              `Shortlist ${index + 1} selected for application`
+            );
+          } catch (error) {
+            toast.error(
+              error?.response?.data?.detail ||
+                "Unable to select shortlist."
+            );
+          }
+        }}
+        className="mt-1 h-4 w-4 cursor-pointer"
+      />
+    )}
+
+    <div>
+      <h4 className="font-semibold text-sm">
+        Shortlist {index + 1}
+
         {index < 2 && (
-          <span className="text-red-500 ml-1">*</span>
+          <span className="text-red-500 ml-1">
+            *
+          </span>
         )}
       </h4>
 
@@ -797,12 +802,14 @@ const uploadedDocumentCount = new Set(
         </p>
       )}
     </div>
-      
-    <span className="text-stone-500 text-sm transition-transform group-open:rotate-180">
-      ▼
-    </span>
-  </summary>
 
+  </div>
+
+  <span className="text-stone-500 text-sm transition-transform group-open:rotate-180">
+    ▼
+  </span>
+
+</summary>
   <div className="p-4">
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
