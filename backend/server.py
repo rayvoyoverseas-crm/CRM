@@ -850,46 +850,46 @@ async def update_lead(
                     ),
                 )
 
-    if current_stage == "DR" and requested_stage == "RA":
-        selected_shortlist_id = existing.get("selected_shortlist_id")
+        if current_stage == "DR" and requested_stage == "RA":
+            selected_shortlist_id = existing.get("selected_shortlist_id")
 
-        if not selected_shortlist_id:
-            raise HTTPException(
-                status_code=400,
-                detail=(
-                    "Please select one shortlist for application "
-                    "before moving this lead to Ready to Application."
+            if not selected_shortlist_id:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        "Please select one shortlist for application "
+                        "before moving this lead to Ready to Application."
+                   ),
+               )
+
+            shortlists = existing.get("shortlists", [])
+
+            selected_shortlist = next(
+                (
+                    shortlist
+                    for shortlist in shortlists
+                    if shortlist.get("id") == selected_shortlist_id
                 ),
+                None,
             )
 
-        shortlists = existing.get("shortlists", [])
-
-        selected_shortlist = next(
-            (
-                shortlist
-                for shortlist in shortlists
-                if shortlist.get("id") == selected_shortlist_id
-            ),
-            None,
-        )
-
-        if not selected_shortlist:
-            raise HTTPException(
-                status_code=400,
-                detail=(
-                    "The selected shortlist could not be found. "
-                    "Please select a valid shortlist before continuing."
-                ),
-            )
+            if not selected_shortlist:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        "The selected shortlist could not be found. "
+                        "Please select a valid shortlist before continuing."
+                    ),
+                )
 
         if requested_stage not in allowed_stages:
-            raise HTTPException(
-                status_code=400,
-                detail=(
-                    f"Stage cannot move from "
-                    f"{current_stage} to {requested_stage}"
-                ),
-            )
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Stage cannot move from "
+                f"{current_stage} to {requested_stage}"
+            ),
+        )
 
         activity_entries.append({
             "type": "stage_change",
