@@ -1101,6 +1101,7 @@ const uploadedDocumentCount = new Set(
         </div>
 
         <div className="flex flex-wrap gap-2 mt-4">
+
   {!form.id && (
     <Button
       onClick={() => saveShortlist(index)}
@@ -1144,26 +1145,30 @@ const uploadedDocumentCount = new Set(
         Cancel
       </Button>
     </>
-   )}
+  )}
+
 </div>
-      </div>
-        </details>
-      </React.Fragment>
-    ))}
-  </div>
-    
-  {shortlistForms.length < 10 && (
-   <Button
-     type="button"
-     variant="outline"
-     onClick={addMoreShortlist}
-     className="w-full mt-4"
-   >
-    + Add More
-  </Button>
-)}
-    
-  </div>
+
+</div>
+</details>
+
+{index === shortlistForms.length - 1 &&
+  shortlistForms.length < 10 && (
+    <Button
+      type="button"
+      variant="outline"
+      onClick={addMoreShortlist}
+      className="w-full mt-4"
+    >
+      + Add More
+    </Button>
+  )}
+
+</React.Fragment>
+))}
+
+</div>
+</div>
 </details>
           
           {/* Current Stage*/}
