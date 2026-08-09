@@ -131,8 +131,12 @@ useEffect(() => {
       const { data } = await api.patch(`/leads/${id}`, patch);
       setLead(data);
       toast.success("Updated");
-    } catch (e) { toast.error("Failed"); }
-  };
+    } catch (e) {
+  toast.error(
+    e?.response?.data?.detail ||
+      "Failed to update stage"
+  );
+}
 
   const addNote = async () => {
     if (!note.trim()) return;
