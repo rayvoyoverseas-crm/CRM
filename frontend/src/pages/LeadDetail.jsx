@@ -757,29 +757,44 @@ const uploadedDocumentCount = new Set(
       <input
         type="radio"
         name="selectedShortlist"
-        checked={lead.selected_shortlist_id === form.id}
-        onClick={(e) => e.stopPropagation()}
-        onChange={async () => {
-          try {
-            const { data } = await api.patch(
-              `/leads/${id}`,
-              {
-                selected_shortlist_id: form.id,
-              }
-            );
+       checked={lead.selected_shortlist_id === form.id}
+onClick={async (e) => {
+  e.stopPropagation();
 
-            setLead(data);
+  try {
+    const isAlreadySelected =
+      lead.selected_shortlist_id === form.id;
 
-            toast.success(
-              `Shortlist ${index + 1} selected for application`
-            );
-          } catch (error) {
-            toast.error(
-              error?.response?.data?.detail ||
-                "Unable to select shortlist."
-            );
-          }
-        }}
+    const newSelectedId = isAlreadySelected
+      ? null
+      : form.id;
+
+    const { data } = await api.patch(
+      `/leads/${id}`,
+      {
+        selected_shortlist_id: newSelectedId,
+      }
+    );
+
+    setLead(data);
+
+    if (isAlreadySelected) {
+      toast.success(
+        `Shortlist ${index + 1} unselected`
+      );
+    } else {
+      toast.success(
+        `Shortlist ${index + 1} selected for application`
+      );
+    }
+  } catch (error) {
+    toast.error(
+      error?.response?.data?.detail ||
+        "Unable to update shortlist selection."
+    );
+  }
+}}
+onChange={() => {}}
         className="mt-1 h-4 w-4 cursor-pointer accent-green-600"
       />
     )}
