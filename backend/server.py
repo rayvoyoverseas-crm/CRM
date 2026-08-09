@@ -750,139 +750,141 @@ async def update_lead(
     activity_entries = []
     now = datetime.now(timezone.utc)
 
-    if "stage" in update and update["stage"] != existing.get("stage"):
-        current_stage = existing.get("stage")
-        requested_stage = update["stage"]
+   if "stage" in update and update["stage"] != existing.get("stage"):
+    current_stage = existing.get("stage")
+    requested_stage = update["stage"]
 
-        allowed_stages = STAGE_TRANSITIONS.get(current_stage, [])
+    allowed_stages = STAGE_TRANSITIONS.get(current_stage, [])
 
-        # NL → CC requires a successful call
-        if current_stage == "NL" and requested_stage == "CC":
-            call_history = existing.get("call_history", [])
+    # NL → CC requires a successful call
+    if current_stage == "NL" and requested_stage == "CC":
+        call_history = existing.get("call_history", [])
 
-            has_successful_call = any(
-                call.get("outcome") == "Call Made"
-                for call in call_history
+        has_successful_call = any(
+            call.get("outcome") == "Call Made"
+            for call in call_history
+        )
+
+        if not has_successful_call:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "Please record a successful call "
+                    "(Outcome: Call Made) before moving this lead "
+                    "to Counsellor Contacted."
+                ),
             )
 
-            if not has_successful_call:
-                raise HTTPException(
-                    status_code=400,
-                    detail=(
-                        "Please record a successful call "
-                        "(Outcome: Call Made) before moving this lead "
-                        "to Counsellor Contacted."
-                    ),
-                )
+    # CC → SL requires two complete shortlist entries
+    if current_stage == "CC" and requested_stage == "SL":
+        shortlists = existing.get("shortlists", [])
 
-        # CC → SL requires three complete shortlist entries
-        if current_stage == "CC" and requested_stage == "SL":
-            shortlists = existing.get("shortlists", [])
+        required_shortlist_fields = [
+            "country",
+            "intake",
+            "level_of_study",
+            "university_name",
+            "course",
+            "course_link",
+            "shortlist_status",
+        ]
 
-            required_shortlist_fields = [
-                "country",
-                "intake",
-                "level_of_study",
-                "university_name",
-                "course",
-                "course_link",
-                "shortlist_status",
-            ]
+        complete_shortlists = [
+            shortlist
+            for shortlist in shortlists
+            if all(
+                str(shortlist.get(field, "")).strip()
+                for field in required_shortlist_fields
+            )
+        ]
 
-            complete_shortlists = [
-                shortlist
-                for shortlist in shortlists
-                if all(
-                    str(shortlist.get(field, "")).strip()
-                    for field in required_shortlist_fields
-                )
-            ]
+        if len(complete_shortlists) < 2:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "Please save at least 2 complete shortlist entries "
+                    "before moving this lead to Shortlisting."
+                ),
+            )
 
-            if len(complete_shortlists) < 2:
-                raise HTTPException(
-                    status_code=400,
-                    detail=(
-                        "Please save at least 2 complete shortlist entries "
-                        "before moving this lead to Shortlisting."
-                    ),
-                )
+    # SL → DR requires mandatory documents
+    if current_stage == "SL" and requested_stage == "DR":
+        required_doc_types = ["10th", "12th", "cv"]
 
-        if current_stage == "SL" and requested_stage == "DR":
-            required_doc_types = ["10th", "12th", "cv"]
+        uploaded_docs = await db.documents.find(
+            {
+                "lead_id": lead_id,
+                "doc_type": {"$in": required_doc_types},
+                "is_deleted": False,
+            }
+        ).to_list(20)
 
-            uploaded_docs = await db.documents.find(
-                {
-                    "lead_id": lead_id,
-                    "doc_type": {"$in": required_doc_types},
-                    "is_deleted": False,
-                }
-            ).to_list(20)
+        uploaded_doc_types = {
+            doc.get("doc_type")
+            for doc in uploaded_docs
+        }
 
-            uploaded_doc_types = {
-                doc.get("doc_type")
-                for doc in uploaded_docs
+        missing_docs = [
+            doc_type
+            for doc_type in required_doc_types
+            if doc_type not in uploaded_doc_types
+        ]
+
+        if missing_docs:
+            document_labels = {
+                "10th": "10th Certificate",
+                "12th": "12th / Diploma Certificate",
+                "cv": "CV / Resume",
             }
 
-            missing_docs = [
-                doc_type
-                for doc_type in required_doc_types
-                if doc_type not in uploaded_doc_types
+            missing_labels = [
+                document_labels.get(doc, doc)
+                for doc in missing_docs
             ]
 
-            if missing_docs:
-                document_labels = {
-                    "10th": "10th Certificate",
-                    "12th": "12th / Diploma Certificate",
-                    "cv": "CV / Resume",
-                }
-
-                missing_labels = [
-                    document_labels.get(doc, doc)
-                    for doc in missing_docs
-                ]
-
-                raise HTTPException(
-                    status_code=400,
-                    detail=(
-                        "Please upload the required documents before "
-                        "moving this lead to Docs Received: "
-                        + ", ".join(missing_labels)
-                    ),
-                )
-
-        if current_stage == "DR" and requested_stage == "RA":
-            selected_shortlist_id = existing.get("selected_shortlist_id")
-
-            if not selected_shortlist_id:
-                raise HTTPException(
-                    status_code=400,
-                    detail=(
-                        "Please select one shortlist for application "
-                        "before moving this lead to Ready to Application."
-                   ),
-               )
-
-            shortlists = existing.get("shortlists", [])
-
-            selected_shortlist = next(
-                (
-                    shortlist
-                    for shortlist in shortlists
-                    if shortlist.get("id") == selected_shortlist_id
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "Please upload the required documents before "
+                    "moving this lead to Docs Received: "
+                    + ", ".join(missing_labels)
                 ),
-                None,
             )
 
-            if not selected_shortlist:
-                raise HTTPException(
-                    status_code=400,
-                    detail=(
-                        "The selected shortlist could not be found. "
-                        "Please select a valid shortlist before continuing."
-                    ),
-                )
+    # DR → RA requires one selected shortlist
+    if current_stage == "DR" and requested_stage == "RA":
+        selected_shortlist_id = existing.get("selected_shortlist_id")
 
-        if requested_stage not in allowed_stages:
+        if not selected_shortlist_id:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "Please select one shortlist for application "
+                    "before moving this lead to Ready to Application."
+                ),
+            )
+
+        shortlists = existing.get("shortlists", [])
+
+        selected_shortlist = next(
+            (
+                shortlist
+                for shortlist in shortlists
+                if shortlist.get("id") == selected_shortlist_id
+            ),
+            None,
+        )
+
+        if not selected_shortlist:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    "The selected shortlist could not be found. "
+                    "Please select a valid shortlist before continuing."
+                ),
+            )
+
+    if requested_stage not in allowed_stages:
         raise HTTPException(
             status_code=400,
             detail=(
@@ -891,15 +893,15 @@ async def update_lead(
             ),
         )
 
-        activity_entries.append({
-            "type": "stage_change",
-            "text": (
-                f"Stage changed: "
-                f"{current_stage} → {requested_stage}"
-            ),
-            "at": now.isoformat(),
-            "by": user.get("name", ""),
-        })
+    activity_entries.append({
+        "type": "stage_change",
+        "text": (
+            f"Stage changed: "
+            f"{current_stage} → {requested_stage}"
+        ),
+        "at": now.isoformat(),
+        "by": user.get("name", ""),
+    })
 
     if (
         "assigned_to" in update
