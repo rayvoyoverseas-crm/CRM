@@ -137,6 +137,7 @@ useEffect(() => {
       "Failed to update stage"
   );
 }
+};
 
   const addNote = async () => {
     if (!note.trim()) return;
