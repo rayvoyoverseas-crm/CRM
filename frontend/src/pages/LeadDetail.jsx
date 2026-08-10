@@ -957,6 +957,7 @@ const uploadedDocumentCount = new Set(
         );
 
         setLead(data);
+        await load();
 
         if (isAlreadySelected) {
           toast.success(
