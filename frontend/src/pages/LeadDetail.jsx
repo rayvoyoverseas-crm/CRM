@@ -766,17 +766,22 @@ const uploadedDocumentCount = new Set(
       e.stopPropagation();
 
       try {
-        const isAlreadySelected =
-          lead.selected_shortlist_id === form.id;
+        const currentSelectedIds =
+          lead.selected_shortlist_ids || [];
 
-        const newSelectedId = isAlreadySelected
-          ? ""
-          : form.id;
+        const isAlreadySelected =
+          currentSelectedIds.includes(form.id);
+
+        const newSelectedIds = isAlreadySelected
+          ? currentSelectedIds.filter(
+              (shortlistId) => shortlistId !== form.id
+            )
+          : [...currentSelectedIds, form.id];
 
         const { data } = await api.patch(
           `/leads/${id}`,
           {
-            selected_shortlist_id: newSelectedId,
+            selected_shortlist_ids: newSelectedIds,
           }
         );
 
@@ -799,17 +804,16 @@ const uploadedDocumentCount = new Set(
       }
     }}
     className={`mt-1 h-5 w-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
-      lead.selected_shortlist_id === form.id
+      (lead.selected_shortlist_ids || []).includes(form.id)
         ? "border-green-600"
         : "border-stone-400"
     }`}
   >
-    {lead.selected_shortlist_id === form.id && (
+    {(lead.selected_shortlist_ids || []).includes(form.id) && (
       <span className="h-2.5 w-2.5 rounded-full bg-green-600" />
     )}
   </button>
 )}
-
     <div>
       <h4 className="font-semibold text-sm">
         Shortlist {index + 1}
