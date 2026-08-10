@@ -1277,11 +1277,11 @@ const uploadedDocumentCount = new Set(
 </div>
 </details>
 
-        {lead.stage === "RA" && (
+{lead.stage === "RA" && (
   <div className="bg-white border border-stone-200 rounded-2xl p-6">
     <div className="mb-4">
       <h3 className="font-display font-semibold text-lg">
-        Application Record
+        Application Records
       </h3>
 
       <p className="text-xs text-stone-400 mt-1">
@@ -1289,208 +1289,275 @@ const uploadedDocumentCount = new Set(
       </p>
     </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-
-      <div>
-        <Label className="text-xs">University *</Label>
-        <Input
-          value={applicationForm.university}
-          onChange={(e) =>
-            setApplicationForm({
-              ...applicationForm,
-              university: e.target.value,
-            })
-          }
-          placeholder="Enter university"
-        />
-      </div>
-
-      <div>
-        <Label className="text-xs">Course *</Label>
-        <Input
-          value={applicationForm.course}
-          onChange={(e) =>
-            setApplicationForm({
-              ...applicationForm,
-              course: e.target.value,
-            })
-          }
-          placeholder="Enter course"
-        />
-      </div>
-
-      <div>
-        <Label className="text-xs">Intake *</Label>
-        <Input
-          value={applicationForm.intake}
-          onChange={(e) =>
-            setApplicationForm({
-              ...applicationForm,
-              intake: e.target.value,
-            })
-          }
-          placeholder="Enter intake"
-        />
-      </div>
-
-      <div>
-        <Label className="text-xs">Application Agent *</Label>
-        <Input
-          value={applicationForm.application_agent}
-          onChange={(e) =>
-            setApplicationForm({
-              ...applicationForm,
-              application_agent: e.target.value,
-            })
-          }
-          placeholder="Enter application agent"
-        />
-      </div>
-
-      <div>
-        <Label className="text-xs">Application ID *</Label>
-        <Input
-          value={applicationForm.application_id}
-          onChange={(e) =>
-            setApplicationForm({
-              ...applicationForm,
-              application_id: e.target.value,
-            })
-          }
-          placeholder="Enter application ID"
-        />
-      </div>
-
-      <div>
-        <Label className="text-xs">Submission Date *</Label>
-        <Input
-          type="date"
-          value={applicationForm.submission_date}
-          onChange={(e) =>
-            setApplicationForm({
-              ...applicationForm,
-              submission_date: e.target.value,
-            })
-          }
-        />
-      </div>
-
-      <div>
-        <Label className="text-xs">Submission Time *</Label>
-        <Input
-          type="time"
-          value={applicationForm.submission_time}
-          onChange={(e) =>
-            setApplicationForm({
-              ...applicationForm,
-              submission_time: e.target.value,
-            })
-          }
-        />
-      </div>
-
-      <div>
-        <Label className="text-xs">Submitted By *</Label>
-        <Input
-          value={applicationForm.submitted_by}
-          onChange={(e) =>
-            setApplicationForm({
-              ...applicationForm,
-              submitted_by: e.target.value,
-            })
-          }
-          placeholder="Enter submitted by"
-        />
-      </div>
-
-      <div>
-        <Label className="text-xs">Application Status *</Label>
-
-        <Select
-          value={applicationForm.application_status}
-          onValueChange={(value) =>
-            setApplicationForm({
-              ...applicationForm,
-              application_status: value,
-            })
-          }
+    <div className="space-y-4">
+      {applicationForms.map((application, index) => (
+        <details
+          key={application.id || index}
+          open={!application.id}
+          className="group border border-stone-200 rounded-xl overflow-hidden"
         >
-          <SelectTrigger>
-            <SelectValue placeholder="Select status" />
-          </SelectTrigger>
+          <summary className="cursor-pointer list-none flex items-center justify-between px-4 py-4 bg-stone-50 hover:bg-stone-100">
+            <div>
+              <h4 className="font-semibold text-sm">
+                Application {index + 1}
+              </h4>
 
-          <SelectContent>
-            <SelectItem value="Draft">
-              Draft
-            </SelectItem>
+              {application.id && (
+                <p className="text-xs text-stone-500 mt-1">
+                  {application.university} · {application.course}
+                </p>
+              )}
+            </div>
 
-            <SelectItem value="Ready to submit">
-              Ready to submit
-            </SelectItem>
+            <span className="text-stone-500 text-sm transition-transform group-open:rotate-180">
+              ▼
+            </span>
+          </summary>
 
-            <SelectItem value="Submitted">
-              Submitted
-            </SelectItem>
+          <div className="p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 
-            <SelectItem value="Under review">
-              Under review
-            </SelectItem>
+              <div>
+                <Label className="text-xs">University *</Label>
+                <Input
+                  value={application.university}
+                  onChange={(e) =>
+                    updateApplicationField(
+                      index,
+                      "university",
+                      e.target.value
+                    )
+                  }
+                  placeholder="Enter university"
+                />
+              </div>
 
-            <SelectItem value="Additional documents requested">
-              Additional documents requested
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+              <div>
+                <Label className="text-xs">Course *</Label>
+                <Input
+                  value={application.course}
+                  onChange={(e) =>
+                    updateApplicationField(
+                      index,
+                      "course",
+                      e.target.value
+                    )
+                  }
+                  placeholder="Enter course"
+                />
+              </div>
 
-      <div>
-        <Label className="text-xs">Priority *</Label>
+              <div>
+                <Label className="text-xs">Intake *</Label>
 
-        <Select
-          value={applicationForm.priority}
-          onValueChange={(value) =>
-            setApplicationForm({
-              ...applicationForm,
-              priority: value,
-            })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select priority" />
-          </SelectTrigger>
+                <Select
+                  value={application.intake}
+                  onValueChange={(value) =>
+                    updateApplicationField(
+                      index,
+                      "intake",
+                      value
+                    )
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select intake" />
+                  </SelectTrigger>
 
-          <SelectContent>
-            <SelectItem value="Low">
-              Low
-            </SelectItem>
+                  <SelectContent>
+                    <SelectItem value="September 2026">
+                      September 2026
+                    </SelectItem>
 
-            <SelectItem value="Normal">
-              Normal
-            </SelectItem>
+                    <SelectItem value="January 2027">
+                      January 2027
+                    </SelectItem>
 
-            <SelectItem value="High">
-              High
-            </SelectItem>
+                    <SelectItem value="September 2027">
+                      September 2027
+                    </SelectItem>
 
-            <SelectItem value="Urgent">
-              Urgent
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+                    <SelectItem value="January 2028">
+                      January 2028
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
+              <div>
+                <Label className="text-xs">
+                  Submission Date *
+                </Label>
+
+                <Input
+                  type="date"
+                  value={application.submission_date}
+                  onChange={(e) =>
+                    updateApplicationField(
+                      index,
+                      "submission_date",
+                      e.target.value
+                    )
+                  }
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs">
+                  Submission Time *
+                </Label>
+
+                <Input
+                  type="time"
+                  value={application.submission_time}
+                  onChange={(e) =>
+                    updateApplicationField(
+                      index,
+                      "submission_time",
+                      e.target.value
+                    )
+                  }
+                />
+              </div>
+
+              <div>
+                <Label className="text-xs">Submitted By *</Label>
+
+                <Select
+                  value={application.submitted_by}
+                  onValueChange={(value) =>
+                    updateApplicationField(
+                      index,
+                      "submitted_by",
+                      value
+                    )
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select submitted by" />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    <SelectItem value="KC">
+                      KC
+                    </SelectItem>
+
+                    <SelectItem value="Crizac">
+                      Crizac
+                    </SelectItem>
+
+                    <SelectItem value="SI-UK">
+                      SI-UK
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-xs">
+                  Application Status *
+                </Label>
+
+                <Select
+                  value={application.application_status}
+                  onValueChange={(value) =>
+                    updateApplicationField(
+                      index,
+                      "application_status",
+                      value
+                    )
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    <SelectItem value="Draft">
+                      Draft
+                    </SelectItem>
+
+                    <SelectItem value="Ready to submit">
+                      Ready to submit
+                    </SelectItem>
+
+                    <SelectItem value="Submitted">
+                      Submitted
+                    </SelectItem>
+
+                    <SelectItem value="Under review">
+                      Under review
+                    </SelectItem>
+
+                    <SelectItem value="Additional documents requested">
+                      Additional documents requested
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-xs">Priority *</Label>
+
+                <Select
+                  value={application.priority}
+                  onValueChange={(value) =>
+                    updateApplicationField(
+                      index,
+                      "priority",
+                      value
+                    )
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select priority" />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {[1,2,3,4,5,6,7,8,9,10].map((priority) => (
+                      <SelectItem
+                        key={priority}
+                        value={String(priority)}
+                      >
+                        {priority}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+            </div>
+
+            {!application.id && (
+              <Button
+                type="button"
+                onClick={() => saveApplicationRecord(index)}
+                disabled={savingApplicationIndex === index}
+                className="w-full mt-4 bg-[#1B365D] hover:bg-[#152a4a]"
+              >
+                {savingApplicationIndex === index
+                  ? "Saving..."
+                  : `Save Application ${index + 1}`}
+              </Button>
+            )}
+          </div>
+        </details>
+      ))}
+
+      {applicationForms.length < 10 &&
+        applicationForms[
+          applicationForms.length - 1
+        ]?.id && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={addMoreApplication}
+            className="w-full"
+          >
+            + Add More
+          </Button>
+        )}
     </div>
-
-    <Button
-      type="button"
-      onClick={saveApplicationRecord}
-      disabled={savingApplication}
-      className="w-full mt-4 bg-[#1B365D] hover:bg-[#152a4a]"
-    >
-      {savingApplication
-        ? "Saving..."
-        : "Save Application Record"}
-    </Button>
   </div>
 )}
           
