@@ -268,6 +268,19 @@ useEffect(() => {
 };
 
 const updateApplicationField = (index, field, value) => {
+  if (field === "priority") {
+    const priorityAlreadyUsed = applicationForms.some(
+      (application, applicationIndex) =>
+        applicationIndex !== index &&
+        application.priority === value
+    );
+
+    if (priorityAlreadyUsed) {
+      toast.error(`Priority ${value} is already assigned.`);
+      return;
+    }
+  }
+
   const updated = [...applicationForms];
 
   updated[index] = {
