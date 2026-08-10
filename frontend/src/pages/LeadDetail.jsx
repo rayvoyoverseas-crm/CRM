@@ -131,6 +131,33 @@ if (loadedShortlists.length === 0) {
 } else {
   setShortlistForms(loadedShortlists);
 }
+
+const savedApplications = Array.isArray(data.application_records)
+  ? data.application_records
+  : [];
+
+const loadedApplications = savedApplications.map((application) => ({
+  university: application.university || "",
+  course: application.course || "",
+  intake: application.intake || "",
+  submission_date: application.submission_date || "",
+  submission_time: application.submission_time || "",
+  submitted_by: application.submitted_by || "",
+  application_status: application.application_status || "",
+  priority: application.priority || "",
+  id: application.id,
+  created_at: application.created_at,
+  created_by: application.created_by,
+}));
+
+if (loadedApplications.length === 0) {
+  setApplicationForms([
+    { ...emptyApplication },
+  ]);
+} else {
+  setApplicationForms(loadedApplications);
+}
+  
 }, [id]);
 
 useEffect(() => {
