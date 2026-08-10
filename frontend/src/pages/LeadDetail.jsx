@@ -202,45 +202,76 @@ useEffect(() => {
   }
 };
 
-const saveApplicationRecord = async () => {
+const updateApplicationField = (index, field, value) => {
+  const updated = [...applicationForms];
+
+  updated[index] = {
+    ...updated[index],
+    [field]: value,
+  };
+
+  setApplicationForms(updated);
+};
+
+const addMoreApplication = () => {
+  if (applicationForms.length >= 10) {
+    toast.error("Maximum 10 applications are allowed.");
+    return;
+  }
+
+  const lastApplication =
+    applicationForms[applicationForms.length - 1];
+
+  if (!lastApplication.id) {
+    toast.error(
+      "Please save the current application before adding another."
+    );
+    return;
+  }
+
+  setApplicationForms([
+    ...applicationForms,
+    { ...emptyApplication },
+  ]);
+};
+
+const saveApplicationRecord = async (index) => {
+  const application = applicationForms[index];
+
   if (
-    !applicationForm.university.trim() ||
-    !applicationForm.course.trim() ||
-    !applicationForm.intake.trim() ||
-    !applicationForm.application_agent.trim() ||
-    !applicationForm.application_id.trim() ||
-    !applicationForm.submission_date ||
-    !applicationForm.submission_time ||
-    !applicationForm.submitted_by.trim() ||
-    !applicationForm.application_status ||
-    !applicationForm.priority
+    !application.university.trim() ||
+    !application.course.trim() ||
+    !application.intake ||
+    !application.submission_date ||
+    !application.submission_time ||
+    !application.submitted_by ||
+    !application.application_status ||
+    !application.priority
   ) {
     toast.error("Please complete all application fields.");
     return;
   }
 
   try {
-    setSavingApplication(true);
+    setSavingApplicationIndex(index);
 
-    await api.post(
+    const { data } = await api.post(
       `/leads/${id}/applications`,
-      applicationForm
+      application
     );
 
-    toast.success("Application record saved");
+    const updated = [...applicationForms];
 
-    setApplicationForm({
-      university: "",
-      course: "",
-      intake: "",
-      application_agent: "",
-      application_id: "",
-      submission_date: "",
-      submission_time: "",
-      submitted_by: user?.name || "",
-      application_status: "",
-      priority: "Normal",
-    });
+    updated[index] = {
+      ...application,
+      id: data.entry.id,
+    };
+
+    setApplicationForms(updated);
+
+    toast.success(
+      `Application ${index + 1} saved`
+    );
 
     await load();
   } catch (error) {
@@ -249,7 +280,7 @@ const saveApplicationRecord = async () => {
         "Unable to save application record."
     );
   } finally {
-    setSavingApplication(false);
+    setSavingApplicationIndex(null);
   }
 };
 
