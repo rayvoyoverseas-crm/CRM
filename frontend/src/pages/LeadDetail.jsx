@@ -1242,6 +1242,223 @@ const uploadedDocumentCount = new Set(
 </div>
 </div>
 </details>
+
+        {lead.stage === "RA" && (
+  <div className="bg-white border border-stone-200 rounded-2xl p-6">
+    <div className="mb-4">
+      <h3 className="font-display font-semibold text-lg">
+        Application Record
+      </h3>
+
+      <p className="text-xs text-stone-400 mt-1">
+        Save at least one application with status Submitted before moving to Application.
+      </p>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+      <div>
+        <Label className="text-xs">University *</Label>
+        <Input
+          value={applicationForm.university}
+          onChange={(e) =>
+            setApplicationForm({
+              ...applicationForm,
+              university: e.target.value,
+            })
+          }
+          placeholder="Enter university"
+        />
+      </div>
+
+      <div>
+        <Label className="text-xs">Course *</Label>
+        <Input
+          value={applicationForm.course}
+          onChange={(e) =>
+            setApplicationForm({
+              ...applicationForm,
+              course: e.target.value,
+            })
+          }
+          placeholder="Enter course"
+        />
+      </div>
+
+      <div>
+        <Label className="text-xs">Intake *</Label>
+        <Input
+          value={applicationForm.intake}
+          onChange={(e) =>
+            setApplicationForm({
+              ...applicationForm,
+              intake: e.target.value,
+            })
+          }
+          placeholder="Enter intake"
+        />
+      </div>
+
+      <div>
+        <Label className="text-xs">Application Agent *</Label>
+        <Input
+          value={applicationForm.application_agent}
+          onChange={(e) =>
+            setApplicationForm({
+              ...applicationForm,
+              application_agent: e.target.value,
+            })
+          }
+          placeholder="Enter application agent"
+        />
+      </div>
+
+      <div>
+        <Label className="text-xs">Application ID *</Label>
+        <Input
+          value={applicationForm.application_id}
+          onChange={(e) =>
+            setApplicationForm({
+              ...applicationForm,
+              application_id: e.target.value,
+            })
+          }
+          placeholder="Enter application ID"
+        />
+      </div>
+
+      <div>
+        <Label className="text-xs">Submission Date *</Label>
+        <Input
+          type="date"
+          value={applicationForm.submission_date}
+          onChange={(e) =>
+            setApplicationForm({
+              ...applicationForm,
+              submission_date: e.target.value,
+            })
+          }
+        />
+      </div>
+
+      <div>
+        <Label className="text-xs">Submission Time *</Label>
+        <Input
+          type="time"
+          value={applicationForm.submission_time}
+          onChange={(e) =>
+            setApplicationForm({
+              ...applicationForm,
+              submission_time: e.target.value,
+            })
+          }
+        />
+      </div>
+
+      <div>
+        <Label className="text-xs">Submitted By *</Label>
+        <Input
+          value={applicationForm.submitted_by}
+          onChange={(e) =>
+            setApplicationForm({
+              ...applicationForm,
+              submitted_by: e.target.value,
+            })
+          }
+          placeholder="Enter submitted by"
+        />
+      </div>
+
+      <div>
+        <Label className="text-xs">Application Status *</Label>
+
+        <Select
+          value={applicationForm.application_status}
+          onValueChange={(value) =>
+            setApplicationForm({
+              ...applicationForm,
+              application_status: value,
+            })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select status" />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem value="Draft">
+              Draft
+            </SelectItem>
+
+            <SelectItem value="Ready to submit">
+              Ready to submit
+            </SelectItem>
+
+            <SelectItem value="Submitted">
+              Submitted
+            </SelectItem>
+
+            <SelectItem value="Under review">
+              Under review
+            </SelectItem>
+
+            <SelectItem value="Additional documents requested">
+              Additional documents requested
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label className="text-xs">Priority *</Label>
+
+        <Select
+          value={applicationForm.priority}
+          onValueChange={(value) =>
+            setApplicationForm({
+              ...applicationForm,
+              priority: value,
+            })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select priority" />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem value="Low">
+              Low
+            </SelectItem>
+
+            <SelectItem value="Normal">
+              Normal
+            </SelectItem>
+
+            <SelectItem value="High">
+              High
+            </SelectItem>
+
+            <SelectItem value="Urgent">
+              Urgent
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+    </div>
+
+    <Button
+      type="button"
+      onClick={saveApplicationRecord}
+      disabled={savingApplication}
+      className="w-full mt-4 bg-[#1B365D] hover:bg-[#152a4a]"
+    >
+      {savingApplication
+        ? "Saving..."
+        : "Save Application Record"}
+    </Button>
+  </div>
+)}
           
           {/* Current Stage*/}
           <div className="bg-white border border-stone-200 rounded-2xl p-6">
