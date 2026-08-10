@@ -361,6 +361,7 @@ def serialize_lead(l: dict) -> dict:
         "activity": l.get("activity", []),
         "call_history": l.get("call_history", []),
         "shortlists": l.get("shortlists", []),
+        "application_records": l.get("application_records", []),
         "selected_shortlist_id": l.get("selected_shortlist_id"),
         "selected_shortlist_ids": l.get(
             "selected_shortlist_ids",
@@ -1343,6 +1344,103 @@ async def delete_shortlist(
     )
 
     return {"ok": True}
+
+@api.post("/leads/{lead_id}/applications")
+async def add_application_record(
+    lead_id: str,
+    payload: ApplicationRecordIn,
+    user: dict = Depends(get_current_user),
+):
+    q = {"_id": ObjectId(lead_id)}
+
+    if user.get("role") != "admin" and not (
+        user.get("permissions") or {}
+    ).get("see_all_leads"):
+        q["assigned_to"] = str(user["_id"])
+
+    lead = await db.leads.find_one(q)
+
+    if not lead:
+        raise HTTPException(
+            status_code=404,
+            detail="Lead not found",
+        )
+
+    required_fields = {
+        "university": payload.university,
+        "course": payload.course,
+        "intake": payload.intake,
+        "application_agent": payload.application_agent,
+        "application_id": payload.application_id,
+        "submission_date": payload.submission_date,
+        "submission_time": payload.submission_time,
+        "submitted_by": payload.submitted_by,
+        "application_status": payload.application_status,
+        "priority": payload.priority,
+    }
+
+    missing_fields = [
+        field_name
+        for field_name, value in required_fields.items()
+        if not str(value or "").strip()
+    ]
+
+    if missing_fields:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Please complete all compulsory application fields: "
+                + ", ".join(missing_fields)
+            ),
+        )
+
+    now = datetime.now(timezone.utc)
+
+    entry = {
+        "id": str(uuid.uuid4()),
+        "university": payload.university.strip(),
+        "course": payload.course.strip(),
+        "intake": payload.intake.strip(),
+        "application_agent": payload.application_agent.strip(),
+        "application_id": payload.application_id.strip(),
+        "submission_date": payload.submission_date.strip(),
+        "submission_time": payload.submission_time.strip(),
+        "submitted_by": payload.submitted_by.strip(),
+        "application_status": payload.application_status,
+        "priority": payload.priority,
+        "created_at": now.isoformat(),
+        "created_by": user.get("name", ""),
+        "created_by_user_id": str(user["_id"]),
+    }
+
+    activity_entry = {
+        "type": "application",
+        "text": (
+            f"Application saved: "
+            f"{entry['university']} · {entry['course']} · "
+            f"{entry['application_status']}"
+        ),
+        "at": now.isoformat(),
+        "by": user.get("name", ""),
+    }
+
+    await db.leads.update_one(
+        {"_id": ObjectId(lead_id)},
+        {
+            "$push": {
+                "application_records": entry,
+                "activity": activity_entry,
+            },
+            "$set": {
+                "updated_at": now,
+            },
+        },
+    )
+
+    return {
+        "ok": True,
+        "entry": entry,
+    }
     
 @api.delete("/leads/{lead_id}")
 async def delete_lead(lead_id: str, admin: dict = Depends(require_admin)):
