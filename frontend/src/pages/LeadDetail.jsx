@@ -304,11 +304,14 @@ const saveApplicationRecord = async (index) => {
   const application = applicationForms[index];
 
   if (
-    !application.university.trim() ||
-    !application.course.trim() ||
+    !application.shortlist_id ||
+    !application.country ||
+    !application.level_of_study ||
+    !application.university ||
+    !application.course ||
+    !application.course_link ||
     !application.intake ||
-    !application.submission_date ||
-    !application.submission_time ||
+    !application.submission_datetime ||
     !application.submitted_by ||
     !application.application_status ||
     !application.priority
@@ -330,6 +333,8 @@ const saveApplicationRecord = async (index) => {
     updated[index] = {
       ...application,
       id: data.entry.id,
+      created_at: data.entry.created_at,
+      created_by: data.entry.created_by,
     };
 
     setApplicationForms(updated);
