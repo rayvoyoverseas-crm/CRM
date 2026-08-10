@@ -45,7 +45,23 @@ export default function LeadDetail() {
 });
 
 const [savingCall, setSavingCall] = useState(false);
-  const emptyShortlist = {
+
+const [applicationForm, setApplicationForm] = useState({
+  university: "",
+  course: "",
+  intake: "",
+  application_agent: "",
+  application_id: "",
+  submission_date: "",
+  submission_time: "",
+  submitted_by: user?.name || "",
+  application_status: "",
+  priority: "Normal",
+});
+
+const [savingApplication, setSavingApplication] = useState(false);
+  
+const emptyShortlist = {
   country: "",
   intake: "",
   level_of_study: "",
