@@ -208,6 +208,29 @@ class ShortlistIn(BaseModel):
     application_fee: Optional[str] = ""
     counsellor_remarks: Optional[str] = ""
 
+class ApplicationRecordIn(BaseModel):
+    university: str
+    course: str
+    intake: str
+    application_agent: str
+    application_id: str
+    submission_date: str
+    submission_time: str
+    submitted_by: str
+    application_status: Literal[
+        "Draft",
+        "Ready to submit",
+        "Submitted",
+        "Under review",
+        "Additional documents requested",
+    ]
+    priority: Literal[
+        "Low",
+        "Normal",
+        "High",
+        "Urgent",
+    ]
+
 class WebhookLeadIn(BaseModel):
     name: str
     email: Optional[str] = ""
