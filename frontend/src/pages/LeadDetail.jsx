@@ -199,6 +199,57 @@ useEffect(() => {
   }
 };
 
+const saveApplicationRecord = async () => {
+  if (
+    !applicationForm.university.trim() ||
+    !applicationForm.course.trim() ||
+    !applicationForm.intake.trim() ||
+    !applicationForm.application_agent.trim() ||
+    !applicationForm.application_id.trim() ||
+    !applicationForm.submission_date ||
+    !applicationForm.submission_time ||
+    !applicationForm.submitted_by.trim() ||
+    !applicationForm.application_status ||
+    !applicationForm.priority
+  ) {
+    toast.error("Please complete all application fields.");
+    return;
+  }
+
+  try {
+    setSavingApplication(true);
+
+    await api.post(
+      `/leads/${id}/applications`,
+      applicationForm
+    );
+
+    toast.success("Application record saved");
+
+    setApplicationForm({
+      university: "",
+      course: "",
+      intake: "",
+      application_agent: "",
+      application_id: "",
+      submission_date: "",
+      submission_time: "",
+      submitted_by: user?.name || "",
+      application_status: "",
+      priority: "Normal",
+    });
+
+    await load();
+  } catch (error) {
+    toast.error(
+      error?.response?.data?.detail ||
+        "Unable to save application record."
+    );
+  } finally {
+    setSavingApplication(false);
+  }
+};
+
   const updateShortlistField = (index, field, value) => {
   const updated = [...shortlistForms];
   updated[index][field] = value;
