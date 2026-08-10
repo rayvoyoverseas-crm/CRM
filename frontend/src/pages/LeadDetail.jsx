@@ -268,20 +268,26 @@ useEffect(() => {
 };
 
 const updateApplicationField = (index, field, value) => {
+  const updated = [...applicationForms];
+
   if (field === "priority") {
-    const priorityAlreadyUsed = applicationForms.some(
+    const oldPriority = updated[index].priority;
+
+    const otherApplicationIndex = updated.findIndex(
       (application, applicationIndex) =>
         applicationIndex !== index &&
         application.priority === value
     );
 
-    if (priorityAlreadyUsed) {
-      toast.error(`Priority ${value} is already assigned.`);
-      return;
+    // If another application already has the selected priority,
+    // automatically give it this application's previous priority.
+    if (otherApplicationIndex !== -1) {
+      updated[otherApplicationIndex] = {
+        ...updated[otherApplicationIndex],
+        priority: oldPriority,
+      };
     }
   }
-
-  const updated = [...applicationForms];
 
   updated[index] = {
     ...updated[index],
@@ -290,7 +296,6 @@ const updateApplicationField = (index, field, value) => {
 
   setApplicationForms(updated);
 };
-
 const addMoreApplication = () => {
   if (applicationForms.length >= 10) {
     toast.error("Maximum 10 applications are allowed.");
