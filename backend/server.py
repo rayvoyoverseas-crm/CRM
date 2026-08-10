@@ -212,11 +212,13 @@ class ApplicationRecordIn(BaseModel):
     university: str
     course: str
     intake: str
-    application_agent: str
-    application_id: str
     submission_date: str
     submission_time: str
-    submitted_by: str
+    submitted_by: Literal[
+        "KC",
+        "Crizac",
+        "SI-UK",
+    ]
     application_status: Literal[
         "Draft",
         "Ready to submit",
@@ -225,10 +227,16 @@ class ApplicationRecordIn(BaseModel):
         "Additional documents requested",
     ]
     priority: Literal[
-        "Low",
-        "Normal",
-        "High",
-        "Urgent",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
     ]
 
 class WebhookLeadIn(BaseModel):
