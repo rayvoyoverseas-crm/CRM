@@ -47,14 +47,23 @@ export default function LeadDetail() {
 const [savingCall, setSavingCall] = useState(false);
 
 const emptyApplication = {
+  shortlist_id: "",
+
+  // Auto-filled from selected shortlist
+  country: "",
+  level_of_study: "",
   university: "",
   course: "",
+  course_link: "",
   intake: "",
-  submission_date: "",
-  submission_time: "",
+
+  // Filled during RA stage
+  submission_datetime: "",
   submitted_by: "",
   application_status: "",
   priority: "",
+
+  id: null,
 };
 
 const [applicationForms, setApplicationForms] = useState([
