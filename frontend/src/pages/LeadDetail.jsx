@@ -46,20 +46,23 @@ export default function LeadDetail() {
 
 const [savingCall, setSavingCall] = useState(false);
 
-const [applicationForm, setApplicationForm] = useState({
+const emptyApplication = {
   university: "",
   course: "",
   intake: "",
-  application_agent: "",
-  application_id: "",
   submission_date: "",
   submission_time: "",
-  submitted_by: user?.name || "",
+  submitted_by: "",
   application_status: "",
-  priority: "Normal",
-});
+  priority: "",
+};
 
-const [savingApplication, setSavingApplication] = useState(false);
+const [applicationForms, setApplicationForms] = useState([
+  { ...emptyApplication },
+]);
+
+const [savingApplicationIndex, setSavingApplicationIndex] =
+  useState(null);
   
 const emptyShortlist = {
   country: "",
