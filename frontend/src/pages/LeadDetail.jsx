@@ -1408,17 +1408,18 @@ const uploadedDocumentCount = new Set(
                     </SelectTrigger>
 
                     <SelectContent>
-                      {[1,2,3,4,5,6,7,8,9,10].map(
-                        (priority) => (
+                      {Array.from(
+                         { length: applicationForms.length },
+                         (_, i) => i + 1
+                      ).map((priority) => (
                           <SelectItem
                             key={priority}
                             value={String(priority)}
-                          >
-                            {priority}
+                         >
+                           {priority}
                           </SelectItem>
-                        )
-                      )}
-                    </SelectContent>
+                        ))}
+                      </SelectContent>
                   </Select>
                 </div>
 
