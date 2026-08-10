@@ -1405,15 +1405,18 @@ async def add_application_record(
         )
 
     required_fields = {
-        "university": payload.university,
-        "course": payload.course,
-        "intake": payload.intake,
-        "submission_date": payload.submission_date,
-        "submission_time": payload.submission_time,
-        "submitted_by": payload.submitted_by,
-        "application_status": payload.application_status,
-        "priority": payload.priority,
-    }
+    "shortlist_id": payload.shortlist_id,
+    "country": payload.country,
+    "level_of_study": payload.level_of_study,
+    "university": payload.university,
+    "course": payload.course,
+    "course_link": payload.course_link,
+    "intake": payload.intake,
+    "submission_datetime": payload.submission_datetime,
+    "submitted_by": payload.submitted_by,
+    "application_status": payload.application_status,
+    "priority": payload.priority,
+}
 
     missing_fields = [
         field_name
@@ -1433,19 +1436,22 @@ async def add_application_record(
     now = datetime.now(timezone.utc)
 
     entry = {
-        "id": str(uuid.uuid4()),
-        "university": payload.university.strip(),
-        "course": payload.course.strip(),
-        "intake": payload.intake.strip(),
-        "submission_date": payload.submission_date.strip(),
-        "submission_time": payload.submission_time.strip(),
-        "submitted_by": payload.submitted_by.strip(),
-        "application_status": payload.application_status,
-        "priority": payload.priority,
-        "created_at": now.isoformat(),
-        "created_by": user.get("name", ""),
-        "created_by_user_id": str(user["_id"]),
-    }
+    "id": str(uuid.uuid4()),
+    "shortlist_id": payload.shortlist_id.strip(),
+    "country": payload.country.strip(),
+    "level_of_study": payload.level_of_study.strip(),
+    "university": payload.university.strip(),
+    "course": payload.course.strip(),
+    "course_link": payload.course_link.strip(),
+    "intake": payload.intake.strip(),
+    "submission_datetime": payload.submission_datetime.strip(),
+    "submitted_by": payload.submitted_by,
+    "application_status": payload.application_status,
+    "priority": payload.priority,
+    "created_at": now.isoformat(),
+    "created_by": user.get("name", ""),
+    "created_by_user_id": str(user["_id"]),
+}
 
     activity_entry = {
         "type": "application",
