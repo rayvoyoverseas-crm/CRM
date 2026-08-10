@@ -209,16 +209,23 @@ class ShortlistIn(BaseModel):
     counsellor_remarks: Optional[str] = ""
 
 class ApplicationRecordIn(BaseModel):
+    shortlist_id: str
+
+    country: str
+    level_of_study: str
     university: str
     course: str
+    course_link: str
     intake: str
-    submission_date: str
-    submission_time: str
+
+    submission_datetime: str
+
     submitted_by: Literal[
         "KC",
         "Crizac",
         "SI-UK",
     ]
+
     application_status: Literal[
         "Draft",
         "Ready to submit",
@@ -226,6 +233,7 @@ class ApplicationRecordIn(BaseModel):
         "Under review",
         "Additional documents requested",
     ]
+
     priority: Literal[
         "1",
         "2",
