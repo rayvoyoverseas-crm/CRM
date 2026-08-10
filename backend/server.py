@@ -933,6 +933,28 @@ async def update_lead(
                         "shortlists before continuing."
                     ),
                 )
+
+        # RA → AP requires at least one submitted application
+        if current_stage == "RA" and requested_stage == "AP":
+            application_records = existing.get(
+                "application_records",
+                [],
+            )
+
+            has_submitted_application = any(
+                application.get("application_status") == "Submitted"
+                for application in application_records
+            )
+
+            if not has_submitted_application:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        "Please save at least one application record "
+                        "with Application Status = Submitted before "
+                        "moving this lead to Application."
+                    ),
+                )
                 
         if requested_stage not in allowed_stages:
             raise HTTPException(
