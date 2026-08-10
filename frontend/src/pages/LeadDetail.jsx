@@ -929,7 +929,7 @@ const uploadedDocumentCount = new Set(
 
   <div className="flex items-start gap-3">
 
-    {lead.stage === "DR" && form.id && (
+    {form.id && (
   <button
     type="button"
     onClick={async (e) => {
