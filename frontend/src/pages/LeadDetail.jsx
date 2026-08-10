@@ -136,27 +136,56 @@ const savedApplications = Array.isArray(data.application_records)
   ? data.application_records
   : [];
 
-const loadedApplications = savedApplications.map((application) => ({
-  university: application.university || "",
-  course: application.course || "",
-  intake: application.intake || "",
-  submission_date: application.submission_date || "",
-  submission_time: application.submission_time || "",
-  submitted_by: application.submitted_by || "",
-  application_status: application.application_status || "",
-  priority: application.priority || "",
-  id: application.id,
-  created_at: application.created_at,
-  created_by: application.created_by,
-}));
+const selectedShortlistIds = Array.isArray(
+  data.selected_shortlist_ids
+)
+  ? data.selected_shortlist_ids
+  : [];
 
-if (loadedApplications.length === 0) {
-  setApplicationForms([
-    { ...emptyApplication },
-  ]);
-} else {
-  setApplicationForms(loadedApplications);
-}
+const selectedShortlists = Array.isArray(data.shortlists)
+  ? data.shortlists.filter((shortlist) =>
+      selectedShortlistIds.includes(shortlist.id)
+    )
+  : [];
+
+const loadedApplications = selectedShortlists.map(
+  (shortlist, index) => {
+    const savedApplication = savedApplications.find(
+      (application) =>
+        application.shortlist_id === shortlist.id
+    );
+
+    return {
+      shortlist_id: shortlist.id,
+
+      country: shortlist.country || "",
+      level_of_study: shortlist.level_of_study || "",
+      university: shortlist.university_name || "",
+      course: shortlist.course || "",
+      course_link: shortlist.course_link || "",
+      intake: shortlist.intake || "",
+
+      submission_datetime:
+        savedApplication?.submission_datetime || "",
+
+      submitted_by:
+        savedApplication?.submitted_by || "",
+
+      application_status:
+        savedApplication?.application_status || "",
+
+      priority:
+        savedApplication?.priority ||
+        String(index + 1),
+
+      id: savedApplication?.id || null,
+      created_at: savedApplication?.created_at,
+      created_by: savedApplication?.created_by,
+    };
+  }
+);
+
+setApplicationForms(loadedApplications);
   
 }, [id]);
 
