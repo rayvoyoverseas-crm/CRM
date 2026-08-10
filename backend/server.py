@@ -1481,6 +1481,79 @@ async def add_application_record(
         "ok": True,
         "entry": entry,
     }
+
+@api.patch("/leads/{lead_id}/applications/{application_id}")
+async def update_application_record(
+    lead_id: str,
+    application_id: str,
+    payload: ApplicationRecordIn,
+    user: dict = Depends(get_current_user),
+):
+    q = {"_id": ObjectId(lead_id)}
+
+    if user.get("role") != "admin" and not (
+        user.get("permissions") or {}
+    ).get("see_all_leads"):
+        q["assigned_to"] = str(user["_id"])
+
+    lead = await db.leads.find_one(q)
+
+    if not lead:
+        raise HTTPException(
+            status_code=404,
+            detail="Lead not found",
+        )
+
+    application_records = lead.get(
+        "application_records",
+        [],
+    )
+
+    application_exists = any(
+        application.get("id") == application_id
+        for application in application_records
+    )
+
+    if not application_exists:
+        raise HTTPException(
+            status_code=404,
+            detail="Application record not found",
+        )
+
+    updated_application = {
+        "id": application_id,
+        "shortlist_id": payload.shortlist_id.strip(),
+        "country": payload.country.strip(),
+        "level_of_study": payload.level_of_study.strip(),
+        "university": payload.university.strip(),
+        "course": payload.course.strip(),
+        "course_link": payload.course_link.strip(),
+        "intake": payload.intake.strip(),
+        "submission_datetime": payload.submission_datetime.strip(),
+        "submitted_by": payload.submitted_by,
+        "application_status": payload.application_status,
+        "priority": payload.priority,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "updated_by": user.get("name", ""),
+    }
+
+    await db.leads.update_one(
+        {
+            "_id": ObjectId(lead_id),
+            "application_records.id": application_id,
+        },
+        {
+            "$set": {
+                "application_records.$": updated_application,
+                "updated_at": datetime.now(timezone.utc),
+            }
+        },
+    )
+
+    return {
+        "ok": True,
+        "entry": updated_application,
+    }
     
 @api.delete("/leads/{lead_id}")
 async def delete_lead(lead_id: str, admin: dict = Depends(require_admin)):
