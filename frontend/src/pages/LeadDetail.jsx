@@ -1653,83 +1653,118 @@ const uploadedDocumentCount = new Set(
         {/* Right column */}
         <div className="space-y-4">
 
-          {/* Notes */}
-  <div className="bg-white border border-stone-200 rounded-2xl p-4">
-    <div className="flex items-center gap-2 mb-3">
-      <MessageSquare className="w-4 h-4 text-[#C05B43]" />
+          {/* Notes & Follow-ups */}
+<div className="bg-white border border-stone-200 rounded-2xl p-4">
 
-      <div>
-        <h3 className="font-display font-semibold text-lg">
-          Notes
-        </h3>
+  <div className="flex items-center gap-2 mb-3">
+    <MessageSquare className="w-4 h-4 text-[#C05B43]" />
 
-        <p className="text-xs text-stone-400 mt-0.5">
-          Add a note for this lead
-        </p>
-      </div>
+    <div>
+      <h3 className="font-display font-semibold text-base">
+        Notes & Follow-ups
+      </h3>
+
+      <p className="text-[11px] text-stone-400 mt-0.5">
+        Notes, tasks and reminders for this lead
+      </p>
     </div>
+  </div>
 
-    <Textarea
-  value={note}
-  onChange={(event) => {
-    setNote(event.target.value);
-
-    event.target.style.height = "auto";
-    event.target.style.height =
-      event.target.scrollHeight + "px";
-  }}
-  placeholder="Write a note or update..."
-  rows={2}
-  className="min-h-[72px] resize-none overflow-hidden"
-  data-testid="note-input"
-/>
-
-    <Button
-      onClick={addNote}
-      disabled={!note.trim()}
-      className="w-full mt-3 bg-[#1B365D] hover:bg-[#152a4a]"
-      data-testid="add-note-button"
+  <div className="grid grid-cols-2 gap-1 bg-stone-100 rounded-lg p-1 mb-3">
+    <button
+      type="button"
+      onClick={() => setFollowupTab("notes")}
+      className={`rounded-md px-2 py-1.5 text-xs font-medium transition ${
+        followupTab === "notes"
+          ? "bg-white text-stone-900 shadow-sm"
+          : "text-stone-500 hover:text-stone-800"
+      }`}
     >
-      <MessageSquare className="w-4 h-4 mr-1" />
-      Add Note
-    </Button>
-    {(lead.activity || []).filter(
-  (item) => item.type === "note"
-).length > 0 && (
-  <div className="mt-4 border-t border-stone-200 pt-3">
-    <div className="text-xs font-semibold text-stone-500 mb-2">
-      Recent Notes
-    </div>
+      Notes
+    </button>
 
-    <div className="space-y-2">
-      {(lead.activity || [])
-        .filter((item) => item.type === "note")
-        .slice()
-        .reverse()
-        .map((item, index) => (
-          <div
-            key={index}
-            className="rounded-lg bg-stone-50 border border-stone-200 p-3"
-          >
-            <div className="text-sm text-stone-700 whitespace-pre-wrap">
-              {item.text}
-            </div>
+    <button
+      type="button"
+      onClick={() => setFollowupTab("tasks")}
+      className={`rounded-md px-2 py-1.5 text-xs font-medium transition ${
+        followupTab === "tasks"
+          ? "bg-white text-stone-900 shadow-sm"
+          : "text-stone-500 hover:text-stone-800"
+      }`}
+    >
+      Tasks & Reminders
+    </button>
+  </div>
 
-            <div className="mt-2 flex flex-wrap justify-between gap-2 text-[11px] text-stone-400">
-              <span>
-                {new Date(item.at).toLocaleString()}
-              </span>
+  {followupTab === "notes" && (
+    <div>
+      <Textarea
+        value={note}
+        onChange={(event) => {
+          setNote(event.target.value);
 
-              <span>
-                By {item.by || "Unknown"}
-              </span>
-            </div>
+          event.target.style.height = "auto";
+          event.target.style.height =
+            event.target.scrollHeight + "px";
+        }}
+        placeholder="Write a note..."
+        rows={2}
+        className="min-h-[64px] resize-none overflow-hidden"
+        data-testid="note-input"
+      />
+
+      <Button
+        onClick={addNote}
+        disabled={!note.trim()}
+        className="w-full mt-2 h-8 text-xs bg-[#1B365D] hover:bg-[#152a4a]"
+        data-testid="add-note-button"
+      >
+        <MessageSquare className="w-3.5 h-3.5 mr-1" />
+        Add Note
+      </Button>
+
+      {(lead.activity || []).filter(
+        (item) => item.type === "note"
+      ).length > 0 && (
+        <div className="mt-4 border-t border-stone-200 pt-3">
+
+          <div className="text-[11px] uppercase tracking-wider font-semibold text-stone-400 mb-2">
+            Recent Notes
           </div>
-        ))}
+
+          <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+            {(lead.activity || [])
+              .filter((item) => item.type === "note")
+              .slice()
+              .reverse()
+              .map((item, index) => (
+                <div
+                  key={index}
+                  className="rounded-lg border border-stone-200 bg-stone-50 p-2.5"
+                >
+                  <div className="text-xs text-stone-700 whitespace-pre-wrap">
+                    {item.text}
+                  </div>
+
+                  <div className="mt-1.5 text-[10px] text-stone-400">
+                    {new Date(item.at).toLocaleString()}
+                    {item.by && ` · ${item.by}`}
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+      )}
     </div>
-  </div>
-)}
-  </div>
+  )}
+
+  {followupTab === "tasks" && (
+    <div>
+      <LeadTasks leadId={lead.id} />
+    </div>
+  )}
+
+</div>
           
           {/* Current Stage*/}
           <div className="bg-white border border-stone-200 rounded-2xl p-4">
