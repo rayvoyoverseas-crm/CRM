@@ -6,22 +6,65 @@ import { Link } from "react-router-dom";
 
 export default function NotificationBell() {
   const [items, setItems] = useState([]);
-  const unread = items.filter((n) => !n.read).length;
+  const [soundPlayed, setSoundPlayed] = useState(false);
+
+  const unreadItems = items.filter((n) => !n.read);
+  const unread = unreadItems.length;
+  
+  const hasActiveReminder = unreadItems.some(
+    (n) =>
+      n.type === "task_reminder" ||
+      n.type === "reminder" ||
+      n.title?.toLowerCase().includes("reminder")
+  );
 
   const load = async () => {
     try { const { data } = await api.get("/notifications"); setItems(data); } catch (e) {}
   };
   useEffect(() => { load(); const iv = setInterval(load, 30000); return () => clearInterval(iv); }, []);
 
+    useEffect(() => {
+    if (hasActiveReminder && !soundPlayed) {
+      try {
+        const audio = new Audio("/notification.mp3");
+        audio.volume = 0.7;
+  
+        audio.play().catch(() => {
+          // Browser may block sound until the user interacts with the page.
+        });
+  
+        setSoundPlayed(true);
+      } catch (e) {
+        // Do nothing if audio cannot be played.
+      }
+    }
+  
+    if (!hasActiveReminder) {
+      setSoundPlayed(false);
+    }
+  }, [hasActiveReminder, soundPlayed]);
+
   const readAll = async () => { await api.post("/notifications/read-all"); load(); };
 
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <button data-testid="notification-bell" className="relative p-2 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors">
-          <Bell className="w-4 h-4" />
-          {unread > 0 && <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#C05B43]" />}
-        </button>
+      <button
+        data-testid="notification-bell"
+        className="relative p-2 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors"
+      >
+        <Bell
+          className={`w-4 h-4 ${
+            hasActiveReminder ? "animate-bell-ring text-[#C05B43]" : ""
+          }`}
+        />
+      
+        {unread > 0 && (
+          <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+            {unread > 99 ? "99+" : unread}
+          </span>
+        )}
+      </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0">
         <div className="flex items-center justify-between px-4 py-3 border-b border-stone-200">
