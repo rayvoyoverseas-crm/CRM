@@ -838,6 +838,7 @@ const uploadedDocumentCount = new Set(
 )}
     
   </div>
+  </div>
 </details>
 
           {/* Activity dropdown */}
