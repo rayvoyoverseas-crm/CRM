@@ -37,6 +37,7 @@ export default function LeadDetail() {
   const [leadDocs, setLeadDocs] = useState([]);
   const [users, setUsers] = useState([]);
   const [note, setNote] = useState("");
+  const [followupTab, setFollowupTab] = useState("notes");
   const [callForm, setCallForm] = useState({
   call_date: "",
   call_time: "",
