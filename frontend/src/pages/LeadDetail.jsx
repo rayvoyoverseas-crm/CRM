@@ -1670,34 +1670,44 @@ const uploadedDocumentCount = new Set(
     </div>
   </div>
 
-  <div className="grid grid-cols-2 gap-1 bg-stone-100 rounded-lg p-1 mb-3">
-    <button
+  <div className="grid grid-cols-2 gap-2 mb-4">
+    <Button
       type="button"
-      onClick={() => setFollowupTab("notes")}
-      className={`rounded-md px-2 py-1.5 text-xs font-medium transition ${
-        followupTab === "notes"
-          ? "bg-white text-stone-900 shadow-sm"
-          : "text-stone-500 hover:text-stone-800"
-      }`}
+      variant={followupForm === "note" ? "default" : "outline"}
+      onClick={() =>
+        setFollowupForm(
+          followupForm === "note" ? null : "note"
+        )
+      }
+      className={
+        followupForm === "note"
+          ? "h-9 text-xs bg-[#1B365D] hover:bg-[#152a4a]"
+          : "h-9 text-xs"
+      }
     >
-      Notes
-    </button>
+      + Note
+    </Button>
 
-    <button
+    <Button
       type="button"
-      onClick={() => setFollowupTab("tasks")}
-      className={`rounded-md px-2 py-1.5 text-xs font-medium transition ${
-        followupTab === "tasks"
-          ? "bg-white text-stone-900 shadow-sm"
-          : "text-stone-500 hover:text-stone-800"
-      }`}
+      variant={followupForm === "task" ? "default" : "outline"}
+      onClick={() =>
+        setFollowupForm(
+          followupForm === "task" ? null : "task"
+        )
+      }
+      className={
+        followupForm === "task"
+          ? "h-9 text-xs bg-[#C05B43] hover:bg-[#A64D37]"
+          : "h-9 text-xs"
+      }
     >
-      Tasks & Reminders
-    </button>
+      + New Task
+    </Button>
   </div>
 
-  {followupTab === "notes" && (
-    <div>
+  {followupForm === "note" && (
+    <div className="mb-4">
       <Textarea
         value={note}
         onChange={(event) => {
@@ -1713,54 +1723,70 @@ const uploadedDocumentCount = new Set(
         data-testid="note-input"
       />
 
-      <Button
-        onClick={addNote}
-        disabled={!note.trim()}
-        className="w-full mt-2 h-8 text-xs bg-[#1B365D] hover:bg-[#152a4a]"
-        data-testid="add-note-button"
-      >
-        <MessageSquare className="w-3.5 h-3.5 mr-1" />
-        Add Note
-      </Button>
+      <div className="flex gap-2 mt-2">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => {
+            setNote("");
+            setFollowupForm(null);
+          }}
+          className="flex-1 h-8 text-xs"
+        >
+          Cancel
+        </Button>
 
-      {(lead.activity || []).filter(
-        (item) => item.type === "note"
-      ).length > 0 && (
-        <div className="mt-4 border-t border-stone-200 pt-3">
-
-          <div className="text-[11px] uppercase tracking-wider font-semibold text-stone-400 mb-2">
-            Recent Notes
-          </div>
-
-          <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-            {(lead.activity || [])
-              .filter((item) => item.type === "note")
-              .slice()
-              .reverse()
-              .map((item, index) => (
-                <div
-                  key={index}
-                  className="rounded-lg border border-stone-200 bg-stone-50 p-2.5"
-                >
-                  <div className="text-xs text-stone-700 whitespace-pre-wrap">
-                    {item.text}
-                  </div>
-
-                  <div className="mt-1.5 text-[10px] text-stone-400">
-                    {new Date(item.at).toLocaleString()}
-                    {item.by && ` · ${item.by}`}
-                  </div>
-                </div>
-              ))}
-          </div>
-        </div>
-      )}
+        <Button
+          onClick={async () => {
+            await addNote();
+            setFollowupForm(null);
+          }}
+          disabled={!note.trim()}
+          className="flex-1 h-8 text-xs bg-[#1B365D] hover:bg-[#152a4a]"
+          data-testid="add-note-button"
+        >
+          Add Note
+        </Button>
+      </div>
     </div>
   )}
 
-  {followupTab === "tasks" && (
-    <div>
+  {followupForm === "task" && (
+    <div className="mb-4">
       <LeadTasks leadId={lead.id} />
+    </div>
+  )}
+
+  {(lead.activity || []).filter(
+    (item) => item.type === "note"
+  ).length > 0 && (
+    <div className="border-t border-stone-200 pt-3">
+
+      <div className="text-[11px] uppercase tracking-wider font-semibold text-stone-400 mb-2">
+        Recent Notes
+      </div>
+
+      <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+        {(lead.activity || [])
+          .filter((item) => item.type === "note")
+          .slice()
+          .reverse()
+          .map((item, index) => (
+            <div
+              key={index}
+              className="rounded-lg border border-stone-200 bg-stone-50 p-2.5"
+            >
+              <div className="text-xs text-stone-700 whitespace-pre-wrap">
+                {item.text}
+              </div>
+
+              <div className="mt-1.5 text-[10px] text-stone-400">
+                {new Date(item.at).toLocaleString()}
+                {item.by && ` · ${item.by}`}
+              </div>
+            </div>
+          ))}
+      </div>
     </div>
   )}
 
