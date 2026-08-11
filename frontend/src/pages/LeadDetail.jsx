@@ -1641,22 +1641,22 @@ const uploadedDocumentCount = new Set(
 
               </div>
 
-              {!application.id && (
-                <Button
-                  type="button"
-                  onClick={() =>
-                    saveApplicationRecord(index)
-                  }
-                  disabled={
-                    savingApplicationIndex === index
-                  }
-                  className="w-full mt-4 bg-[#1B365D] hover:bg-[#152a4a]"
-                >
-                  {savingApplicationIndex === index
-                    ? "Saving..."
+              <Button
+                type="button"
+                onClick={() =>
+                  saveApplicationRecord(index)
+                }
+                disabled={
+                  savingApplicationIndex === index
+                }
+                className="w-full mt-4 bg-[#1B365D] hover:bg-[#152a4a]"
+              >
+                {savingApplicationIndex === index
+                  ? "Saving..."
+                  : application.id
+                    ? `Update Application ${index + 1}`
                     : `Save Application ${index + 1}`}
-                </Button>
-              )}
+              </Button>
 
               {application.id && (
                 <div className="mt-4 text-xs text-green-700 font-medium">
