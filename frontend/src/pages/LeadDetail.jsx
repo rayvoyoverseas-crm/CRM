@@ -1692,6 +1692,42 @@ const uploadedDocumentCount = new Set(
       <MessageSquare className="w-4 h-4 mr-1" />
       Add Note
     </Button>
+    {(lead.activity || []).filter(
+  (item) => item.type === "note"
+).length > 0 && (
+  <div className="mt-4 border-t border-stone-200 pt-3">
+    <div className="text-xs font-semibold text-stone-500 mb-2">
+      Recent Notes
+    </div>
+
+    <div className="space-y-2">
+      {(lead.activity || [])
+        .filter((item) => item.type === "note")
+        .slice()
+        .reverse()
+        .map((item, index) => (
+          <div
+            key={index}
+            className="rounded-lg bg-stone-50 border border-stone-200 p-3"
+          >
+            <div className="text-sm text-stone-700 whitespace-pre-wrap">
+              {item.text}
+            </div>
+
+            <div className="mt-2 flex flex-wrap justify-between gap-2 text-[11px] text-stone-400">
+              <span>
+                {new Date(item.at).toLocaleString()}
+              </span>
+
+              <span>
+                By {item.by || "Unknown"}
+              </span>
+            </div>
+          </div>
+        ))}
+    </div>
+  </div>
+)}
   </div>
           
           {/* Current Stage*/}
