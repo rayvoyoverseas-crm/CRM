@@ -625,21 +625,7 @@ const uploadedDocumentCount = new Set(
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 space-y-5">
           <Tabs defaultValue="overview">
-          <TabsList className="mb-4">
-            <TabsTrigger
-              value="overview"
-              data-testid="tab-overview"
-            >
-              Overview
-            </TabsTrigger>
           
-            <TabsTrigger
-              value="application"
-              data-testid="tab-application"
-            >
-              Application
-            </TabsTrigger>
-          </TabsList>
 
             <TabsContent value="overview" className="space-y-5">
           {/* Header */}
@@ -700,6 +686,22 @@ const uploadedDocumentCount = new Set(
               </Button>
             </div>
           </div>
+
+  <TabsList className="mb-4">
+            <TabsTrigger
+              value="overview"
+              data-testid="tab-overview"
+            >
+              Overview
+            </TabsTrigger>
+          
+            <TabsTrigger
+              value="application"
+              data-testid="tab-application"
+            >
+              Application
+            </TabsTrigger>
+          </TabsList>
 
   {/* Call History dropdown */}
 <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
