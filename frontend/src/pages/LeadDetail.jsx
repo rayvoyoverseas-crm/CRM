@@ -841,101 +841,7 @@ const uploadedDocumentCount = new Set(
   </div>
 </details>
 
-          {/* Activity dropdown */}
-          <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
-            <summary className="cursor-pointer list-none flex items-center justify-between px-6 py-5 hover:bg-stone-50">
-              <div>
-                <h3 className="font-display font-semibold text-lg">
-                  Activity
-                </h3>
-                <p className="text-xs text-stone-400 mt-1">
-                  View updates and history for this lead
-                </p>
-              </div>
-
-              <span className="text-stone-500 text-sm transition-transform group-open:rotate-180">
-                ▼
-              </span>
-            </summary>
-
-            <div className="border-t border-stone-200 p-6">
-              <div className="space-y-3">
-                {(lead.activity || [])
-                  .slice()
-                  .reverse()
-                  .map((activity, index) => (
-                    <div
-                      key={index}
-                      className="border-l-2 border-[#C05B43]/30 pl-3 py-1"
-                    >
-                      <div className="text-[10px] uppercase tracking-widest text-stone-400 font-semibold">
-                        {activity.type.replace("_", " ")} · {activity.by}
-                      </div>
-
-                      <div className="text-sm text-stone-700 mt-0.5">
-                        {activity.text}
-                      </div>
-
-                      <div className="text-[11px] text-stone-400 mt-0.5">
-                        {new Date(activity.at).toLocaleString()}
-                      </div>
-                    </div>
-                  ))}
-
-                {(!lead.activity || lead.activity.length === 0) && (
-                  <div className="text-sm text-stone-400">
-                    No activity yet.
-                  </div>
-                )}
-              </div>
-            </div>
-          </details>
-        </TabsContent>
-            
-            {lead.pipeline === "loan" && <TabsContent value="loan"><LeadLoanInfo lead={lead} onUpdate={load} /></TabsContent>}
-          </Tabs>
-        </div>
-
-        {/* Right column */}
-        <div className="space-y-4">
-
-          {/* Notes */}
-  <div className="bg-white border border-stone-200 rounded-2xl p-6">
-    <div className="flex items-center gap-2 mb-4">
-      <MessageSquare className="w-4 h-4 text-[#C05B43]" />
-
-      <div>
-        <h3 className="font-display font-semibold text-lg">
-          Notes
-        </h3>
-
-        <p className="text-xs text-stone-400 mt-0.5">
-          Add a note for this lead
-        </p>
-      </div>
-    </div>
-
-    <Textarea
-      value={note}
-      onChange={(event) => setNote(event.target.value)}
-      placeholder="Write a note or update..."
-      rows={5}
-      data-testid="note-input"
-    />
-
-    <Button
-      onClick={addNote}
-      disabled={!note.trim()}
-      className="w-full mt-3 bg-[#1B365D] hover:bg-[#152a4a]"
-      data-testid="add-note-button"
-    >
-      <MessageSquare className="w-4 h-4 mr-1" />
-      Add Note
-    </Button>
-  </div>
-
-        
-          {/* Shortlisting */}
+{/* Shortlisting */}
 <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
   <summary className="cursor-pointer list-none flex items-center justify-between px-6 py-5 hover:bg-stone-50">
     <div>
@@ -1385,6 +1291,100 @@ const uploadedDocumentCount = new Set(
 </div>
 </div>
 </details>
+
+
+          {/* Activity dropdown */}
+          <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
+            <summary className="cursor-pointer list-none flex items-center justify-between px-6 py-5 hover:bg-stone-50">
+              <div>
+                <h3 className="font-display font-semibold text-lg">
+                  Activity
+                </h3>
+                <p className="text-xs text-stone-400 mt-1">
+                  View updates and history for this lead
+                </p>
+              </div>
+
+              <span className="text-stone-500 text-sm transition-transform group-open:rotate-180">
+                ▼
+              </span>
+            </summary>
+
+            <div className="border-t border-stone-200 p-6">
+              <div className="space-y-3">
+                {(lead.activity || [])
+                  .slice()
+                  .reverse()
+                  .map((activity, index) => (
+                    <div
+                      key={index}
+                      className="border-l-2 border-[#C05B43]/30 pl-3 py-1"
+                    >
+                      <div className="text-[10px] uppercase tracking-widest text-stone-400 font-semibold">
+                        {activity.type.replace("_", " ")} · {activity.by}
+                      </div>
+
+                      <div className="text-sm text-stone-700 mt-0.5">
+                        {activity.text}
+                      </div>
+
+                      <div className="text-[11px] text-stone-400 mt-0.5">
+                        {new Date(activity.at).toLocaleString()}
+                      </div>
+                    </div>
+                  ))}
+
+                {(!lead.activity || lead.activity.length === 0) && (
+                  <div className="text-sm text-stone-400">
+                    No activity yet.
+                  </div>
+                )}
+              </div>
+            </div>
+          </details>
+        </TabsContent>
+            
+            {lead.pipeline === "loan" && <TabsContent value="loan"><LeadLoanInfo lead={lead} onUpdate={load} /></TabsContent>}
+          </Tabs>
+        </div>
+
+        {/* Right column */}
+        <div className="space-y-4">
+
+          {/* Notes */}
+  <div className="bg-white border border-stone-200 rounded-2xl p-6">
+    <div className="flex items-center gap-2 mb-4">
+      <MessageSquare className="w-4 h-4 text-[#C05B43]" />
+
+      <div>
+        <h3 className="font-display font-semibold text-lg">
+          Notes
+        </h3>
+
+        <p className="text-xs text-stone-400 mt-0.5">
+          Add a note for this lead
+        </p>
+      </div>
+    </div>
+
+    <Textarea
+      value={note}
+      onChange={(event) => setNote(event.target.value)}
+      placeholder="Write a note or update..."
+      rows={5}
+      data-testid="note-input"
+    />
+
+    <Button
+      onClick={addNote}
+      disabled={!note.trim()}
+      className="w-full mt-3 bg-[#1B365D] hover:bg-[#152a4a]"
+      data-testid="add-note-button"
+    >
+      <MessageSquare className="w-4 h-4 mr-1" />
+      Add Note
+    </Button>
+  </div>
 
 {["RA", "AP", "OL", "RD", "DP", "VS", "EN"].includes(lead.stage) && (
   <div className="bg-white border border-stone-200 rounded-2xl p-6">
