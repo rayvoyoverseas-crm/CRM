@@ -1804,6 +1804,91 @@ const uploadedDocumentCount = new Set(
     </div>
   )}
 
+      {leadTasks.length > 0 && (
+        <div className="mt-4 border-t border-stone-200 pt-3">
+      
+          <div className="text-[11px] uppercase tracking-wider font-semibold text-stone-400 mb-2">
+            Tasks & Reminders
+          </div>
+      
+          <div className="space-y-2">
+            {leadTasks.map((task) => (
+              <div
+                key={task.id}
+                className={`flex items-start gap-3 rounded-xl border border-stone-200 p-3 ${
+                  task.status === "done"
+                    ? "bg-stone-50 opacity-60"
+                    : "bg-white"
+                }`}
+              >
+      
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (task.status === "done") return;
+      
+                    try {
+                      await api.patch(`/tasks/${task.id}`, {
+                        status: "done",
+                      });
+      
+                      toast.success("Task completed");
+                      await load();
+                    } catch (error) {
+                      toast.error("Unable to complete task");
+                    }
+                  }}
+                  className={`mt-0.5 w-5 h-5 rounded-full border-2 grid place-items-center shrink-0 ${
+                    task.status === "done"
+                      ? "bg-emerald-500 border-emerald-500"
+                      : "border-stone-300 hover:border-[#C05B43]"
+                  }`}
+                >
+                  {task.status === "done" && (
+                    <span className="text-white text-xs">
+                      ✓
+                    </span>
+                  )}
+                </button>
+      
+                <div className="flex-1 min-w-0">
+                  <div
+                    className={`text-sm font-semibold ${
+                      task.status === "done"
+                        ? "line-through text-stone-500"
+                        : "text-stone-800"
+                    }`}
+                  >
+                    {task.title}
+                  </div>
+      
+                  {task.description && (
+                    <div className="text-xs text-stone-500 mt-1">
+                      {task.description}
+                    </div>
+                  )}
+      
+                  <div className="text-[11px] text-stone-400 mt-1">
+                    Due: {new Date(task.due_at).toLocaleString()}
+                    {task.assigned_to_name &&
+                      ` · ${task.assigned_to_name}`}
+                  </div>
+      
+                  {task.remind_at && task.status !== "done" && (
+                    <div className="text-[11px] text-[#C05B43] mt-1">
+                      Reminder:{" "}
+                      {new Date(task.remind_at).toLocaleString()}
+                    </div>
+                  )}
+                </div>
+      
+              </div>
+            ))}
+          </div>
+      
+        </div>
+      )}
+
 </div>
           
           {/* Current Stage*/}
