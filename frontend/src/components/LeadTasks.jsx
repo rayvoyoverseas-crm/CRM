@@ -122,7 +122,7 @@ return (
     {open && (
       <form
         onSubmit={submit}
-        className="mb-4 grid grid-cols-2 gap-3 border-b border-stone-200 pb-4"
+        className="mb-4 grid grid-cols-2 gap-3 rounded-xl border border-stone-200 bg-stone-50 p-3"
       >
 
         <div className="col-span-2">
@@ -161,41 +161,54 @@ return (
           />
         </div>
 
-        <div className="col-span-2">
+        <div>
           <Label className="text-xs">
-            Due Date & Time
+            Due (date & time)
           </Label>
-
+        
           <Input
             type="datetime-local"
-            value={form.due_at}
-            onChange={(e) =>
+            value={
+              form.due_date && form.due_time
+                ? `${form.due_date}T${form.due_time}`
+                : ""
+            }
+            onChange={(e) => {
+              const [date, time] = e.target.value.split("T");
+        
               setForm({
                 ...form,
-                due_at: e.target.value,
-              })
-            }
+                due_date: date || "",
+                due_time: time || "",
+              });
+            }}
             data-testid="task-due"
           />
         </div>
-
-        <div className="col-span-2">
+        
+        <div>
           <Label className="text-xs">
-            Reminder Date & Time
+            Remind at (optional)
           </Label>
-
+        
           <Input
             type="datetime-local"
-            value={form.remind_at}
-            onChange={(e) =>
+            value={
+              form.reminder_date && form.reminder_time
+                ? `${form.reminder_date}T${form.reminder_time}`
+                : ""
+            }
+            onChange={(e) => {
+              const [date, time] = e.target.value.split("T");
+        
               setForm({
                 ...form,
-                remind_at: e.target.value,
-              })
-            }
+                reminder_date: date || "",
+                reminder_time: time || "",
+              });
+            }}
           />
         </div>
-
         <div className="col-span-2 flex justify-end gap-2">
 
           <Button
@@ -225,7 +238,7 @@ return (
         </div>
       </form>
     )}
-
+    {!compact && (
     <div className="space-y-2">
 
       {tasks.length === 0 && !open && (
