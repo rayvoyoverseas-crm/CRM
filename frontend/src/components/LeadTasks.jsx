@@ -15,7 +15,14 @@ export default function LeadTasks({
 }) {
   const [tasks, setTasks] = useState([]);
   const [open, setOpen] = useState(showForm);
-  const [form, setForm] = useState({ title: "", description: "", due_at: "", remind_at: "" });
+  const [form, setForm] = useState({
+  title: "",
+  description: "",
+  due_date: "",
+  due_time: "",
+  reminder_date: "",
+  reminder_time: "",
+});
 
   const load = useCallback(async () => {
   const { data } = await api.get("/tasks", {
@@ -37,19 +44,41 @@ useEffect(() => {
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!form.title || !form.due_at) { toast.error("Title & due date required"); return; }
+    if (
+  !form.title ||
+  !form.due_date ||
+  !form.due_time
+) {
+  toast.error("Title, due date and due time are required");
+  return;
+}
     try {
-      await api.post("/tasks", { lead_id: leadId, ...form, remind_at: form.remind_at || null });
+      const dueAt =
+  `${form.due_date}T${form.due_time}`;
+
+const remindAt =
+  form.reminder_date && form.reminder_time
+    ? `${form.reminder_date}T${form.reminder_time}`
+    : null;
+      await api.post("/tasks", {
+        lead_id: leadId,
+        title: form.title,
+        description: form.description,
+        due_at: dueAt,
+        remind_at: remindAt,
+      });
       toast.success("Task added");
       
       setOpen(false);
       
       setForm({
-        title: "",
-        description: "",
-        due_at: "",
-        remind_at: "",
-      });
+      title: "",
+      description: "",
+      due_date: "",
+      due_time: "",
+      reminder_date: "",
+      reminder_time: "",
+    });
       
       await load();
       
