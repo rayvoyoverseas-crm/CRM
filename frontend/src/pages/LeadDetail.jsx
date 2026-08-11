@@ -625,25 +625,21 @@ const uploadedDocumentCount = new Set(
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         <div className="lg:col-span-2 space-y-5">
           <Tabs defaultValue="overview">
-            <TabsList className="mb-3">
-  <TabsTrigger value="overview" data-testid="tab-overview">
-    Overview
-  </TabsTrigger>
-
-  <TabsTrigger value="tasks" data-testid="tab-tasks">
-    Tasks
-  </TabsTrigger>
-
-  <TabsTrigger value="referees" data-testid="tab-referees">
-    Referees
-  </TabsTrigger>
-
-  {lead.pipeline === "loan" && (
-    <TabsTrigger value="loan" data-testid="tab-loan">
-      Loan Info
-    </TabsTrigger>
-  )}
-</TabsList>
+          <TabsList className="mb-4">
+            <TabsTrigger
+              value="overview"
+              data-testid="tab-overview"
+            >
+              Overview
+            </TabsTrigger>
+          
+            <TabsTrigger
+              value="application"
+              data-testid="tab-application"
+            >
+              Application
+            </TabsTrigger>
+          </TabsList>
 
             <TabsContent value="overview" className="space-y-5">
           {/* Header */}
