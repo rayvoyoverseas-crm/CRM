@@ -1643,6 +1643,8 @@ const uploadedDocumentCount = new Set(
   </div>
 )}
             
+</TabsContent>
+            
             {lead.pipeline === "loan" && <TabsContent value="loan"><LeadLoanInfo lead={lead} onUpdate={load} /></TabsContent>}
           </Tabs>
         </div>
