@@ -701,33 +701,7 @@ const uploadedDocumentCount = new Set(
             </div>
           </div>
 
-          {/* Documents dropdown */}
-          <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
-            <summary className="cursor-pointer list-none flex items-center justify-between px-6 py-5 hover:bg-stone-50">
-              <div>
-                <h3 className="font-display font-semibold text-lg">
-                  Documents
-                </h3>
-                <p className="text-xs text-stone-400 mt-1">
-                  Upload and manage documents for this lead
-                </p>
-              </div>
-
-              <span className="text-stone-500 text-sm transition-transform group-open:rotate-180">
-                ▼
-              </span>
-            </summary>
-
-            <div className="border-t border-stone-200 p-6">
-              <LeadDocuments
-                lead={lead}
-                onUpdate={load}
-                mode={lead.pipeline === "loan" ? "loan" : "study"}
-              />
-            </div>
-          </details>
-
-{/* Call History dropdown */}
+  {/* Call History dropdown */}
 <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
   <summary className="cursor-pointer list-none flex items-center justify-between px-6 py-5 hover:bg-stone-50">
     <div className="flex items-center gap-2">
@@ -840,6 +814,33 @@ const uploadedDocumentCount = new Set(
   </div>
   </div>
 </details>
+
+
+          {/* Documents dropdown */}
+          <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
+            <summary className="cursor-pointer list-none flex items-center justify-between px-6 py-5 hover:bg-stone-50">
+              <div>
+                <h3 className="font-display font-semibold text-lg">
+                  Documents
+                </h3>
+                <p className="text-xs text-stone-400 mt-1">
+                  Upload and manage documents for this lead
+                </p>
+              </div>
+
+              <span className="text-stone-500 text-sm transition-transform group-open:rotate-180">
+                ▼
+              </span>
+            </summary>
+
+            <div className="border-t border-stone-200 p-6">
+              <LeadDocuments
+                lead={lead}
+                onUpdate={load}
+                mode={lead.pipeline === "loan" ? "loan" : "study"}
+              />
+            </div>
+          </details>
 
 {/* Shortlisting */}
 <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
