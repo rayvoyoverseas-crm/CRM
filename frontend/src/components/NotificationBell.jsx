@@ -16,6 +16,7 @@ export default function NotificationBell() {
   const unread = unreadItems.length;
   
   const hasActiveReminder = reminderTasks.length > 0;
+  const bellCount = unread + reminderTasks.length;
 
   const load = async () => {
   try {
@@ -28,41 +29,82 @@ export default function NotificationBell() {
     const now = new Date();
 
     const activeReminders = allTasks.filter((task) => {
-      if (task.status !== "pending") return false;
-      if (!task.remind_at) return false;
-
-      const reminderTime = new Date(task.remind_at);
-
-      return reminderTime <= now;
-    });
+     if (task.status !== "pending") return false;
+     if (!task.remind_at) return false;
+   
+     const currentUserId = user?.id || user?._id;
+   
+     if (
+       currentUserId &&
+       task.assigned_to &&
+       task.assigned_to !== currentUserId
+     ) {
+       return false;
+     }
+   
+     const reminderTime = new Date(task.remind_at);
+   
+     return reminderTime <= now;
+   });
 
     setReminderTasks(activeReminders);
   } catch (e) {
     setReminderTasks([]);
   }
 };
-  useEffect(() => { load(); const iv = setInterval(load, 30000); return () => clearInterval(iv); }, []);
 
-    useEffect(() => {
-    if (hasActiveReminder && !soundPlayed) {
-      try {
-        const audio = new Audio("/notification.mp3");
-        audio.volume = 0.7;
+  useEffect(() => {
+    load();
   
-        audio.play().catch(() => {
-          // Browser may block sound until the user interacts with the page.
-        });
+    const iv = setInterval(load, 5000);
   
-        setSoundPlayed(true);
-      } catch (e) {
-        // Do nothing if audio cannot be played.
-      }
-    }
-  
-    if (!hasActiveReminder) {
-      setSoundPlayed(false);
-    }
-  }, [hasActiveReminder, soundPlayed]);
+    return () => clearInterval(iv);
+  }, [user]);
+
+   useEffect(() => {
+     if (!hasActiveReminder) {
+       setSoundPlayed(false);
+       return;
+     }
+   
+     if (soundPlayed) return;
+   
+     try {
+       const AudioContext =
+         window.AudioContext || window.webkitAudioContext;
+   
+       const audioContext = new AudioContext();
+   
+       const oscillator = audioContext.createOscillator();
+       const gainNode = audioContext.createGain();
+   
+       oscillator.connect(gainNode);
+       gainNode.connect(audioContext.destination);
+   
+       oscillator.type = "sine";
+       oscillator.frequency.setValueAtTime(
+         880,
+         audioContext.currentTime
+       );
+   
+       gainNode.gain.setValueAtTime(
+         0.25,
+         audioContext.currentTime
+       );
+   
+       gainNode.gain.exponentialRampToValueAtTime(
+         0.01,
+         audioContext.currentTime + 0.7
+       );
+   
+       oscillator.start();
+       oscillator.stop(audioContext.currentTime + 0.7);
+   
+       setSoundPlayed(true);
+     } catch (e) {
+       // Browser may block sound before user interaction.
+     }
+   }, [hasActiveReminder, soundPlayed]);
 
   const readAll = async () => { await api.post("/notifications/read-all"); load(); };
 
@@ -79,11 +121,11 @@ export default function NotificationBell() {
           }`}
         />
       
-        {unread > 0 && (
-          <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
-            {unread > 99 ? "99+" : unread}
-          </span>
-        )}
+        {bellCount > 0 && (
+        <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+          {bellCount > 99 ? "99+" : bellCount}
+        </span>
+      )}
       </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0">
