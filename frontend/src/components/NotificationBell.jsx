@@ -3,24 +3,44 @@ import api from "@/lib/api";
 import { Bell } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
 
 export default function NotificationBell() {
+ const { user } = useAuth();
+  
   const [items, setItems] = useState([]);
+  const [reminderTasks, setReminderTasks] = useState([]);
   const [soundPlayed, setSoundPlayed] = useState(false);
 
   const unreadItems = items.filter((n) => !n.read);
   const unread = unreadItems.length;
   
-  const hasActiveReminder = unreadItems.some(
-    (n) =>
-      n.type === "task_reminder" ||
-      n.type === "reminder" ||
-      n.title?.toLowerCase().includes("reminder")
-  );
+  const hasActiveReminder = reminderTasks.length > 0;
 
   const load = async () => {
-    try { const { data } = await api.get("/notifications"); setItems(data); } catch (e) {}
-  };
+  try {
+    const notificationsResponse = await api.get("/notifications");
+    setItems(notificationsResponse.data || []);
+
+    const tasksResponse = await api.get("/tasks");
+    const allTasks = tasksResponse.data || [];
+
+    const now = new Date();
+
+    const activeReminders = allTasks.filter((task) => {
+      if (task.status !== "pending") return false;
+      if (!task.remind_at) return false;
+
+      const reminderTime = new Date(task.remind_at);
+
+      return reminderTime <= now;
+    });
+
+    setReminderTasks(activeReminders);
+  } catch (e) {
+    setReminderTasks([]);
+  }
+};
   useEffect(() => { load(); const iv = setInterval(load, 30000); return () => clearInterval(iv); }, []);
 
     useEffect(() => {
