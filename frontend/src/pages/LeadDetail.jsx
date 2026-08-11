@@ -1751,11 +1751,12 @@ const uploadedDocumentCount = new Set(
     </div>
   )}
 
-  {followupForm === "task" && (
-    <div className="mb-4">
-      <LeadTasks leadId={lead.id} />
-    </div>
-  )}
+  <LeadTasks
+  leadId={lead.id}
+  compact={true}
+  showForm={followupForm === "task"}
+  onCloseForm={() => setFollowupForm(null)}
+/>
 
   {(lead.activity || []).filter(
     (item) => item.type === "note"
