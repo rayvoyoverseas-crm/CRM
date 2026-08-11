@@ -101,6 +101,18 @@ const load = useCallback(async () => {
 
   setLead(data);
 
+  try {
+    const tasksResponse = await api.get("/tasks", {
+      params: {
+        lead_id: id,
+      },
+    });
+  
+    setLeadTasks(tasksResponse.data || []);
+  } catch (error) {
+    setLeadTasks([]);
+  }
+
   const docsResponse = await api.get(
   `/leads/${id}/documents`
 );
