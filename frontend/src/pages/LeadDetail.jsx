@@ -1653,8 +1653,8 @@ const uploadedDocumentCount = new Set(
         <div className="space-y-4">
 
           {/* Notes */}
-  <div className="bg-white border border-stone-200 rounded-2xl p-6">
-    <div className="flex items-center gap-2 mb-4">
+  <div className="bg-white border border-stone-200 rounded-2xl p-4">
+    <div className="flex items-center gap-2 mb-3">
       <MessageSquare className="w-4 h-4 text-[#C05B43]" />
 
       <div>
@@ -1669,12 +1669,19 @@ const uploadedDocumentCount = new Set(
     </div>
 
     <Textarea
-      value={note}
-      onChange={(event) => setNote(event.target.value)}
-      placeholder="Write a note or update..."
-      rows={5}
-      data-testid="note-input"
-    />
+  value={note}
+  onChange={(event) => {
+    setNote(event.target.value);
+
+    event.target.style.height = "auto";
+    event.target.style.height =
+      event.target.scrollHeight + "px";
+  }}
+  placeholder="Write a note or update..."
+  rows={2}
+  className="min-h-[72px] resize-none overflow-hidden"
+  data-testid="note-input"
+/>
 
     <Button
       onClick={addNote}
@@ -1688,7 +1695,7 @@ const uploadedDocumentCount = new Set(
   </div>
           
           {/* Current Stage*/}
-          <div className="bg-white border border-stone-200 rounded-2xl p-6">
+          <div className="bg-white border border-stone-200 rounded-2xl p-4">
             <div className="text-[11px] uppercase tracking-widest text-stone-400 font-semibold">
               Current Stage
             </div>
@@ -1719,7 +1726,7 @@ const uploadedDocumentCount = new Set(
           </div>
 
           {user?.role === "admin" && (
-            <div className="bg-white border border-stone-200 rounded-2xl p-6">
+            <div className="bg-white border border-stone-200 rounded-2xl p-4">
               <div className="text-[11px] uppercase tracking-widest text-stone-400 font-semibold">Assigned Counsellor</div>
               <div className="mt-3">
                 <Select value={lead.assigned_to || "__none__"} onValueChange={(v) => updateField({ assigned_to: v === "__none__" ? null : v })}>
