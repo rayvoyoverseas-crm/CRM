@@ -341,24 +341,39 @@ const saveApplicationRecord = async (index) => {
   try {
     setSavingApplicationIndex(index);
 
-    const { data } = await api.post(
-      `/leads/${id}/applications`,
-      application
-    );
+    let data;
+
+    if (application.id) {
+      // Existing application → UPDATE
+      const response = await api.patch(
+        `/leads/${id}/applications/${application.id}`,
+        application
+      );
+
+      data = response.data;
+    } else {
+      // New application → CREATE
+      const response = await api.post(
+        `/leads/${id}/applications`,
+        application
+      );
+
+      data = response.data;
+    }
 
     const updated = [...applicationForms];
 
     updated[index] = {
       ...application,
-      id: data.entry.id,
-      created_at: data.entry.created_at,
-      created_by: data.entry.created_by,
+      ...data.entry,
     };
 
     setApplicationForms(updated);
 
     toast.success(
-      `Application ${index + 1} saved`
+      application.id
+        ? `Application ${index + 1} updated`
+        : `Application ${index + 1} saved`
     );
 
     await load();
@@ -371,7 +386,7 @@ const saveApplicationRecord = async (index) => {
     setSavingApplicationIndex(null);
   }
 };
-
+  
   const updateShortlistField = (index, field, value) => {
   const updated = [...shortlistForms];
   updated[index][field] = value;
