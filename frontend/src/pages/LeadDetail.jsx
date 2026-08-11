@@ -777,9 +777,7 @@ const uploadedDocumentCount = new Set(
             </div>
           </details>
         </TabsContent>
-
-            <TabsContent value="tasks"><LeadTasks leadId={lead.id} /></TabsContent>
-            <TabsContent value="referees"><LeadReferees lead={lead} onUpdate={load} /></TabsContent>
+            
             {lead.pipeline === "loan" && <TabsContent value="loan"><LeadLoanInfo lead={lead} onUpdate={load} /></TabsContent>}
           </Tabs>
         </div>
