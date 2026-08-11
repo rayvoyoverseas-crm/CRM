@@ -626,8 +626,6 @@ const uploadedDocumentCount = new Set(
         <div className="lg:col-span-2 space-y-5">
           <Tabs defaultValue="overview">
           
-
-            <TabsContent value="overview" className="space-y-5">
           {/* Header */}
           <div className="bg-white border border-stone-200 rounded-2xl p-6">
             <div className="flex items-start gap-4">
@@ -702,6 +700,8 @@ const uploadedDocumentCount = new Set(
               Application
             </TabsTrigger>
           </TabsList>
+
+   <TabsContent value="overview" className="space-y-5">
 
   {/* Call History dropdown */}
 <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
