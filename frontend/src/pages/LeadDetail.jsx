@@ -1346,48 +1346,11 @@ const uploadedDocumentCount = new Set(
             </div>
           </details>
         </TabsContent>
-            
-            {lead.pipeline === "loan" && <TabsContent value="loan"><LeadLoanInfo lead={lead} onUpdate={load} /></TabsContent>}
-          </Tabs>
-        </div>
 
-        {/* Right column */}
-        <div className="space-y-4">
-
-          {/* Notes */}
-  <div className="bg-white border border-stone-200 rounded-2xl p-6">
-    <div className="flex items-center gap-2 mb-4">
-      <MessageSquare className="w-4 h-4 text-[#C05B43]" />
-
-      <div>
-        <h3 className="font-display font-semibold text-lg">
-          Notes
-        </h3>
-
-        <p className="text-xs text-stone-400 mt-0.5">
-          Add a note for this lead
-        </p>
-      </div>
-    </div>
-
-    <Textarea
-      value={note}
-      onChange={(event) => setNote(event.target.value)}
-      placeholder="Write a note or update..."
-      rows={5}
-      data-testid="note-input"
-    />
-
-    <Button
-      onClick={addNote}
-      disabled={!note.trim()}
-      className="w-full mt-3 bg-[#1B365D] hover:bg-[#152a4a]"
-      data-testid="add-note-button"
-    >
-      <MessageSquare className="w-4 h-4 mr-1" />
-      Add Note
-    </Button>
-  </div>
+          <TabsContent
+            value="application"
+            className="space-y-5"
+          >
 
 {["RA", "AP", "OL", "RD", "DP", "VS", "EN"].includes(lead.stage) && (
   <div className="bg-white border border-stone-200 rounded-2xl p-6">
@@ -1679,6 +1642,48 @@ const uploadedDocumentCount = new Set(
     )}
   </div>
 )}
+            
+            {lead.pipeline === "loan" && <TabsContent value="loan"><LeadLoanInfo lead={lead} onUpdate={load} /></TabsContent>}
+          </Tabs>
+        </div>
+
+        {/* Right column */}
+        <div className="space-y-4">
+
+          {/* Notes */}
+  <div className="bg-white border border-stone-200 rounded-2xl p-6">
+    <div className="flex items-center gap-2 mb-4">
+      <MessageSquare className="w-4 h-4 text-[#C05B43]" />
+
+      <div>
+        <h3 className="font-display font-semibold text-lg">
+          Notes
+        </h3>
+
+        <p className="text-xs text-stone-400 mt-0.5">
+          Add a note for this lead
+        </p>
+      </div>
+    </div>
+
+    <Textarea
+      value={note}
+      onChange={(event) => setNote(event.target.value)}
+      placeholder="Write a note or update..."
+      rows={5}
+      data-testid="note-input"
+    />
+
+    <Button
+      onClick={addNote}
+      disabled={!note.trim()}
+      className="w-full mt-3 bg-[#1B365D] hover:bg-[#152a4a]"
+      data-testid="add-note-button"
+    >
+      <MessageSquare className="w-4 h-4 mr-1" />
+      Add Note
+    </Button>
+  </div>
           
           {/* Current Stage*/}
           <div className="bg-white border border-stone-200 rounded-2xl p-6">
