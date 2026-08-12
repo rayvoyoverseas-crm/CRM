@@ -247,7 +247,14 @@ return (
         </div>
       )}
 
-      {tasks.map((t) => (
+      {[...tasks]
+        .sort((a, b) => {
+          if (a.status === "pending" && b.status !== "pending") return -1;
+          if (a.status !== "pending" && b.status === "pending") return 1;
+      
+          return new Date(b.created_at) - new Date(a.created_at);
+        })
+        .map((t) => (
         <div
           key={t.id}
           className={`flex items-start gap-3 rounded-xl border p-3 ${
