@@ -70,6 +70,43 @@ export default function NotificationBell() {
     };
   }, []);
 
+    useEffect(() => {
+     const unlockAudio = () => {
+       const audio = bellAudioRef.current;
+   
+       if (!audio) return;
+   
+       audio.volume = 0;
+   
+       audio
+         .play()
+         .then(() => {
+           audio.pause();
+           audio.currentTime = 0;
+           audio.volume = 0.8;
+   
+           document.removeEventListener("click", unlockAudio);
+           document.removeEventListener("keydown", unlockAudio);
+         })
+         .catch(() => {
+           audio.volume = 0.8;
+         });
+     };
+   
+     document.addEventListener("click", unlockAudio, {
+       once: true,
+     });
+   
+     document.addEventListener("keydown", unlockAudio, {
+       once: true,
+     });
+   
+     return () => {
+       document.removeEventListener("click", unlockAudio);
+       document.removeEventListener("keydown", unlockAudio);
+     };
+   }, []);
+
   useEffect(() => {
     load();
   
