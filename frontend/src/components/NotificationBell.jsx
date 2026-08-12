@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import api from "@/lib/api";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Link } from "react-router-dom";
@@ -10,6 +10,7 @@ export default function NotificationBell() {
   
   const [items, setItems] = useState([]);
   const [reminderTasks, setReminderTasks] = useState([]);
+  const bellAudioRef = useRef(null);
  
   const unreadItems = items.filter((n) => !n.read);
   const unread = unreadItems.length;
@@ -53,14 +54,31 @@ export default function NotificationBell() {
 };
 
   useEffect(() => {
+    const audio = new Audio("/notification-bell.mp3");
+  
+    audio.preload = "auto";
+    audio.volume = 0.8;
+    audio.load();
+  
+    bellAudioRef.current = audio;
+  
+    return () => {
+      if (bellAudioRef.current) {
+        bellAudioRef.current.pause();
+        bellAudioRef.current = null;
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     load();
   
-    const iv = setInterval(load, 5000);
+    const iv = setInterval(load, 1000);
   
     return () => clearInterval(iv);
   }, [user]);
 
-   useEffect(() => {
+    useEffect(() => {
      if (reminderTasks.length === 0) return;
    
      reminderTasks.forEach((task) => {
@@ -71,7 +89,7 @@ export default function NotificationBell() {
          `reminder-sound-${task.id}-${task.remind_at}`;
    
        // -------------------------
-       // SHOW POPUP ONLY ONCE
+       // POPUP - ONCE PER REMINDER
        // -------------------------
        const popupAlreadyShown =
          localStorage.getItem(popupKey);
@@ -92,24 +110,24 @@ export default function NotificationBell() {
        }
    
        // -------------------------
-       // PLAY SOUND ONLY ONCE
+       // SOUND - ONCE PER REMINDER
        // -------------------------
        const soundAlreadyPlayed =
          localStorage.getItem(soundKey);
    
        if (soundAlreadyPlayed) return;
    
-       try {
-         const audio =
-           new Audio("/notification-bell.mp3");
+       const audio = bellAudioRef.current;
    
-         audio.volume = 0.8;
-         audio.preload = "auto";
+       if (!audio) return;
+   
+       try {
+         audio.pause();
+         audio.currentTime = 0;
    
          audio
            .play()
            .then(() => {
-             // Mark as played ONLY after audio actually starts
              localStorage.setItem(
                soundKey,
                "played"
@@ -120,12 +138,18 @@ export default function NotificationBell() {
                "Reminder sound blocked:",
                error
              );
+   
+             // Important:
+             // Do NOT mark it as played if sound failed.
+             localStorage.removeItem(soundKey);
            });
        } catch (error) {
          console.log(
            "Unable to play reminder sound:",
            error
          );
+   
+         localStorage.removeItem(soundKey);
        }
      });
    }, [reminderTasks]);
