@@ -169,6 +169,7 @@ return (
         
           <Input
             type="datetime-local"
+            className="w-full"
             value={
               form.due_date && form.due_time
                 ? `${form.due_date}T${form.due_time}`
@@ -188,12 +189,13 @@ return (
         </div>
         
         <div>
-          <Label className="text-xs">
-            Remind at (optional)
-          </Label>
+          <Label className="text-xs whitespace-nowrap">
+              Remind at (optional)
+            </Label>
         
           <Input
             type="datetime-local"
+            className="w-full"
             value={
               form.reminder_date && form.reminder_time
                 ? `${form.reminder_date}T${form.reminder_time}`
