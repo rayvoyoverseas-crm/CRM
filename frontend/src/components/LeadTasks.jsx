@@ -161,8 +161,8 @@ return (
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-        <div>
+        <div className="grid grid-cols-2 gap-4 w-full">
+        <div className="min-w-0 w-full">
           <Label className="text-xs">
             Due (date & time)
           </Label>
@@ -188,7 +188,7 @@ return (
           />
         </div>
         
-        <div>
+       <div className="min-w-0 w-full">
           <Label className="text-xs whitespace-nowrap">
               Remind at (optional)
             </Label>
