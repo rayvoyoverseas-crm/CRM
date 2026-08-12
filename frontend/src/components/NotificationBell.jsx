@@ -145,7 +145,12 @@ export default function NotificationBell() {
                 Active Reminders
               </div>
         
-              {reminderTasks.map((task) => (
+                {[...reminderTasks]
+                .sort(
+                  (a, b) =>
+                    new Date(b.remind_at) - new Date(a.remind_at)
+                )
+                .map((task) => (
                 <Link
                   key={`reminder-${task.id}`}
                   to={`/lead/${task.lead_id}`}
@@ -185,7 +190,12 @@ export default function NotificationBell() {
                 Notifications
               </div>
         
-              {items.map((n) => (
+                {[...items]
+                .sort(
+                  (a, b) =>
+                    new Date(b.created_at) - new Date(a.created_at)
+                )
+                .map((n) => (
                 <Link
                   key={n.id}
                   to={n.link || "#"}
