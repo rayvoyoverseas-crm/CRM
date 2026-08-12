@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from "react";
 import api from "@/lib/api";
-import { Bell } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
 
 export default function NotificationBell() {
  const { user } = useAuth();
   
   const [items, setItems] = useState([]);
   const [reminderTasks, setReminderTasks] = useState([]);
-  const [soundPlayed, setSoundPlayed] = useState(false);
-
+ 
   const unreadItems = items.filter((n) => !n.read);
   const unread = unreadItems.length;
   
@@ -62,49 +61,44 @@ export default function NotificationBell() {
   }, [user]);
 
    useEffect(() => {
-     if (!hasActiveReminder) {
-       setSoundPlayed(false);
-       return;
-     }
+     if (reminderTasks.length === 0) return;
    
-     if (soundPlayed) return;
+     reminderTasks.forEach((task) => {
+       const reminderKey =
+         `reminder-alert-${task.id}-${task.remind_at}`;
    
-     try {
-       const AudioContext =
-         window.AudioContext || window.webkitAudioContext;
+       const alreadyAlerted =
+         localStorage.getItem(reminderKey);
    
-       const audioContext = new AudioContext();
+       if (alreadyAlerted) return;
    
-       const oscillator = audioContext.createOscillator();
-       const gainNode = audioContext.createGain();
+       localStorage.setItem(reminderKey, "played");
    
-       oscillator.connect(gainNode);
-       gainNode.connect(audioContext.destination);
+       toast(`🔔 Reminder: ${task.title}`, {
+         description: task.lead_name
+           ? `${task.lead_name} · ${new Date(
+               task.remind_at
+             ).toLocaleString()}`
+           : new Date(
+               task.remind_at
+             ).toLocaleString(),
+         duration: 8000,
+       });
    
-       oscillator.type = "sine";
-       oscillator.frequency.setValueAtTime(
-         880,
-         audioContext.currentTime
-       );
+       try {
+         const audio =
+           new Audio("/notification-bell.mp3");
    
-       gainNode.gain.setValueAtTime(
-         0.25,
-         audioContext.currentTime
-       );
+         audio.volume = 0.8;
    
-       gainNode.gain.exponentialRampToValueAtTime(
-         0.01,
-         audioContext.currentTime + 0.7
-       );
-   
-       oscillator.start();
-       oscillator.stop(audioContext.currentTime + 0.7);
-   
-       setSoundPlayed(true);
-     } catch (e) {
-       // Browser may block sound before user interaction.
-     }
-   }, [hasActiveReminder, soundPlayed]);
+         audio.play().catch(() => {
+           // Browser may block sound until user interacts with the page.
+         });
+       } catch (e) {
+         // Ignore audio errors.
+       }
+     });
+   }, [reminderTasks]);
 
   const readAll = async () => { await api.post("/notifications/read-all"); load(); };
 
