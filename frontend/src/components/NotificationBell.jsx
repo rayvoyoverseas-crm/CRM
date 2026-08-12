@@ -134,14 +134,88 @@ export default function NotificationBell() {
           {unread > 0 && <button onClick={readAll} className="text-[11px] text-[#C05B43] font-semibold">Mark all read</button>}
         </div>
         <div className="max-h-96 overflow-y-auto">
-          {items.length === 0 && <div className="text-xs text-stone-400 text-center py-8">You're all caught up.</div>}
-          {items.map((n) => (
-            <Link key={n.id} to={n.link || "#"} onClick={() => api.post(`/notifications/${n.id}/read`).then(load)} className={`block px-4 py-3 border-b border-stone-100 hover:bg-stone-50 ${!n.read ? "bg-[#C05B43]/5" : ""}`}>
-              <div className="text-xs font-semibold text-stone-800">{n.title}</div>
-              <div className="text-[11px] text-stone-600 mt-0.5">{n.body}</div>
-              <div className="text-[10px] text-stone-400 mt-1">{new Date(n.created_at).toLocaleString()}</div>
-            </Link>
-          ))}
+        
+          {reminderTasks.length > 0 && (
+            <div>
+              <div className="px-4 py-2 text-[10px] uppercase tracking-wider font-semibold text-stone-400 bg-stone-50 border-b border-stone-100">
+                Active Reminders
+              </div>
+        
+              {reminderTasks.map((task) => (
+                <Link
+                  key={`reminder-${task.id}`}
+                  to={`/lead/${task.lead_id}`}
+                  className="block px-4 py-3 border-b border-stone-100 bg-[#C05B43]/5 hover:bg-[#C05B43]/10"
+                >
+                  <div className="text-xs font-semibold text-stone-800">
+                    Reminder: {task.title}
+                  </div>
+        
+                  {task.lead_name && (
+                    <div className="text-[11px] text-stone-600 mt-0.5">
+                      {task.lead_name}
+                    </div>
+                  )}
+        
+                  {task.remind_at && (
+                    <div className="text-[10px] text-[#C05B43] mt-1">
+                      Reminder time:{" "}
+                      {new Date(task.remind_at).toLocaleString()}
+                    </div>
+                  )}
+        
+                  {task.due_at && (
+                    <div className="text-[10px] text-stone-400 mt-0.5">
+                      Due:{" "}
+                      {new Date(task.due_at).toLocaleString()}
+                    </div>
+                  )}
+                </Link>
+              ))}
+            </div>
+          )}
+        
+          {items.length > 0 && (
+            <div>
+              <div className="px-4 py-2 text-[10px] uppercase tracking-wider font-semibold text-stone-400 bg-stone-50 border-b border-stone-100">
+                Notifications
+              </div>
+        
+              {items.map((n) => (
+                <Link
+                  key={n.id}
+                  to={n.link || "#"}
+                  onClick={() =>
+                    api
+                      .post(`/notifications/${n.id}/read`)
+                      .then(load)
+                  }
+                  className={`block px-4 py-3 border-b border-stone-100 hover:bg-stone-50 ${
+                    !n.read ? "bg-[#C05B43]/5" : ""
+                  }`}
+                >
+                  <div className="text-xs font-semibold text-stone-800">
+                    {n.title}
+                  </div>
+        
+                  <div className="text-[11px] text-stone-600 mt-0.5">
+                    {n.body}
+                  </div>
+        
+                  <div className="text-[10px] text-stone-400 mt-1">
+                    {new Date(n.created_at).toLocaleString()}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        
+          {reminderTasks.length === 0 && items.length === 0 && (
+            <div className="text-xs text-stone-400 text-center py-8">
+              You're all caught up.
+            </div>
+          )}
+        
         </div>
       </PopoverContent>
     </Popover>
