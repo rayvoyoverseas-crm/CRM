@@ -109,13 +109,21 @@ export default function NotificationBell() {
         data-testid="notification-bell"
         className="relative p-2 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-stone-100 transition-colors"
       >
-        <span
-         className={`inline-block text-[20px] leading-none ${
-           hasActiveReminder ? "animate-bell-ring" : ""
-         }`}
-       >
-         🔔
-       </span>
+       <span
+        className={`inline-block text-[20px] leading-none ${
+          bellCount > 0
+            ? "animate-bell-ring"
+            : ""
+        }`}
+        style={{
+          filter:
+            bellCount > 0
+              ? "hue-rotate(300deg) saturate(5) brightness(0.95)"
+              : "none",
+        }}
+      >
+        🔔
+      </span>
       
         {bellCount > 0 && (
         <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
