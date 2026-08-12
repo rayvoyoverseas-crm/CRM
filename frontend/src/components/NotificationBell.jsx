@@ -59,46 +59,54 @@ export default function NotificationBell() {
   }
 };
 
-   useEffect(() => {
-     let cancelled = false;
-   
-     const prepareBellSound = async () => {
-       try {
-         const AudioContext =
-           window.AudioContext || window.webkitAudioContext;
-   
-         const audioContext = new AudioContext();
-   
-         audioContextRef.current = audioContext;
-   
-         const response = await fetch("/notification-bell.mp3");
-         const arrayBuffer = await response.arrayBuffer();
-   
-         const audioBuffer =
-           await audioContext.decodeAudioData(arrayBuffer);
-   
-         if (!cancelled) {
-           bellBufferRef.current = audioBuffer;
-         }
-       } catch (error) {
-         console.log("Unable to prepare bell sound:", error);
-       }
-     };
-   
-     prepareBellSound();
-   
-     return () => {
-       cancelled = true;
-   
-       if (audioContextRef.current) {
-         audioContextRef.current.close().catch(() => {});
-         audioContextRef.current = null;
-       }
-   
-       bellBufferRef.current = null;
-     };
-   }, []);
-
+  useEffect(() => {
+    const unlockAudio = async () => {
+      try {
+        const AudioContext =
+          window.AudioContext || window.webkitAudioContext;
+  
+        if (!AudioContext) return;
+  
+        // Create the AudioContext only after the user interacts
+        if (!audioContextRef.current) {
+          audioContextRef.current = new AudioContext();
+        }
+  
+        const audioContext = audioContextRef.current;
+  
+        if (audioContext.state === "suspended") {
+          await audioContext.resume();
+        }
+  
+        // Load the bell sound after the AudioContext is unlocked
+        if (!bellBufferRef.current) {
+          const response = await fetch("/notification-bell.mp3");
+          const arrayBuffer = await response.arrayBuffer();
+  
+          bellBufferRef.current =
+            await audioContext.decodeAudioData(arrayBuffer);
+        }
+  
+        // We only need the first user interaction
+        document.removeEventListener("click", unlockAudio);
+        document.removeEventListener("keydown", unlockAudio);
+        document.removeEventListener("touchstart", unlockAudio);
+  
+      } catch (error) {
+        console.log("Unable to unlock reminder audio:", error);
+      }
+    };
+  
+    document.addEventListener("click", unlockAudio);
+    document.addEventListener("keydown", unlockAudio);
+    document.addEventListener("touchstart", unlockAudio);
+  
+    return () => {
+      document.removeEventListener("click", unlockAudio);
+      document.removeEventListener("keydown", unlockAudio);
+      document.removeEventListener("touchstart", unlockAudio);
+    };
+  }, []);
     useEffect(() => {
      const unlockAudio = async () => {
        const audioContext = audioContextRef.current;
