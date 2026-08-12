@@ -161,7 +161,7 @@ return (
           />
         </div>
 
-        <div className="col-span-2 grid grid-cols-2 gap-4 w-full">
+        <div className="col-span-2 grid grid-cols-1 gap-3 w-full">
         <div className="min-w-0 w-full">
           <Label className="text-xs">
             Due (date & time)
