@@ -161,6 +161,7 @@ return (
           />
         </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label className="text-xs">
             Due (date & time)
@@ -209,6 +210,8 @@ return (
             }}
           />
         </div>
+
+      </div>
         <div className="col-span-2 flex justify-end gap-2">
 
           <Button
