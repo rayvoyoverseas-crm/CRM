@@ -11,6 +11,7 @@ export default function NotificationBell() {
   const [items, setItems] = useState([]);
   const [reminderTasks, setReminderTasks] = useState([]);
   const bellAudioRef = useRef(null);
+  const triggeredRemindersRef = useRef(new Set());
  
   const unreadItems = items.filter((n) => !n.read);
   const unread = unreadItems.length;
@@ -46,6 +47,10 @@ export default function NotificationBell() {
    
      return reminderTime <= now;
    });
+
+    activeReminders.forEach((task) => {
+      triggerReminder(task);
+    });
 
     setReminderTasks(activeReminders);
   } catch (e) {
@@ -107,6 +112,70 @@ export default function NotificationBell() {
      };
    }, []);
 
+    const triggerReminder = (task) => {
+     const reminderKey =
+       `${task.id}-${task.remind_at}`;
+   
+     // Prevent the same reminder from firing twice
+     if (
+       triggeredRemindersRef.current.has(reminderKey) ||
+       localStorage.getItem(`reminder-fired-${reminderKey}`)
+     ) {
+       return;
+     }
+   
+     triggeredRemindersRef.current.add(reminderKey);
+     localStorage.setItem(
+       `reminder-fired-${reminderKey}`,
+       "true"
+     );
+   
+     // Popup and sound are triggered together
+     toast(`🔔 Reminder: ${task.title}`, {
+       description: task.lead_name
+         ? `${task.lead_name} · ${new Date(
+             task.remind_at
+           ).toLocaleString()}`
+         : new Date(
+             task.remind_at
+           ).toLocaleString(),
+       duration: 8000,
+     });
+   
+     const audio = bellAudioRef.current;
+   
+     if (!audio) return;
+   
+     try {
+       audio.pause();
+       audio.currentTime = 0;
+       audio.volume = 0.8;
+   
+       audio.play().catch((error) => {
+         console.log(
+           "Reminder sound could not play:",
+           error
+         );
+   
+         // Allow another attempt if browser blocked it
+         triggeredRemindersRef.current.delete(reminderKey);
+         localStorage.removeItem(
+           `reminder-fired-${reminderKey}`
+         );
+       });
+     } catch (error) {
+       console.log(
+         "Reminder sound error:",
+         error
+       );
+   
+       triggeredRemindersRef.current.delete(reminderKey);
+       localStorage.removeItem(
+         `reminder-fired-${reminderKey}`
+       );
+     }
+   };
+
   useEffect(() => {
     load();
   
@@ -114,82 +183,6 @@ export default function NotificationBell() {
   
     return () => clearInterval(iv);
   }, [user]);
-
-    useEffect(() => {
-     if (reminderTasks.length === 0) return;
-   
-     reminderTasks.forEach((task) => {
-       const popupKey =
-         `reminder-popup-${task.id}-${task.remind_at}`;
-   
-       const soundKey =
-         `reminder-sound-${task.id}-${task.remind_at}`;
-   
-       // -------------------------
-       // POPUP - ONCE PER REMINDER
-       // -------------------------
-       const popupAlreadyShown =
-         localStorage.getItem(popupKey);
-   
-       if (!popupAlreadyShown) {
-         localStorage.setItem(popupKey, "shown");
-   
-         toast(`🔔 Reminder: ${task.title}`, {
-           description: task.lead_name
-             ? `${task.lead_name} · ${new Date(
-                 task.remind_at
-               ).toLocaleString()}`
-             : new Date(
-                 task.remind_at
-               ).toLocaleString(),
-           duration: 8000,
-         });
-       }
-   
-       // -------------------------
-       // SOUND - ONCE PER REMINDER
-       // -------------------------
-       const soundAlreadyPlayed =
-         localStorage.getItem(soundKey);
-   
-       if (soundAlreadyPlayed) return;
-   
-       const audio = bellAudioRef.current;
-   
-       if (!audio) return;
-   
-       try {
-         audio.pause();
-         audio.currentTime = 0;
-   
-         audio
-           .play()
-           .then(() => {
-             localStorage.setItem(
-               soundKey,
-               "played"
-             );
-           })
-           .catch((error) => {
-             console.log(
-               "Reminder sound blocked:",
-               error
-             );
-   
-             // Important:
-             // Do NOT mark it as played if sound failed.
-             localStorage.removeItem(soundKey);
-           });
-       } catch (error) {
-         console.log(
-           "Unable to play reminder sound:",
-           error
-         );
-   
-         localStorage.removeItem(soundKey);
-       }
-     });
-   }, [reminderTasks]);
  
   const readAll = async () => { await api.post("/notifications/read-all"); load(); };
 
