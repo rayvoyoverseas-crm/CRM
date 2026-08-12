@@ -1812,7 +1812,14 @@ const uploadedDocumentCount = new Set(
           </div>
       
           <div className="space-y-2">
-            {leadTasks.map((task) => (
+            {[...leadTasks]
+            .sort((a, b) => {
+              if (a.status === "pending" && b.status !== "pending") return -1;
+              if (a.status !== "pending" && b.status === "pending") return 1;
+          
+              return new Date(b.created_at) - new Date(a.created_at);
+            })
+            .map((task) => (
               <div
                 key={task.id}
                 className={`flex items-start gap-3 rounded-xl border border-stone-200 p-3 ${
