@@ -10,7 +10,8 @@ export default function NotificationBell() {
   
   const [items, setItems] = useState([]);
   const [reminderTasks, setReminderTasks] = useState([]);
-  const bellAudioRef = useRef(null);
+  const audioContextRef = useRef(null);
+  const bellBufferRef = useRef(null);
   const triggeredRemindersRef = useRef(new Set());
  
   const unreadItems = items.filter((n) => !n.read);
@@ -58,57 +59,73 @@ export default function NotificationBell() {
   }
 };
 
-  useEffect(() => {
-    const audio = new Audio("/notification-bell.mp3");
-  
-    audio.preload = "auto";
-    audio.volume = 0.8;
-    audio.load();
-  
-    bellAudioRef.current = audio;
-  
-    return () => {
-      if (bellAudioRef.current) {
-        bellAudioRef.current.pause();
-        bellAudioRef.current = null;
-      }
-    };
-  }, []);
-
-    useEffect(() => {
-     const unlockAudio = () => {
-       const audio = bellAudioRef.current;
+   useEffect(() => {
+     let cancelled = false;
    
-       if (!audio) return;
+     const prepareBellSound = async () => {
+       try {
+         const AudioContext =
+           window.AudioContext || window.webkitAudioContext;
    
-       audio.volume = 0;
+         const audioContext = new AudioContext();
    
-       audio
-         .play()
-         .then(() => {
-           audio.pause();
-           audio.currentTime = 0;
-           audio.volume = 0.8;
+         audioContextRef.current = audioContext;
    
-           document.removeEventListener("click", unlockAudio);
-           document.removeEventListener("keydown", unlockAudio);
-         })
-         .catch(() => {
-           audio.volume = 0.8;
-         });
+         const response = await fetch("/notification-bell.mp3");
+         const arrayBuffer = await response.arrayBuffer();
+   
+         const audioBuffer =
+           await audioContext.decodeAudioData(arrayBuffer);
+   
+         if (!cancelled) {
+           bellBufferRef.current = audioBuffer;
+         }
+       } catch (error) {
+         console.log("Unable to prepare bell sound:", error);
+       }
      };
    
-     document.addEventListener("click", unlockAudio, {
-       once: true,
-     });
+     prepareBellSound();
    
-     document.addEventListener("keydown", unlockAudio, {
-       once: true,
-     });
+     return () => {
+       cancelled = true;
+   
+       if (audioContextRef.current) {
+         audioContextRef.current.close().catch(() => {});
+         audioContextRef.current = null;
+       }
+   
+       bellBufferRef.current = null;
+     };
+   }, []);
+
+    useEffect(() => {
+     const unlockAudio = async () => {
+       const audioContext = audioContextRef.current;
+   
+       if (!audioContext) return;
+   
+       try {
+         if (audioContext.state === "suspended") {
+           await audioContext.resume();
+         }
+   
+         document.removeEventListener("click", unlockAudio);
+         document.removeEventListener("keydown", unlockAudio);
+         document.removeEventListener("touchstart", unlockAudio);
+       } catch (error) {
+         console.log("Unable to unlock reminder audio:", error);
+       }
+     };
+   
+     document.addEventListener("click", unlockAudio);
+     document.addEventListener("keydown", unlockAudio);
+     document.addEventListener("touchstart", unlockAudio);
    
      return () => {
        document.removeEventListener("click", unlockAudio);
        document.removeEventListener("keydown", unlockAudio);
+       document.removeEventListener("touchstart", unlockAudio);
      };
    }, []);
 
@@ -142,38 +159,64 @@ export default function NotificationBell() {
        duration: 8000,
      });
    
-     const audio = bellAudioRef.current;
+   const audioContext = audioContextRef.current;
+   const bellBuffer = bellBufferRef.current;
    
-     if (!audio) return;
+   if (!audioContext || !bellBuffer) {
+     triggeredRemindersRef.current.delete(reminderKey);
    
-     try {
-       audio.pause();
-       audio.currentTime = 0;
-       audio.volume = 0.8;
+     localStorage.removeItem(
+       `reminder-fired-${reminderKey}`
+     );
    
-       audio.play().catch((error) => {
-         console.log(
-           "Reminder sound could not play:",
-           error
-         );
+     return;
+   }
    
-         // Allow another attempt if browser blocked it
-         triggeredRemindersRef.current.delete(reminderKey);
-         localStorage.removeItem(
-           `reminder-fired-${reminderKey}`
-         );
-       });
-     } catch (error) {
-       console.log(
-         "Reminder sound error:",
-         error
-       );
+   try {
+     const playBell = () => {
+       const source = audioContext.createBufferSource();
+       const gainNode = audioContext.createGain();
    
-       triggeredRemindersRef.current.delete(reminderKey);
-       localStorage.removeItem(
-         `reminder-fired-${reminderKey}`
-       );
+       source.buffer = bellBuffer;
+       gainNode.gain.value = 0.8;
+   
+       source.connect(gainNode);
+       gainNode.connect(audioContext.destination);
+   
+       source.start(0);
+     };
+   
+     if (audioContext.state === "suspended") {
+       audioContext
+         .resume()
+         .then(playBell)
+         .catch((error) => {
+           console.log(
+             "Reminder sound blocked:",
+             error
+           );
+   
+           triggeredRemindersRef.current.delete(reminderKey);
+   
+           localStorage.removeItem(
+             `reminder-fired-${reminderKey}`
+           );
+         });
+     } else {
+       playBell();
      }
+   } catch (error) {
+     console.log(
+       "Reminder sound error:",
+       error
+     );
+   
+     triggeredRemindersRef.current.delete(reminderKey);
+   
+     localStorage.removeItem(
+       `reminder-fired-${reminderKey}`
+     );
+   }
    };
 
   useEffect(() => {
