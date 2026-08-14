@@ -167,65 +167,58 @@ export default function NotificationBell() {
        duration: 8000,
      });
    
-   const audioContext = audioContextRef.current;
-   const bellBuffer = bellBufferRef.current;
+     const playReminderSound = async () => {
+     try {
+       let audioContext = audioContextRef.current;
    
-   if (!audioContext || !bellBuffer) {
-     triggeredRemindersRef.current.delete(reminderKey);
+       if (!audioContext) {
+         const AudioContext =
+           window.AudioContext || window.webkitAudioContext;
    
-     localStorage.removeItem(
-       `reminder-fired-${reminderKey}`
-     );
+         if (!AudioContext) {
+           console.log("Web Audio API not supported");
+           return;
+         }
    
-     return;
-   }
+         audioContext = new AudioContext();
+         audioContextRef.current = audioContext;
+       }
    
-   try {
-     const playBell = () => {
+       if (audioContext.state === "suspended") {
+         await audioContext.resume();
+       }
+   
+       if (!bellBufferRef.current) {
+         const response = await fetch("/notification-bell.mp3");
+         const arrayBuffer = await response.arrayBuffer();
+   
+         bellBufferRef.current =
+           await audioContext.decodeAudioData(arrayBuffer);
+       }
+   
        const source = audioContext.createBufferSource();
        const gainNode = audioContext.createGain();
    
-       source.buffer = bellBuffer;
+       source.buffer = bellBufferRef.current;
        gainNode.gain.value = 0.8;
    
        source.connect(gainNode);
        gainNode.connect(audioContext.destination);
    
        source.start(0);
-     };
    
-     if (audioContext.state === "suspended") {
-       audioContext
-         .resume()
-         .then(playBell)
-         .catch((error) => {
-           console.log(
-             "Reminder sound blocked:",
-             error
-           );
+     } catch (error) {
+       console.log("Reminder sound error:", error);
    
-           triggeredRemindersRef.current.delete(reminderKey);
+       triggeredRemindersRef.current.delete(reminderKey);
    
-           localStorage.removeItem(
-             `reminder-fired-${reminderKey}`
-           );
-         });
-     } else {
-       playBell();
+       localStorage.removeItem(
+         `reminder-fired-${reminderKey}`
+       );
      }
-   } catch (error) {
-     console.log(
-       "Reminder sound error:",
-       error
-     );
-   
-     triggeredRemindersRef.current.delete(reminderKey);
-   
-     localStorage.removeItem(
-       `reminder-fired-${reminderKey}`
-     );
-   }
    };
+   
+   playReminderSound();
 
   useEffect(() => {
     load();
