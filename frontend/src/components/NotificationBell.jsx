@@ -209,12 +209,6 @@ export default function NotificationBell() {
    
      } catch (error) {
        console.log("Reminder sound error:", error);
-   
-       triggeredRemindersRef.current.delete(reminderKey);
-   
-       localStorage.removeItem(
-         `reminder-fired-${reminderKey}`
-       );
      }
    };
    
