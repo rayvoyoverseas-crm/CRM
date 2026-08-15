@@ -15,8 +15,7 @@ export default function NotificationBell() {
   const [items, setItems] = useState([]);
   const [reminderTasks, setReminderTasks] = useState([]);
 
-  const audioContextRef = useRef(null);
-  const bellBufferRef = useRef(null);
+  const bellAudioRef = useRef(null);
   const audioLoadingRef = useRef(false);
 
   // Prevents the same reminder from firing more than once.
