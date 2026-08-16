@@ -985,6 +985,54 @@ async def update_lead(
                         "moving this lead to Application."
                     ),
                 )
+
+        # AP → OL requires a complete and verified offer letter
+        if current_stage == "AP" and requested_stage == "OL":
+            required_offer_fields = {
+                "University": existing.get("offer_university"),
+                "Course": existing.get("offer_course"),
+                "Offer Type": existing.get("offer_type"),
+                "Offer Date": existing.get("offer_date"),
+                "Offer Reference Number": existing.get(
+                    "offer_reference_number"
+                ),
+            }
+
+            missing_offer_fields = [
+                field_name
+                for field_name, value in required_offer_fields.items()
+                if not str(value or "").strip()
+            ]
+
+            # Check that an actual Offer Letter document has been uploaded
+            offer_document = await db.documents.find_one(
+                {
+                    "lead_id": lead_id,
+                    "doc_type": "offer_letter",
+                    "is_deleted": False,
+                }
+            )
+
+            if not offer_document:
+                missing_offer_fields.insert(
+                    0,
+                    "Upload Offer Letter",
+                )
+
+            if not existing.get("offer_details_verified", False):
+                missing_offer_fields.append(
+                    "Verify Offer Details"
+                )
+
+            if missing_offer_fields:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        "Cannot move to Offer Letter. "
+                        "Please complete: "
+                        + ", ".join(missing_offer_fields)
+                    ),
+                )
                 
         if requested_stage not in allowed_stages:
             raise HTTPException(
