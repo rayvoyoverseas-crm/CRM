@@ -16,7 +16,7 @@ export default function NotificationBell() {
   const [reminderTasks, setReminderTasks] = useState([]);
 
   const bellAudioRef = useRef(null);
-  const audioLoadingRef = useRef(false);
+  const audioReadyRef = useRef(false);
 
   // Prevents the same reminder from firing more than once.
   const triggeredRemindersRef = useRef(new Set());
@@ -27,111 +27,6 @@ export default function NotificationBell() {
   const bellCount = unread + reminderTasks.length;
 
   /*
-   * Prepare/unlock the reminder sound after the user interacts
-   * with the CRM. This is required by Chrome's autoplay policy.
-   */
-  const unlockAudio = async () => {
-    try {
-      const AudioContextClass =
-        window.AudioContext || window.webkitAudioContext;
-
-      if (!AudioContextClass) {
-        console.log("Web Audio API is not supported.");
-        return;
-      }
-
-      if (!audioContextRef.current) {
-        audioContextRef.current = new AudioContextClass();
-      }
-
-      const audioContext = audioContextRef.current;
-
-      if (audioContext.state === "suspended") {
-        await audioContext.resume();
-      }
-
-      if (!bellBufferRef.current && !audioLoadingRef.current) {
-        audioLoadingRef.current = true;
-
-        try {
-          const response = await fetch("/notification-bell.mp3");
-
-          if (!response.ok) {
-            throw new Error(
-              `Could not load notification-bell.mp3 (${response.status})`
-            );
-          }
-
-          const arrayBuffer = await response.arrayBuffer();
-
-          bellBufferRef.current =
-            await audioContext.decodeAudioData(arrayBuffer);
-        } finally {
-          audioLoadingRef.current = false;
-        }
-      }
-    } catch (error) {
-      console.log("Unable to prepare reminder audio:", error);
-    }
-  };
-
-  /*
-   * Unlock audio after a real user interaction.
-   */
-  useEffect(() => {
-    document.addEventListener("click", unlockAudio);
-    document.addEventListener("keydown", unlockAudio);
-    document.addEventListener("touchstart", unlockAudio);
-
-    return () => {
-      document.removeEventListener("click", unlockAudio);
-      document.removeEventListener("keydown", unlockAudio);
-      document.removeEventListener("touchstart", unlockAudio);
-
-      if (audioContextRef.current) {
-        audioContextRef.current.close().catch(() => {});
-        audioContextRef.current = null;
-      }
-
-      bellBufferRef.current = null;
-    };
-  }, []);
-
-  /*
-   * Play the reminder bell.
-   */
-  const playBell = async () => {
-    try {
-      const audioContext = audioContextRef.current;
-      const bellBuffer = bellBufferRef.current;
-
-      if (!audioContext || !bellBuffer) {
-        console.log(
-          "Reminder popup shown, but bell sound is not ready yet."
-        );
-        return;
-      }
-
-      if (audioContext.state === "suspended") {
-        await audioContext.resume();
-      }
-
-      const source = audioContext.createBufferSource();
-      const gainNode = audioContext.createGain();
-
-      source.buffer = bellBuffer;
-      gainNode.gain.value = 0.8;
-
-      source.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-
-      source.start(0);
-    } catch (error) {
-      console.log("Reminder sound error:", error);
-    }
-  };
-
-  /*
    * Show a reminder exactly once.
    *
    * IMPORTANT:
@@ -139,6 +34,77 @@ export default function NotificationBell() {
    * This prevents the 1-second polling from showing the
    * same reminder repeatedly.
    */
+     const prepareBellSound = () => {
+      if (bellAudioRef.current) {
+        return;
+      }
+    
+      const audio = new Audio("/notification-bell.mp3");
+    
+      audio.preload = "auto";
+      audio.volume = 1.0;
+    
+      bellAudioRef.current = audio;
+      audioReadyRef.current = true;
+    };
+    
+    const playBell = () => {
+      const audio = bellAudioRef.current;
+    
+      if (!audio || !audioReadyRef.current) {
+        console.log("Bell audio is not ready.");
+        return;
+      }
+    
+      try {
+        audio.pause();
+        audio.currentTime = 0;
+    
+        const playPromise = audio.play();
+    
+        if (playPromise !== undefined) {
+          playPromise.catch((error) => {
+            console.log("Bell sound could not play:", error);
+          });
+        }
+      } catch (error) {
+        console.log("Bell sound error:", error);
+      }
+    };
+    
+    useEffect(() => {
+      prepareBellSound();
+    
+      const unlockAudio = () => {
+        prepareBellSound();
+    
+        const audio = bellAudioRef.current;
+    
+        if (!audio) return;
+    
+        audio.load();
+      };
+    
+      document.addEventListener("click", unlockAudio);
+      document.addEventListener("keydown", unlockAudio);
+      document.addEventListener("touchstart", unlockAudio);
+    
+      return () => {
+        document.removeEventListener("click", unlockAudio);
+        document.removeEventListener("keydown", unlockAudio);
+        document.removeEventListener("touchstart", unlockAudio);
+    
+        if (bellAudioRef.current) {
+          bellAudioRef.current.pause();
+          bellAudioRef.current.currentTime = 0;
+          bellAudioRef.current = null;
+        }
+    
+        audioReadyRef.current = false;
+      };
+    }, []); 
+  
+  
   const triggerReminder = (task) => {
     const reminderKey = `${task.id}-${task.remind_at}`;
 
