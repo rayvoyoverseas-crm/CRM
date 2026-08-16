@@ -48,6 +48,24 @@ export default function LeadDetail() {
 
 const [savingCall, setSavingCall] = useState(false);
 
+const [offerForm, setOfferForm] = useState({
+  university: "",
+  course: "",
+  offer_type: "",
+  offer_date: "",
+  reference_number: "",
+  verified: false,
+});
+
+const [savingOffer, setSavingOffer] = useState(false);
+
+const updateOfferField = (field, value) => {
+  setOfferForm((prev) => ({
+    ...prev,
+    [field]: value,
+  }));
+};
+
 const emptyApplication = {
   shortlist_id: "",
 
@@ -209,6 +227,15 @@ const loadedApplications = selectedShortlists.map(
 );
 
 setApplicationForms(loadedApplications);
+
+setOfferForm({
+  university: data.offer_university || "",
+  course: data.offer_course || "",
+  offer_type: data.offer_type || "",
+  offer_date: data.offer_date || "",
+  reference_number: data.offer_reference_number || "",
+  verified: data.offer_details_verified || false,
+});
   
 }, [id]);
 
@@ -1654,6 +1681,202 @@ const uploadedDocumentCount = new Set(
         ))}
       </div>
     )}
+  </div>
+)}
+
+{/* Offer Letter */}
+{["OL", "RD", "DP", "VS", "EN"].includes(lead.stage) && (
+  <div className="bg-white border border-stone-200 rounded-2xl p-6">
+    <div className="mb-4">
+      <h3 className="font-display font-semibold text-lg">
+        Offer Letter
+      </h3>
+
+      <p className="text-xs text-stone-400 mt-1">
+        Enter and verify the offer letter details before moving this lead
+        to Offer Letter.
+      </p>
+    </div>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+      <div>
+        <Label className="text-xs">
+          University *
+        </Label>
+
+        <Input
+          value={offerForm.university}
+          onChange={(e) =>
+            updateOfferField("university", e.target.value)
+          }
+          placeholder="Enter university"
+        />
+      </div>
+
+      <div>
+        <Label className="text-xs">
+          Course *
+        </Label>
+
+        <Input
+          value={offerForm.course}
+          onChange={(e) =>
+            updateOfferField("course", e.target.value)
+          }
+          placeholder="Enter course"
+        />
+      </div>
+
+      <div>
+        <Label className="text-xs">
+          Offer Type *
+        </Label>
+
+        <Select
+          value={offerForm.offer_type}
+          onValueChange={(value) =>
+            updateOfferField("offer_type", value)
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select offer type" />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem value="Conditional Offer Letter">
+              Conditional Offer Letter
+            </SelectItem>
+
+            <SelectItem value="Unconditional Offer Letter">
+              Unconditional Offer Letter
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label className="text-xs">
+          Offer Date *
+        </Label>
+
+        <Input
+          type="date"
+          value={offerForm.offer_date}
+          onChange={(e) =>
+            updateOfferField("offer_date", e.target.value)
+          }
+        />
+      </div>
+
+      <div className="md:col-span-2">
+        <Label className="text-xs">
+          Offer Reference Number *
+        </Label>
+
+        <Input
+          value={offerForm.reference_number}
+          onChange={(e) =>
+            updateOfferField(
+              "reference_number",
+              e.target.value
+            )
+          }
+          placeholder="Enter offer reference number"
+        />
+      </div>
+
+    </div>
+
+    <div className="mt-5 border border-stone-200 rounded-xl p-4 bg-stone-50">
+      <label className="flex items-start gap-3 cursor-pointer">
+
+        <input
+          type="checkbox"
+          checked={offerForm.verified}
+          onChange={(e) =>
+            updateOfferField(
+              "verified",
+              e.target.checked
+            )
+          }
+          className="mt-1 h-4 w-4"
+        />
+
+        <div>
+          <div className="font-semibold text-sm text-stone-800">
+            ✓ Offer Details Verified
+          </div>
+
+          <div className="text-xs text-stone-500 mt-1">
+            I confirm that the university, course, offer type,
+            offer date and reference number match the uploaded
+            offer letter.
+          </div>
+        </div>
+
+      </label>
+    </div>
+
+    <Button
+      type="button"
+      disabled={savingOffer}
+      onClick={async () => {
+
+        if (
+          !offerForm.university.trim() ||
+          !offerForm.course.trim() ||
+          !offerForm.offer_type ||
+          !offerForm.offer_date ||
+          !offerForm.reference_number.trim()
+        ) {
+          toast.error(
+            "Please complete all Offer Letter details."
+          );
+          return;
+        }
+
+        if (!offerForm.verified) {
+          toast.error(
+            "Please verify the Offer Details before saving."
+          );
+          return;
+        }
+
+        try {
+          setSavingOffer(true);
+
+          await updateField({
+            offer_university: offerForm.university,
+            offer_course: offerForm.course,
+            offer_type: offerForm.offer_type,
+            offer_date: offerForm.offer_date,
+            offer_reference_number:
+              offerForm.reference_number,
+            offer_details_verified: true,
+          });
+
+          toast.success(
+            "Offer details verified and saved."
+          );
+
+          await load();
+
+        } catch (error) {
+          toast.error(
+            error?.response?.data?.detail ||
+              "Unable to save Offer Letter details."
+          );
+        } finally {
+          setSavingOffer(false);
+        }
+      }}
+      className="w-full mt-4 bg-[#1B365D] hover:bg-[#152a4a]"
+    >
+      {savingOffer
+        ? "Saving..."
+        : "✓ Verify & Save Offer Details"}
+    </Button>
   </div>
 )}
             
