@@ -180,6 +180,20 @@ class LeadUpdateIn(BaseModel):
     selected_shortlist_id: Optional[str] = None
     selected_shortlist_ids: Optional[List[str]] = None
 
+    # Offer Letter details
+    offer_university: Optional[str] = None
+    offer_course: Optional[str] = None
+    offer_type: Optional[
+        Literal[
+            "Conditional Offer Letter",
+            "Unconditional Offer Letter",
+        ]
+    ] = None
+    offer_date: Optional[str] = None
+    offer_reference_number: Optional[str] = None
+    offer_details_verified: Optional[bool] = None
+
+
 class NoteIn(BaseModel):
     text: str
 
