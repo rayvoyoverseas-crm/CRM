@@ -1619,11 +1619,15 @@ const uploadedDocumentCount = new Set(
                   </Label>
 
                     <Select
-                    value={application.application_status}
-                    onValueChange={(value) =>
-                      handleApplicationStatusChange(index, value)
-                    }
-                  >
+                      value={application.application_status}
+                      onValueChange={(value) =>
+                        updateApplicationField(
+                          index,
+                          "application_status",
+                          value
+                        )
+                      }
+                    >
                     <SelectTrigger>
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
