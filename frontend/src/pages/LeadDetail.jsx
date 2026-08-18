@@ -22,7 +22,7 @@ const STAGE_TRANSITIONS = {
   SL: ["DR"],
   DR: ["RA"],
   RA: ["AP"],
-  AP: [],
+  AP: ["OL"],
   OL: ["RD"],
   RD: ["DP"],
   DP: ["VS"],
