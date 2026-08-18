@@ -22,7 +22,7 @@ const STAGE_TRANSITIONS = {
   SL: ["DR"],
   DR: ["RA"],
   RA: ["AP"],
-  AP: ["OL"],
+  AP: [],
   OL: ["RD"],
   RD: ["DP"],
   DP: ["VS"],
@@ -337,6 +337,78 @@ const updateApplicationField = (index, field, value) => {
 
   setApplicationForms(updated);
 };
+
+const handleApplicationStatusChange = async (index, value) => {
+  const application = applicationForms[index];
+
+  // Update the application status locally first
+  updateApplicationField(index, "application_status", value);
+
+  // Only "Offer letter received" should trigger AP → OL
+  if (value !== "Offer letter received" || lead.stage !== "AP") {
+    return;
+  }
+
+  try {
+    // Make sure the application status is saved before changing
+    // the lead stage.
+    const updatedApplication = {
+      ...application,
+      application_status: value,
+    };
+
+    if (!updatedApplication.shortlist_id ||
+        !updatedApplication.country ||
+        !updatedApplication.level_of_study ||
+        !updatedApplication.university ||
+        !updatedApplication.course ||
+        !updatedApplication.course_link ||
+        !updatedApplication.intake ||
+        !updatedApplication.submission_datetime ||
+        !updatedApplication.submitted_by ||
+        !updatedApplication.priority) {
+      toast.error("Please complete all application fields before receiving the Offer Letter.");
+      return;
+    }
+
+    let response;
+
+    if (updatedApplication.id) {
+      response = await api.patch(
+        `/leads/${id}/applications/${updatedApplication.id}`,
+        updatedApplication
+      );
+    } else {
+      response = await api.post(
+        `/leads/${id}/applications`,
+        updatedApplication
+      );
+    }
+
+    const updated = [...applicationForms];
+
+    updated[index] = {
+      ...updated[index],
+      ...response.data.entry,
+      application_status: "Offer letter received",
+    };
+
+    setApplicationForms(updated);
+
+    // Automatically move the lead from AP → OL
+    await updateField({ stage: "OL" });
+
+    toast.success("Offer letter received. Lead moved to Offer Letter stage.");
+
+    await load();
+  } catch (e) {
+    toast.error(
+      e?.response?.data?.detail ||
+        "Unable to move lead to Offer Letter stage."
+    );
+  }
+};
+
 const addMoreApplication = () => {
   if (applicationForms.length >= 10) {
     toast.error("Maximum 10 applications are allowed.");
@@ -1613,14 +1685,10 @@ const uploadedDocumentCount = new Set(
                     Application Status *
                   </Label>
 
-                  <Select
+                    <Select
                     value={application.application_status}
                     onValueChange={(value) =>
-                      updateApplicationField(
-                        index,
-                        "application_status",
-                        value
-                      )
+                      handleApplicationStatusChange(index, value)
                     }
                   >
                     <SelectTrigger>
@@ -1628,26 +1696,33 @@ const uploadedDocumentCount = new Set(
                     </SelectTrigger>
 
                     <SelectContent>
-                      <SelectItem value="Draft">
-                        Draft
-                      </SelectItem>
-
-                      <SelectItem value="Ready to submit">
-                        Ready to submit
-                      </SelectItem>
-
+                      {application.application_status !== "Submitted" &&
+                        application.application_status !== "Additional documents requested" &&
+                        application.application_status !== "Offer letter received" && (
+                          <>
+                            <SelectItem value="Draft">
+                              Draft
+                            </SelectItem>
+                    
+                            <SelectItem value="Ready to submit">
+                              Ready to submit
+                            </SelectItem>
+                          </>
+                        )}
+                    
                       <SelectItem value="Submitted">
                         Submitted
                       </SelectItem>
-
-                      <SelectItem value="Under review">
-                        Under review
-                      </SelectItem>
-
+                    
                       <SelectItem value="Additional documents requested">
                         Additional documents requested
                       </SelectItem>
+                    
+                      <SelectItem value="Offer letter received">
+                        Offer letter received
+                      </SelectItem>
                     </SelectContent>
+                    
                   </Select>
                 </div>
 
@@ -1685,7 +1760,7 @@ const uploadedDocumentCount = new Set(
 )}
 
 {/* Offer Letter */}
-{["AP", "OL", "RD", "DP", "VS", "EN"].includes(lead.stage) && (
+{["OL", "RD", "DP", "VS", "EN"].includes(lead.stage) && (
   <div className="bg-white border border-stone-200 rounded-2xl p-6">
     <div className="mb-4">
       <h3 className="font-display font-semibold text-lg">
