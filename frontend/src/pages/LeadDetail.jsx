@@ -1685,7 +1685,7 @@ const uploadedDocumentCount = new Set(
 )}
 
 {/* Offer Letter */}
-{["OL", "RD", "DP", "VS", "EN"].includes(lead.stage) && (
+{["AP", "OL", "RD", "DP", "VS", "EN"].includes(lead.stage) && (
   <div className="bg-white border border-stone-200 rounded-2xl p-6">
     <div className="mb-4">
       <h3 className="font-display font-semibold text-lg">
