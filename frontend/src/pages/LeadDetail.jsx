@@ -338,77 +338,6 @@ const updateApplicationField = (index, field, value) => {
   setApplicationForms(updated);
 };
 
-const handleApplicationStatusChange = async (index, value) => {
-  const application = applicationForms[index];
-
-  // Update the application status locally first
-  updateApplicationField(index, "application_status", value);
-
-  // Only "Offer letter received" should trigger AP → OL
-  if (value !== "Offer letter received" || lead.stage !== "AP") {
-    return;
-  }
-
-  try {
-    // Make sure the application status is saved before changing
-    // the lead stage.
-    const updatedApplication = {
-      ...application,
-      application_status: value,
-    };
-
-    if (!updatedApplication.shortlist_id ||
-        !updatedApplication.country ||
-        !updatedApplication.level_of_study ||
-        !updatedApplication.university ||
-        !updatedApplication.course ||
-        !updatedApplication.course_link ||
-        !updatedApplication.intake ||
-        !updatedApplication.submission_datetime ||
-        !updatedApplication.submitted_by ||
-        !updatedApplication.priority) {
-      toast.error("Please complete all application fields before receiving the Offer Letter.");
-      return;
-    }
-
-    let response;
-
-    if (updatedApplication.id) {
-      response = await api.patch(
-        `/leads/${id}/applications/${updatedApplication.id}`,
-        updatedApplication
-      );
-    } else {
-      response = await api.post(
-        `/leads/${id}/applications`,
-        updatedApplication
-      );
-    }
-
-    const updated = [...applicationForms];
-
-    updated[index] = {
-      ...updated[index],
-      ...response.data.entry,
-      application_status: "Offer letter received",
-    };
-
-    setApplicationForms(updated);
-
-    // Automatically move the lead from AP → OL
-    await updateField({ stage: "OL" });
-
-    toast.success("Offer letter received. Lead moved to Offer Letter stage.");
-
-    await load();
-  } catch (e) {
-    toast.error(
-      e?.response?.data?.detail ||
-        "Unable to move lead to Offer Letter stage."
-    );
-  }
-};
-
 const addMoreApplication = () => {
   if (applicationForms.length >= 10) {
     toast.error("Maximum 10 applications are allowed.");
@@ -1081,7 +1010,11 @@ const uploadedDocumentCount = new Set(
             <Select
   value={form.country}
   onValueChange={(value) =>
-    updateShortlistField(index, "country", value)
+    updateApplicationField(
+      index,
+      "application_status",
+      value
+    )
   }
 >
   <SelectTrigger>
