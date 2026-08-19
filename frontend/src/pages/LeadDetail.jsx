@@ -1935,12 +1935,22 @@ const uploadedDocumentCount = new Set(
               ? "Yes"
               : "No"
           }
-          onValueChange={(value) =>
+          onValueChange={(value) => {
+            if (
+              value === "Yes" &&
+              offerForm.offer_type !== "Unconditional Offer Letter"
+            ) {
+              toast.error(
+                "Unconditional Offer Letter is required before accepting for deposit."
+              );
+              return;
+            }
+          
             updateOfferField(
               "accepted_for_deposit",
               value === "Yes"
-            )
-          }
+            );
+          }}  
         >
           <SelectTrigger>
             <SelectValue placeholder="Select Yes or No" />
