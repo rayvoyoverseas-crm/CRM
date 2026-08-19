@@ -424,6 +424,12 @@ const saveApplicationRecord = async (index) => {
         university: application.university || "",
         course: application.course || "",
       }));
+    if (
+      application.application_status === "Offer Letter Received" &&
+      lead.stage === "AP"
+    ) {
+      await updateField({ stage: "OL" });
+    }
     }
     
     toast.success(
