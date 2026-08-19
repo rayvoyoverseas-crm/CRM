@@ -1652,33 +1652,19 @@ const uploadedDocumentCount = new Set(
                       <SelectValue placeholder="Select status" />
                     </SelectTrigger>
 
-                    <SelectContent>
-                      {application.application_status !== "Submitted" &&
-                        application.application_status !== "Additional documents requested" &&
-                        application.application_status !== "Offer Letter Received" && (
-                          <>
-                            <SelectItem value="Draft">
-                              Draft
-                            </SelectItem>
-                    
-                            <SelectItem value="Ready to submit">
-                              Ready to submit
-                            </SelectItem>
-                          </>
-                        )}
-                    
-                      <SelectItem value="Under review">
-                        Under review
-                      </SelectItem>
-                    
-                      <SelectItem value="Additional documents requested">
-                        Additional documents requested
-                      </SelectItem>
-                    
-                      <SelectItem value="Offer Letter Received">
-                        Offer Letter Received
-                      </SelectItem>
-                    </SelectContent>
+                  <SelectContent>
+                    <SelectItem value="Under review">
+                      Under review
+                    </SelectItem>
+                  
+                    <SelectItem value="Additional documents requested">
+                      Additional documents requested
+                    </SelectItem>
+                  
+                    <SelectItem value="Offer Letter Received">
+                      Offer Letter Received
+                    </SelectItem>
+                  </SelectContent>
                     
                   </Select>
                 </div>
