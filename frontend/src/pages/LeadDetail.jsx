@@ -408,14 +408,24 @@ const saveApplicationRecord = async (index) => {
     }
 
     const updated = [...applicationForms];
-
+    
     updated[index] = {
       ...application,
       ...data.entry,
     };
-
+    
     setApplicationForms(updated);
-
+    
+    // If the application has received an offer,
+    // automatically prepare the Offer Letter form
+    if (application.application_status === "Offer Letter Received") {
+      setOfferForm((prev) => ({
+        ...prev,
+        university: application.university || "",
+        course: application.course || "",
+      }));
+    }
+    
     toast.success(
       application.id
         ? `Application ${index + 1} updated`
@@ -1659,8 +1669,8 @@ const uploadedDocumentCount = new Set(
                         Additional documents requested
                       </SelectItem>
                     
-                      <SelectItem value="Offer letter received">
-                        Offer letter received
+                      <SelectItem value="Offer Letter Received">
+                        Offer Letter Received
                       </SelectItem>
                     </SelectContent>
                     
@@ -1701,7 +1711,13 @@ const uploadedDocumentCount = new Set(
 )}
 
 {/* Offer Letter */}
-{["OL", "RD", "DP", "VS", "EN"].includes(lead.stage) && (
+{(
+  ["OL", "RD", "DP", "VS", "EN"].includes(lead.stage) ||
+  applicationForms.some(
+    (application) =>
+      application.application_status === "Offer Letter Received"
+  )
+) && (
   <div className="bg-white border border-stone-200 rounded-2xl p-6">
     <div className="mb-4">
       <h3 className="font-display font-semibold text-lg">
