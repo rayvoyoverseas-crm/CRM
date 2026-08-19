@@ -246,6 +246,7 @@ class ApplicationRecordIn(BaseModel):
         "Submitted",
         "Under review",
         "Additional documents requested",
+        "Offer Letter Received",
     ]
 
     priority: Literal[
