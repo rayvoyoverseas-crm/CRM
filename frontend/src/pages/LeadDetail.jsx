@@ -1714,6 +1714,51 @@ const uploadedDocumentCount = new Set(
       </p>
     </div>
 
+        <div className="mb-5 border border-stone-200 rounded-xl p-4 bg-stone-50">
+      <Label className="text-xs">
+        Upload Offer Letter *
+      </Label>
+    
+      <div className="mt-2 flex items-center gap-3">
+        <input
+          id="offer-letter-file"
+          type="file"
+          accept=".pdf,.jpg,.jpeg,.png"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0] || null;
+    
+            if (!file) return;
+    
+            setOfferFile(file);
+            setOfferFileName(file.name);
+          }}
+        />
+    
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() =>
+            document
+              .getElementById("offer-letter-file")
+              ?.click()
+          }
+        >
+          Choose Offer Letter
+        </Button>
+    
+        {offerFileName && (
+          <span className="text-xs text-stone-600 truncate">
+            {offerFileName}
+          </span>
+        )}
+      </div>
+    
+      <p className="text-[11px] text-stone-400 mt-2">
+        Accepted formats: PDF, JPG, JPEG, PNG
+      </p>
+    </div>
+
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 
       <div>
@@ -1837,8 +1882,13 @@ const uploadedDocumentCount = new Set(
     <Button
       type="button"
       disabled={savingOffer}
-      onClick={async () => {
 
+      onClick={async () => {
+        if (!offerFile) {
+          toast.error("Please upload the Offer Letter.");
+          return;
+        }
+      
         if (
           !offerForm.university.trim() ||
           !offerForm.course.trim() ||
@@ -1846,22 +1896,31 @@ const uploadedDocumentCount = new Set(
           !offerForm.offer_date ||
           !offerForm.reference_number.trim()
         ) {
-          toast.error(
-            "Please complete all Offer Letter details."
-          );
+          toast.error("Please complete all Offer Letter details.");
           return;
         }
-
+      
         if (!offerForm.verified) {
-          toast.error(
-            "Please verify the Offer Details before saving."
-          );
+          toast.error("Please verify the Offer Details before saving.");
           return;
         }
-
+      
         try {
           setSavingOffer(true);
-
+          setUploadingOffer(true);
+      
+          const formData = new FormData();
+      
+          formData.append("file", offerFile);
+          formData.append("doc_type", "offer_letter");
+      
+          await api.post(
+            `/leads/${id}/documents`,
+            formData
+          );
+      
+          setUploadingOffer(false);
+      
           await updateField({
             offer_university: offerForm.university,
             offer_course: offerForm.course,
@@ -1871,27 +1930,35 @@ const uploadedDocumentCount = new Set(
               offerForm.reference_number,
             offer_details_verified: true,
           });
-
+      
           toast.success(
-            "Offer details verified and saved."
+            "Offer Letter uploaded and details verified."
           );
-
+      
+          setOfferFile(null);
+          setOfferFileName("");
+      
           await load();
-
+      
         } catch (error) {
+          setUploadingOffer(false);
+      
           toast.error(
             error?.response?.data?.detail ||
-              "Unable to save Offer Letter details."
+              "Unable to upload or save Offer Letter."
           );
         } finally {
           setSavingOffer(false);
         }
       }}
+      
       className="w-full mt-4 bg-[#1B365D] hover:bg-[#152a4a]"
     >
-      {savingOffer
+    {uploadingOffer
+      ? "Uploading Offer Letter..."
+      : savingOffer
         ? "Saving..."
-        : "✓ Verify & Save Offer Details"}
+        : "✓ Upload & Verify Offer Details"}
     </Button>
   </div>
 )}
