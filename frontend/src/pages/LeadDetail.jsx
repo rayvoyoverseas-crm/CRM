@@ -232,9 +232,21 @@ const loadedApplications = selectedShortlists.map(
 
 setApplicationForms(loadedApplications);
 
+const offerApplication =
+  savedApplications.find(
+    (application) =>
+      application.application_status === "Offer Letter Received"
+  ) || null;
+
 setOfferForm({
-  university: data.offer_university || "",
-  course: data.offer_course || "",
+  university:
+    offerApplication?.university ||
+    data.offer_university ||
+    "",
+  course:
+    offerApplication?.course ||
+    data.offer_course ||
+    "",
   offer_type: data.offer_type || "",
   offer_date: data.offer_date || "",
   reference_number: data.offer_reference_number || "",
@@ -1697,18 +1709,25 @@ const uploadedDocumentCount = new Set(
 )}
 
 {/* Offer Letter */}
-{["OL", "RD", "DP", "VS", "EN"].includes(lead.stage) && (
-  <div className="bg-white border border-stone-200 rounded-2xl p-6">
-    <div className="mb-4">
-      <h3 className="font-display font-semibold text-lg">
-        Offer Letter
-      </h3>
-
-      <p className="text-xs text-stone-400 mt-1">
-        Enter and verify the offer letter details before moving this lead
-        to Offer Letter.
-      </p>
-    </div>
+    {["OL", "RD", "DP", "VS", "EN"].includes(lead.stage) && (
+      <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
+        <summary className="cursor-pointer list-none flex items-center justify-between px-6 py-5 hover:bg-stone-50">
+          <div>
+            <h3 className="font-display font-semibold text-lg">
+              Offer Letter
+            </h3>
+    
+            <p className="text-xs text-stone-400 mt-1">
+              Upload, verify and save the offer letter details.
+            </p>
+          </div>
+    
+          <span className="text-stone-500 text-sm transition-transform group-open:rotate-180">
+            ▼
+          </span>
+        </summary>
+    
+        <div className="border-t border-stone-200 p-6">
 
         <div className="mb-5 border border-stone-200 rounded-xl p-4 bg-stone-50">
       <Label className="text-xs">
@@ -1762,13 +1781,11 @@ const uploadedDocumentCount = new Set(
           University *
         </Label>
 
-        <Input
-          value={offerForm.university}
-          onChange={(e) =>
-            updateOfferField("university", e.target.value)
-          }
-          placeholder="Enter university"
-        />
+      <Input
+        value={offerForm.university}
+        readOnly
+        className="bg-stone-50 cursor-not-allowed"
+      />
       </div>
 
       <div>
@@ -1776,13 +1793,11 @@ const uploadedDocumentCount = new Set(
           Course *
         </Label>
 
-        <Input
-          value={offerForm.course}
-          onChange={(e) =>
-            updateOfferField("course", e.target.value)
-          }
-          placeholder="Enter course"
-        />
+      <Input
+        value={offerForm.course}
+        readOnly
+        className="bg-stone-50 cursor-not-allowed"
+      />
       </div>
 
       <div>
@@ -1955,8 +1970,10 @@ const uploadedDocumentCount = new Set(
       : savingOffer
         ? "Saving..."
         : "✓ Upload & Verify Offer Details"}
-    </Button>
-  </div>
+      </Button>
+
+    </div>
+  </details>
 )}
             
 </TabsContent>
