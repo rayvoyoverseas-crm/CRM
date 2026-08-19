@@ -189,6 +189,15 @@ class LeadUpdateIn(BaseModel):
             "Unconditional Offer Letter",
         ]
     ] = None
+    deposit_required: Optional[
+        Literal[
+            "Yes", 
+            "No",
+    ]
+] = None
+    deposit_amount: Optional[str] = None
+    accepted_for_deposit: Optional[bool] = None
+    
     offer_date: Optional[str] = None
     offer_reference_number: Optional[str] = None
     offer_details_verified: Optional[bool] = None
