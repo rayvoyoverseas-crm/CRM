@@ -246,14 +246,31 @@ setOfferForm({
     offerApplication?.university ||
     data.offer_university ||
     "",
+
   course:
     offerApplication?.course ||
     data.offer_course ||
     "",
+
   offer_type: data.offer_type || "",
-  offer_date: data.offer_date || "",
-  reference_number: data.offer_reference_number || "",
-  verified: data.offer_details_verified || false,
+
+  deposit_required:
+    data.deposit_required || "",
+
+  deposit_amount:
+    data.deposit_amount || "",
+
+  accepted_for_deposit:
+    data.accepted_for_deposit || false,
+
+  offer_date:
+    data.offer_date || "",
+
+  reference_number:
+    data.offer_reference_number || "",
+
+  verified:
+    data.offer_details_verified || false,
 });
   
 }, [id]);
@@ -1985,6 +2002,13 @@ const uploadedDocumentCount = new Set(
             offer_university: offerForm.university,
             offer_course: offerForm.course,
             offer_type: offerForm.offer_type,
+            deposit_required: offerForm.deposit_required,
+            deposit_amount:
+              offerForm.deposit_required === "Yes"
+                ? offerForm.deposit_amount
+                : "",
+            accepted_for_deposit:
+              offerForm.accepted_for_deposit,
             offer_date: offerForm.offer_date,
             offer_reference_number:
               offerForm.reference_number,
