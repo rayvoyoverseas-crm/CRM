@@ -52,6 +52,9 @@ const [offerForm, setOfferForm] = useState({
   university: "",
   course: "",
   offer_type: "",
+  deposit_required: "",
+  deposit_amount: "",
+  accepted_for_deposit: false,
   offer_date: "",
   reference_number: "",
   verified: false,
@@ -1827,6 +1830,52 @@ const uploadedDocumentCount = new Set(
         </Select>
       </div>
 
+      <div>
+        <Label className="text-xs">
+          Deposit Required *
+        </Label>
+      
+        <Select
+          value={offerForm.deposit_required}
+          onValueChange={(value) =>
+            updateOfferField("deposit_required", value)
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select Yes or No" />
+          </SelectTrigger>
+      
+          <SelectContent>
+            <SelectItem value="Yes">
+              Yes
+            </SelectItem>
+      
+            <SelectItem value="No">
+              No
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      
+      {offerForm.deposit_required === "Yes" && (
+        <div>
+          <Label className="text-xs">
+            Deposit Amount *
+          </Label>
+      
+          <Input
+            value={offerForm.deposit_amount}
+            onChange={(e) =>
+              updateOfferField(
+                "deposit_amount",
+                e.target.value
+              )
+            }
+            placeholder="Enter deposit amount"
+          />
+        </div>
+      )}
+      
       <div>
         <Label className="text-xs">
           Offer Date *
