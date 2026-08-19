@@ -402,12 +402,19 @@ def serialize_lead(l: dict) -> dict:
         "call_history": l.get("call_history", []),
         "shortlists": l.get("shortlists", []),
         "application_records": l.get("application_records", []),
+        
         "offer_university": l.get("offer_university", ""),
         "offer_course": l.get("offer_course", ""),
         "offer_type": l.get("offer_type", ""),
+        
+        "deposit_required": l.get("deposit_required", ""),
+        "deposit_amount": l.get("deposit_amount", ""),
+        "accepted_for_deposit": l.get("accepted_for_deposit", False),
+        
         "offer_date": l.get("offer_date", ""),
         "offer_reference_number": l.get("offer_reference_number", ""),
         "offer_details_verified": l.get("offer_details_verified", False),
+        
         "selected_shortlist_id": l.get("selected_shortlist_id"),
         "selected_shortlist_ids": l.get(
             "selected_shortlist_ids",
