@@ -59,6 +59,10 @@ const [offerForm, setOfferForm] = useState({
 
 const [savingOffer, setSavingOffer] = useState(false);
 
+const [offerFile, setOfferFile] = useState(null);
+const [uploadingOffer, setUploadingOffer] = useState(false);
+const [offerFileName, setOfferFileName] = useState("");
+
 const updateOfferField = (field, value) => {
   setOfferForm((prev) => ({
     ...prev,
