@@ -1639,7 +1639,7 @@ const uploadedDocumentCount = new Set(
                     <SelectContent>
                       {application.application_status !== "Submitted" &&
                         application.application_status !== "Additional documents requested" &&
-                        application.application_status !== "Offer letter received" && (
+                        application.application_status !== "Offer Letter Received" && (
                           <>
                             <SelectItem value="Draft">
                               Draft
@@ -1651,8 +1651,8 @@ const uploadedDocumentCount = new Set(
                           </>
                         )}
                     
-                      <SelectItem value="Submitted">
-                        Submitted
+                      <SelectItem value="Under review">
+                        Under review
                       </SelectItem>
                     
                       <SelectItem value="Additional documents requested">
