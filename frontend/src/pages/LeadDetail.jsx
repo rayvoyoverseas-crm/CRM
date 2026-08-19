@@ -1924,6 +1924,40 @@ const uploadedDocumentCount = new Set(
         />
       </div>
 
+      <div className="md:col-span-2">
+        <Label className="text-xs">
+          Accepted for Deposit *
+        </Label>
+      
+        <Select
+          value={
+            offerForm.accepted_for_deposit
+              ? "Yes"
+              : "No"
+          }
+          onValueChange={(value) =>
+            updateOfferField(
+              "accepted_for_deposit",
+              value === "Yes"
+            )
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select Yes or No" />
+          </SelectTrigger>
+      
+          <SelectContent>
+            <SelectItem value="Yes">
+              Yes
+            </SelectItem>
+      
+            <SelectItem value="No">
+              No
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
     </div>
 
     <div className="mt-5 border border-stone-200 rounded-xl p-4 bg-stone-50">
