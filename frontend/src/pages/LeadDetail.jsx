@@ -2421,8 +2421,6 @@ const uploadedDocumentCount = new Set(
               updateField({
                 stage: v,
                 offer_type: offerForm.offer_type,
-                accepted_for_deposit:
-                  offerForm.accepted_for_deposit,
               });
         
               return;
