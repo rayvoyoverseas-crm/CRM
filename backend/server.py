@@ -1044,10 +1044,10 @@ async def update_lead(
                         "Unconditional Offer Letter"
                     )
             
-                if not existing.get("accepted_for_deposit", False):
-                    missing_requirements.append(
-                        "Accepted for Deposit = Yes"
-                    )
+            if existing.get("accepted_for_deposit") is not True:
+            missing_requirements.append(
+                "Accepted for Deposit = Yes"
+            )
             
                 if missing_requirements:
                     raise HTTPException(
