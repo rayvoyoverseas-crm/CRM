@@ -197,6 +197,7 @@ class LeadUpdateIn(BaseModel):
 ] = None
     deposit_amount: Optional[str] = None
     accepted_for_deposit: Optional[bool] = None
+    payment_made: Optional[bool] = None
     
     offer_date: Optional[str] = None
     offer_reference_number: Optional[str] = None
