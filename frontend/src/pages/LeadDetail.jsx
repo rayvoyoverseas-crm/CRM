@@ -2277,10 +2277,6 @@ const uploadedDocumentCount = new Set(
     </div>
   </div>
 )}
-
-</TabsContent>
-
-{lead.pipeline === "loan" && <TabsContent value="loan">           
             
 </TabsContent>
             
