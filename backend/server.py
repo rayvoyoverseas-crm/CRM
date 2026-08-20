@@ -411,6 +411,7 @@ def serialize_lead(l: dict) -> dict:
         "deposit_required": l.get("deposit_required", ""),
         "deposit_amount": l.get("deposit_amount", ""),
         "accepted_for_deposit": l.get("accepted_for_deposit", False),
+        "payment_made": l.get("payment_made", False),
         
         "offer_date": l.get("offer_date", ""),
         "offer_reference_number": l.get("offer_reference_number", ""),
