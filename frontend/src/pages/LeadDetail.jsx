@@ -2139,10 +2139,11 @@ const uploadedDocumentCount = new Set(
 )}
 
 
-  {/* Deposit */}
-  {lead.stage === "OL" &&
-    offerLetterDoc &&
-    offerForm.verified && (
+    {/* Deposit */}
+    {lead.stage === "OL" &&
+      offerLetterDoc &&
+      offerForm.verified &&
+      offerForm.offer_type === "Unconditional Offer Letter" && (
       <div className="bg-white border border-stone-200 rounded-2xl p-6">
         <div className="mb-4">
           <h3 className="font-display font-semibold text-lg">
