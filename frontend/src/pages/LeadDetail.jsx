@@ -1824,7 +1824,9 @@ const uploadedDocumentCount = new Set(
         <Label className="text-xs">
           Offer Type *
         </Label>
-
+      
+        <Select
+          value={offerForm.offer_type}
           onValueChange={(value) => {
             if (
               offerForm.offer_type === "Unconditional Offer Letter" &&
@@ -1835,18 +1837,19 @@ const uploadedDocumentCount = new Set(
               );
               return;
             }
-          
+      
             updateOfferField("offer_type", value);
           }}
+        >
           <SelectTrigger>
             <SelectValue placeholder="Select offer type" />
           </SelectTrigger>
-
+      
           <SelectContent>
             <SelectItem value="Conditional Offer Letter">
               Conditional Offer Letter
             </SelectItem>
-
+      
             <SelectItem value="Unconditional Offer Letter">
               Unconditional Offer Letter
             </SelectItem>
