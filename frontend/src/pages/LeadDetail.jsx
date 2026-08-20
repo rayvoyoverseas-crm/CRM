@@ -2077,14 +2077,26 @@ const uploadedDocumentCount = new Set(
           setOfferFileName("");
       
           await load();
+
+
+      } catch (error) {
+        setUploadingOffer(false);
       
-        } catch (error) {
-          setUploadingOffer(false);
+        const detail = error?.response?.data?.detail;
       
-          toast.error(
-            error?.response?.data?.detail ||
-              "Unable to upload or save Offer Letter."
-          );
+        let errorMessage = "Unable to upload or save Offer Letter.";
+      
+        if (typeof detail === "string") {
+          errorMessage = detail;
+        } else if (Array.isArray(detail)) {
+          errorMessage = detail
+            .map((item) => item?.msg || JSON.stringify(item))
+            .join(", ");
+        } else if (detail) {
+          errorMessage = JSON.stringify(detail);
+        }
+      
+        toast.error(errorMessage);
         } finally {
           setSavingOffer(false);
         }
