@@ -2440,20 +2440,44 @@ const uploadedDocumentCount = new Set(
                 Move to
               </label>
               
-              <Select
-      onValueChange={(v) => {
-        if (lead.stage === "OL" && v === "RD") {
-          updateField({
-            stage: v,
-            offer_type: offerForm.offer_type,
-            accepted_for_deposit: offerForm.accepted_for_deposit,
-          });
-          return;
-        }
-    
-        updateField({ stage: v });
-      }}
-    >
+        <Select
+          onValueChange={(v) => {
+            if (lead.stage === "OL" && v === "RD") {
+              const missing = [];
+        
+              if (
+                offerForm.offer_type !== "Unconditional Offer Letter"
+              ) {
+                missing.push("Unconditional Offer Letter");
+              }
+        
+              if (offerForm.accepted_for_deposit !== true) {
+                missing.push("Accepted for Deposit = Yes");
+              }
+        
+              if (missing.length > 0) {
+                toast.error(
+                  `Cannot move to Ready for Deposit. Please complete: ${missing.join(
+                    ", "
+                  )}`
+                );
+                return;
+              }
+        
+              updateField({
+                stage: v,
+                offer_type: offerForm.offer_type,
+                accepted_for_deposit:
+                  offerForm.accepted_for_deposit,
+              });
+        
+              return;
+            }
+        
+            updateField({ stage: v });
+          }}
+        >
+              
   <SelectTrigger data-testid="detail-stage-select">
     <SelectValue placeholder="Move to next stage" />
   </SelectTrigger>
