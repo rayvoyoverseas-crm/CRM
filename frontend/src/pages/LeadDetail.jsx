@@ -2137,6 +2137,86 @@ const uploadedDocumentCount = new Set(
     </div>
   </details>
 )}
+
+
+  {/* Deposit */}
+  {lead.stage === "OL" &&
+    offerLetterDoc &&
+    offerForm.verified && (
+      <div className="bg-white border border-stone-200 rounded-2xl p-6">
+        <div className="mb-4">
+          <h3 className="font-display font-semibold text-lg">
+            Deposit
+          </h3>
+  
+          <p className="text-xs text-stone-400 mt-1">
+            Confirm whether this offer has been accepted for deposit.
+          </p>
+        </div>
+  
+        <div>
+          <Label className="text-xs">
+            Accepted for Deposit *
+          </Label>
+  
+          <Select
+            value={
+              offerForm.accepted_for_deposit
+                ? "Yes"
+                : "No"
+            }
+            onValueChange={async (value) => {
+              if (value === "No") {
+                updateOfferField(
+                  "accepted_for_deposit",
+                  false
+                );
+  
+                await updateField({
+                  accepted_for_deposit: false,
+                });
+  
+                return;
+              }
+  
+              if (
+                offerForm.offer_type !==
+                "Unconditional Offer Letter"
+              ) {
+                toast.error(
+                  "An Unconditional Offer Letter is required before accepting for deposit."
+                );
+                return;
+              }
+  
+              updateOfferField(
+                "accepted_for_deposit",
+                true
+              );
+  
+              await updateField({
+                accepted_for_deposit: true,
+                stage: "RD",
+              });
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select Yes or No" />
+            </SelectTrigger>
+  
+            <SelectContent>
+              <SelectItem value="No">
+                No
+              </SelectItem>
+  
+              <SelectItem value="Yes">
+                Yes
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+  )}            
             
 </TabsContent>
             
