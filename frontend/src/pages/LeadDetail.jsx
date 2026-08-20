@@ -636,6 +636,12 @@ const hasCV = leadDocs.some(
     doc.original_filename
 );
 
+const offerLetterDoc = leadDocs.find(
+  (doc) =>
+    doc.doc_type === "offer_letter" &&
+    doc.original_filename
+);
+
 const completeShortlists = (lead?.shortlists || []).filter(
   (shortlist) =>
     [
