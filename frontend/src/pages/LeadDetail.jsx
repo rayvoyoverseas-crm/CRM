@@ -2217,10 +2217,7 @@ const uploadedDocumentCount = new Set(
           </Select>
         </div>
       </div>
-  )}            
-
- </details>
-)}
+  )}        
 
 {/* Ready to Deposit */}
 {lead.stage === "RD" && (
