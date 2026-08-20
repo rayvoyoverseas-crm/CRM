@@ -2040,15 +2040,14 @@ const uploadedDocumentCount = new Set(
           setSavingOffer(true);
           setUploadingOffer(true);
       
-          const formData = new FormData();
+        const formData = new FormData();
       
-          formData.append("file", offerFile);
-          formData.append("doc_type", "offer_letter");
-      
-          await api.post(
-            `/leads/${id}/documents`,
-            formData
-          );
+        formData.append("file", offerFile);
+        
+        await api.post(
+          `/leads/${id}/documents?doc_type=offer_letter`,
+          formData
+        );
       
           setUploadingOffer(false);
       
