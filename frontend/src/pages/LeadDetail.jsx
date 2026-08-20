@@ -1825,12 +1825,19 @@ const uploadedDocumentCount = new Set(
           Offer Type *
         </Label>
 
-        <Select
-          value={offerForm.offer_type}
-          onValueChange={(value) =>
-            updateOfferField("offer_type", value)
-          }
-        >
+          onValueChange={(value) => {
+            if (
+              offerForm.offer_type === "Unconditional Offer Letter" &&
+              value === "Conditional Offer Letter"
+            ) {
+              toast.error(
+                "An Unconditional Offer Letter cannot be changed back to Conditional."
+              );
+              return;
+            }
+          
+            updateOfferField("offer_type", value);
+          }}
           <SelectTrigger>
             <SelectValue placeholder="Select offer type" />
           </SelectTrigger>
