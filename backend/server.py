@@ -1032,27 +1032,28 @@ async def update_lead(
                         "before moving this lead to Offer Letter."
                     ),
                 )
-            # OL → RD requires an unconditional offer
-            # and Accepted for Deposit = Yes
-            if current_stage == "OL" and requested_stage == "RD":
-            
-                if existing.get("offer_type") != "Unconditional Offer Letter":
-                    raise HTTPException(
-                        status_code=400,
-                        detail=(
-                            "An Unconditional Offer Letter is required "
-                            "before moving this lead to Ready for Deposit."
-                        ),
-                    )
-            
-                if not existing.get("accepted_for_deposit", False):
-                    raise HTTPException(
-                        status_code=400,
-                        detail=(
-                            "Accepted for Deposit must be set to Yes "
-                            "before moving this lead to Ready for Deposit."
-                        ),
-                    )
+        
+        # OL → RD requires an unconditional offer
+        # and Accepted for Deposit = Yes
+        if current_stage == "OL" and requested_stage == "RD":
+        
+            if existing.get("offer_type") != "Unconditional Offer Letter":
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        "An Unconditional Offer Letter is required "
+                        "before moving this lead to Ready for Deposit."
+                    ),
+                )
+        
+            if not existing.get("accepted_for_deposit", False):
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        "Accepted for Deposit must be set to Yes "
+                        "before moving this lead to Ready for Deposit."
+                    ),
+                )
         
         if requested_stage not in allowed_stages:
             raise HTTPException(
