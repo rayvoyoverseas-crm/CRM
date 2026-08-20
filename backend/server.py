@@ -1032,28 +1032,32 @@ async def update_lead(
                         "before moving this lead to Offer Letter."
                     ),
                 )
-        
-        # OL → RD requires an unconditional offer
-        # and Accepted for Deposit = Yes
-        if current_stage == "OL" and requested_stage == "RD":
-        
-            if existing.get("offer_type") != "Unconditional Offer Letter":
-                raise HTTPException(
-                    status_code=400,
-                    detail=(
-                        "An Unconditional Offer Letter is required "
-                        "before moving this lead to Ready for Deposit."
-                    ),
-                )
-        
-            if not existing.get("accepted_for_deposit", False):
-                raise HTTPException(
-                    status_code=400,
-                    detail=(
-                        "Accepted for Deposit must be set to Yes "
-                        "before moving this lead to Ready for Deposit."
-                    ),
-                )
+
+            # OL → RD requires BOTH:
+            # 1. Unconditional Offer Letter
+            # 2. Accepted for Deposit = Yes
+            if current_stage == "OL" and requested_stage == "RD":
+                missing_requirements = []
+            
+                if existing.get("offer_type") != "Unconditional Offer Letter":
+                    missing_requirements.append(
+                        "Unconditional Offer Letter"
+                    )
+            
+                if not existing.get("accepted_for_deposit", False):
+                    missing_requirements.append(
+                        "Accepted for Deposit = Yes"
+                    )
+            
+                if missing_requirements:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=(
+                            "Cannot move to Ready for Deposit. "
+                            "Please complete: "
+                            + ", ".join(missing_requirements)
+                        ),
+                    )
         
         if requested_stage not in allowed_stages:
             raise HTTPException(
