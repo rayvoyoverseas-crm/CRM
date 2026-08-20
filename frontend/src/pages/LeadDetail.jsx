@@ -2218,6 +2218,69 @@ const uploadedDocumentCount = new Set(
         </div>
       </div>
   )}            
+
+ </details>
+)}
+
+{/* Ready to Deposit */}
+{lead.stage === "RD" && (
+  <div className="bg-white border border-stone-200 rounded-2xl p-6">
+    <div className="mb-4">
+      <h3 className="font-display font-semibold text-lg">
+        Deposit
+      </h3>
+
+      <p className="text-xs text-stone-400 mt-1">
+        Confirm whether the deposit payment has been made.
+      </p>
+    </div>
+
+    <div>
+      <Label className="text-xs">
+        Payment Made *
+      </Label>
+
+      <Select
+        value={
+          lead.payment_made === true
+            ? "Yes"
+            : "No"
+        }
+        onValueChange={async (value) => {
+          if (value === "No") {
+            await updateField({
+              payment_made: false,
+            });
+            return;
+          }
+
+          await updateField({
+            payment_made: true,
+            stage: "DP",
+          });
+        }}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Select Yes or No" />
+        </SelectTrigger>
+
+        <SelectContent>
+          <SelectItem value="No">
+            No
+          </SelectItem>
+
+          <SelectItem value="Yes">
+            Yes
+          </SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  </div>
+)}
+
+</TabsContent>
+
+{lead.pipeline === "loan" && <TabsContent value="loan">           
             
 </TabsContent>
             
