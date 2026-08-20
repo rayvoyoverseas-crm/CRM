@@ -1037,17 +1037,27 @@ async def update_lead(
             # 1. Unconditional Offer Letter
             # 2. Accepted for Deposit = Yes
             if current_stage == "OL" and requested_stage == "RD":
+                offer_type = update.get(
+                    "offer_type",
+                    existing.get("offer_type"),
+                )
+            
+                accepted_for_deposit = update.get(
+                    "accepted_for_deposit",
+                    existing.get("accepted_for_deposit"),
+                )
+            
                 missing_requirements = []
             
-                if existing.get("offer_type") != "Unconditional Offer Letter":
+                if offer_type != "Unconditional Offer Letter":
                     missing_requirements.append(
                         "Unconditional Offer Letter"
                     )
             
-            if existing.get("accepted_for_deposit") is not True:
-            missing_requirements.append(
-                "Accepted for Deposit = Yes"
-            )
+                if accepted_for_deposit is not True:
+                    missing_requirements.append(
+                        "Accepted for Deposit = Yes"
+                    )
             
                 if missing_requirements:
                     raise HTTPException(
