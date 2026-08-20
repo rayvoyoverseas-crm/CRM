@@ -1059,16 +1059,16 @@ const uploadedDocumentCount = new Set(
             <Label className="text-xs">
               Country *
             </Label>
-            <Select
-  value={form.country}
-  onValueChange={(value) =>
-    updateApplicationField(
-      index,
-      "application_status",
-      value
-    )
-  }
->
+  <Select
+    value={form.country}
+    onValueChange={(value) =>
+      updateShortlistField(
+        index,
+        "country",
+        value
+      )
+    }
+  >
   <SelectTrigger>
     <SelectValue placeholder="Select Country" />
   </SelectTrigger>
