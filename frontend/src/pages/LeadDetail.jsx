@@ -1798,6 +1798,60 @@ const uploadedDocumentCount = new Set(
       <p className="text-[11px] text-stone-400 mt-2">
         Accepted formats: PDF, JPG, JPEG, PNG
       </p>
+        {offerLetterDoc && (
+          <div className="mt-4 border-t border-stone-200 pt-4">
+            <div className="text-sm text-stone-700">
+              📄 {offerLetterDoc.original_filename}
+            </div>
+        
+            <div className="flex flex-wrap gap-2 mt-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() =>
+                  window.open(
+                    `${api.defaults.baseURL}/documents/${offerLetterDoc.id}/download`,
+                    "_blank"
+                  )
+                }
+              >
+                👁 View
+              </Button>
+        
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  const link = document.createElement("a");
+        
+                  link.href =
+                    `${api.defaults.baseURL}/documents/${offerLetterDoc.id}/download`;
+        
+                  link.download =
+                    offerLetterDoc.original_filename || "offer-letter";
+        
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                }}
+              >
+                ⬇ Download
+              </Button>
+        
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() =>
+                  document
+                    .getElementById("offer-letter-file")
+                    ?.click()
+                }
+              >
+                🔄 Replace
+              </Button>
+            </div>
+          </div>
+        )}  
     </div>
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
