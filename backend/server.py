@@ -1070,6 +1070,22 @@ async def update_lead(
                             + ", ".join(missing_requirements)
                         ),
                     )
+
+            # RD → DP requires Payment Made = Yes
+            if current_stage == "RD" and requested_stage == "DP":
+                payment_made = update.get(
+                    "payment_made",
+                    existing.get("payment_made"),
+                )
+            
+                if payment_made is not True:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=(
+                            "Payment Made must be set to Yes "
+                            "before moving this lead to Deposit Paid."
+                        ),
+                    )
         
         if requested_stage not in allowed_stages:
             raise HTTPException(
