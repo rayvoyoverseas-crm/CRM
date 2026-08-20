@@ -2004,50 +2004,6 @@ const uploadedDocumentCount = new Set(
         />
       </div>
 
-      <div className="md:col-span-2">
-        <Label className="text-xs">
-          Accepted for Deposit *
-        </Label>
-      
-        <Select
-          value={
-            offerForm.accepted_for_deposit
-              ? "Yes"
-              : "No"
-          }
-          onValueChange={(value) => {
-            if (
-              value === "Yes" &&
-              offerForm.offer_type !== "Unconditional Offer Letter"
-            ) {
-              toast.error(
-                "Unconditional Offer Letter is required before accepting for deposit."
-              );
-              return;
-            }
-          
-            updateOfferField(
-              "accepted_for_deposit",
-              value === "Yes"
-            );
-          }}  
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select Yes or No" />
-          </SelectTrigger>
-      
-          <SelectContent>
-            <SelectItem value="Yes">
-              Yes
-            </SelectItem>
-      
-            <SelectItem value="No">
-              No
-            </SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
     </div>
 
     <div className="mt-5 border border-stone-200 rounded-xl p-4 bg-stone-50">
@@ -2130,8 +2086,6 @@ const uploadedDocumentCount = new Set(
               offerForm.deposit_required === "Yes"
                 ? offerForm.deposit_amount
                 : "",
-            accepted_for_deposit:
-              offerForm.accepted_for_deposit,
             offer_date: offerForm.offer_date,
             offer_reference_number:
               offerForm.reference_number,
