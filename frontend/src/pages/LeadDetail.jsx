@@ -2440,7 +2440,20 @@ const uploadedDocumentCount = new Set(
                 Move to
               </label>
               
-              <Select onValueChange={(v) => updateField({ stage: v })}>
+              <Select
+      onValueChange={(v) => {
+        if (lead.stage === "OL" && v === "RD") {
+          updateField({
+            stage: v,
+            offer_type: offerForm.offer_type,
+            accepted_for_deposit: offerForm.accepted_for_deposit,
+          });
+          return;
+        }
+    
+        updateField({ stage: v });
+      }}
+    >
   <SelectTrigger data-testid="detail-stage-select">
     <SelectValue placeholder="Move to next stage" />
   </SelectTrigger>
