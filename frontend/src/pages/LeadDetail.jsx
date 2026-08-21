@@ -66,6 +66,23 @@ const [offerFile, setOfferFile] = useState(null);
 const [uploadingOffer, setUploadingOffer] = useState(false);
 const [offerFileName, setOfferFileName] = useState("");
 
+
+const [depositForm, setDepositForm] = useState({
+  payment_method: "",
+  payment_amount: "",
+  payment_date: "",
+  payment_id: "",
+});
+
+const [depositReceiptFile, setDepositReceiptFile] =
+  useState(null);
+
+const [depositReceiptFileName, setDepositReceiptFileName] =
+  useState("");
+
+const [savingDepositDetails, setSavingDepositDetails] =
+  useState(false);
+
 const updateOfferField = (field, value) => {
   setOfferForm((prev) => ({
     ...prev,
@@ -272,6 +289,21 @@ setOfferForm({
   verified:
     data.offer_details_verified || false,
 });
+
+setDepositForm({
+  payment_method:
+    data.deposit_payment_method || "",
+
+  payment_amount:
+    data.deposit_payment_amount || "",
+
+  payment_date:
+    data.deposit_payment_date || "",
+
+  payment_id:
+    data.deposit_payment_id || "",
+});
+
   
 }, [id]);
 
@@ -2274,6 +2306,271 @@ const uploadedDocumentCount = new Set(
     </div>
   </div>
 )}
+
+{/* Deposit Paid - Deposit Details */}
+{["DP", "VS", "EN"].includes(lead.stage) && (
+  <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
+    <summary className="cursor-pointer list-none flex items-center justify-between px-6 py-5 hover:bg-stone-50">
+      <div>
+        <h3 className="font-display font-semibold text-lg">
+          Deposit Details
+        </h3>
+
+        <p className="text-xs text-stone-400 mt-1">
+          Record and save the student's deposit payment details.
+        </p>
+      </div>
+
+      <span className="text-stone-500 text-sm transition-transform group-open:rotate-180">
+        ▼
+      </span>
+    </summary>
+
+    <div className="border-t border-stone-200 p-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+
+        <div>
+          <Label className="text-xs">
+            Payment Method *
+          </Label>
+
+          <Select
+            value={depositForm.payment_method}
+            onValueChange={(value) =>
+              setDepositForm((prev) => ({
+                ...prev,
+                payment_method: value,
+              }))
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select payment method" />
+            </SelectTrigger>
+
+            <SelectContent>
+              <SelectItem value="Online Bank Transfer">
+                Online Bank Transfer
+              </SelectItem>
+
+              <SelectItem value="Offline Bank Transfer">
+                Offline Bank Transfer
+              </SelectItem>
+
+              <SelectItem value="Visa Card">
+                Visa Card
+              </SelectItem>
+
+              <SelectItem value="Master Card">
+                Master Card
+              </SelectItem>
+
+              <SelectItem value="Cash to Rayvoy">
+                Cash to Rayvoy
+              </SelectItem>
+
+              <SelectItem value="Bank Transfers to Rayvoy">
+                Bank Transfers to Rayvoy
+              </SelectItem>
+
+              <SelectItem value="UPI to Rayvoy">
+                UPI to Rayvoy
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label className="text-xs">
+            Payment Amount *
+          </Label>
+
+          <Input
+            value={depositForm.payment_amount}
+            onChange={(e) =>
+              setDepositForm((prev) => ({
+                ...prev,
+                payment_amount: e.target.value,
+              }))
+            }
+            placeholder="Enter payment amount"
+          />
+        </div>
+
+        <div>
+          <Label className="text-xs">
+            Payment Date *
+          </Label>
+
+          <Input
+            type="date"
+            value={depositForm.payment_date}
+            onChange={(e) =>
+              setDepositForm((prev) => ({
+                ...prev,
+                payment_date: e.target.value,
+              }))
+            }
+          />
+        </div>
+
+        <div>
+          <Label className="text-xs">
+            Payment ID *
+          </Label>
+
+          <Input
+            value={depositForm.payment_id}
+            onChange={(e) =>
+              setDepositForm((prev) => ({
+                ...prev,
+                payment_id: e.target.value,
+              }))
+            }
+            placeholder="Enter payment / transaction ID"
+          />
+        </div>
+
+        <div className="md:col-span-2">
+          <Label className="text-xs">
+            Payment Receipt *
+          </Label>
+
+          <input
+            id="deposit-receipt-file"
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png"
+            className="hidden"
+            onChange={(e) => {
+              const file =
+                e.target.files?.[0] || null;
+
+              if (!file) return;
+
+              setDepositReceiptFile(file);
+              setDepositReceiptFileName(
+                file.name
+              );
+            }}
+          />
+
+          <div className="flex items-center gap-3 mt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() =>
+                document
+                  .getElementById(
+                    "deposit-receipt-file"
+                  )
+                  ?.click()
+              }
+            >
+              Choose Payment Receipt
+            </Button>
+
+            {depositReceiptFileName && (
+              <span className="text-xs text-stone-600 truncate">
+                {depositReceiptFileName}
+              </span>
+            )}
+          </div>
+        </div>
+
+      </div>
+
+      <Button
+        type="button"
+        disabled={savingDepositDetails}
+        className="w-full mt-4 bg-[#1B365D] hover:bg-[#152a4a]"
+        onClick={async () => {
+          if (
+            !depositForm.payment_method ||
+            !depositForm.payment_amount ||
+            !depositForm.payment_date ||
+            !depositForm.payment_id
+          ) {
+            toast.error(
+              "Please complete all Deposit Details."
+            );
+            return;
+          }
+
+          const existingReceipt =
+            leadDocs.find(
+              (doc) =>
+                doc.doc_type ===
+                  "deposit_receipt" &&
+                doc.original_filename
+            );
+
+          if (
+            !depositReceiptFile &&
+            !existingReceipt
+          ) {
+            toast.error(
+              "Please upload the Payment Receipt."
+            );
+            return;
+          }
+
+          try {
+            setSavingDepositDetails(true);
+
+            if (depositReceiptFile) {
+              const formData = new FormData();
+
+              formData.append(
+                "file",
+                depositReceiptFile
+              );
+
+              await api.post(
+                `/leads/${id}/documents?doc_type=deposit_receipt`,
+                formData
+              );
+            }
+
+            await updateField({
+              deposit_payment_method:
+                depositForm.payment_method,
+
+              deposit_payment_amount:
+                depositForm.payment_amount,
+
+              deposit_payment_date:
+                depositForm.payment_date,
+
+              deposit_payment_id:
+                depositForm.payment_id,
+
+              deposit_details_saved: true,
+            });
+
+            toast.success(
+              "Deposit Details saved successfully."
+            );
+
+            setDepositReceiptFile(null);
+            setDepositReceiptFileName("");
+
+            await load();
+          } catch (error) {
+            toast.error(
+              error?.response?.data?.detail ||
+                "Unable to save Deposit Details."
+            );
+          } finally {
+            setSavingDepositDetails(false);
+          }
+        }}
+      >
+        {savingDepositDetails
+          ? "Saving..."
+          : "Save Deposit Details"}
+      </Button>
+    </div>
+  </details>
+)}            
             
 </TabsContent>
             
