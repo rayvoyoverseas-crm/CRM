@@ -236,6 +236,13 @@ class LeadUpdateIn(BaseModel):
             "Visa Refused",
         ]
     ] = None
+
+    student_enrolment: Optional[
+        Literal[
+            "Awaiting",
+            "Done",
+        ]
+    ] = None
     
     offer_date: Optional[str] = None
     offer_reference_number: Optional[str] = None
@@ -491,6 +498,11 @@ def serialize_lead(l: dict) -> dict:
         "visa_decision": l.get(
             "visa_decision",
             "",
+        ),
+
+        "student_enrolment": l.get(
+            "student_enrolment",
+            "Awaiting",
         ),
         
         "offer_date": l.get("offer_date", ""),
@@ -1257,14 +1269,87 @@ async def update_lead(
                     ),
                 )
 
-        if requested_stage not in allowed_stages:
-            raise HTTPException(
-                status_code=400,
-                detail=(
-                    f"Stage cannot move from "
-                    f"{current_stage} to {requested_stage}"
-                ),
+        # VS → EN requires:
+        # 1. Complete Visa Application
+        # 2. Visa Decision = Visa Granted
+        # 3. Student Enrolment = Done
+        if current_stage == "VS" and requested_stage == "EN":
+            visa_applied = update.get(
+                "visa_applied",
+                existing.get("visa_applied"),
             )
+
+            visa_applied_date = update.get(
+                "visa_applied_date",
+                existing.get("visa_applied_date"),
+            )
+
+            visa_type = update.get(
+                "visa_type",
+                existing.get("visa_type"),
+            )
+
+            visa_decision = update.get(
+                "visa_decision",
+                existing.get("visa_decision"),
+            )
+
+            student_enrolment = update.get(
+                "student_enrolment",
+                existing.get("student_enrolment"),
+            )
+
+            missing_requirements = []
+
+            if visa_applied is not True:
+                missing_requirements.append(
+                    "Visa Applied = Yes"
+                )
+
+            if not str(
+                visa_applied_date or ""
+            ).strip():
+                missing_requirements.append(
+                    "Applied Date"
+                )
+
+            if not str(
+                visa_type or ""
+            ).strip():
+                missing_requirements.append(
+                    "Visa Type"
+                )
+
+            if visa_decision != "Visa Granted":
+                missing_requirements.append(
+                    "Visa Decision = Visa Granted"
+                )
+
+            if student_enrolment != "Done":
+                missing_requirements.append(
+                    "Student Enrolment = Done"
+                )
+
+            if missing_requirements:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        "Cannot move to Enrolment. "
+                        "Please complete: "
+                        + ", ".join(
+                            missing_requirements
+                        )
+                    ),
+                )
+
+         if requested_stage not in allowed_stages:
+             raise HTTPException(
+                 status_code=400,
+                 detail=(
+                     f"Stage cannot move from "
+                     f"{current_stage} to {requested_stage}"
+                 ),
+             )
         
         activity_entries.append({
             "type": "stage_change",
