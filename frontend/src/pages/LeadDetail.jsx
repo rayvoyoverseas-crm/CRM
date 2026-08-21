@@ -2806,6 +2806,66 @@ const uploadedDocumentCount = new Set(
         </div>
       )}
 
+      {/* Student Enrolment */}
+      {lead.visa_applied === true &&
+        lead.visa_decision === "Visa Granted" && (
+          <div className="mt-5 border-t border-stone-200 pt-5">
+            <Label className="text-xs">
+              Student Enrolment *
+            </Label>
+
+            <Select
+              value={
+                lead.student_enrolment || "Awaiting"
+              }
+              onValueChange={async (value) => {
+                try {
+                  if (value === "Awaiting") {
+                    await updateField({
+                      student_enrolment: "Awaiting",
+                    });
+
+                    await load();
+                    return;
+                  }
+
+                  if (value === "Done") {
+                    await updateField({
+                      student_enrolment: "Done",
+                      stage: "EN",
+                    });
+
+                    toast.success(
+                      "Student enrolment completed."
+                    );
+
+                    await load();
+                  }
+                } catch (error) {
+                  toast.error(
+                    error?.response?.data?.detail ||
+                      "Unable to update Student Enrolment."
+                  );
+                }
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select enrolment status" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="Awaiting">
+                  Awaiting
+                </SelectItem>
+
+                <SelectItem value="Done">
+                  Done
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}      
+
     </div>
   </details>
 )}            
