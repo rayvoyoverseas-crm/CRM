@@ -215,6 +215,27 @@ class LeadUpdateIn(BaseModel):
     deposit_payment_date: Optional[str] = None
     deposit_payment_id: Optional[str] = None
     deposit_details_saved: Optional[bool] = None
+
+    # Visa Application details
+    visa_applied: Optional[bool] = None
+    visa_applied_date: Optional[str] = None
+    visa_reference_number: Optional[str] = None
+
+    visa_type: Optional[
+        Literal[
+            "General",
+            "Priority",
+            "VIP",
+        ]
+    ] = None
+
+    visa_decision: Optional[
+        Literal[
+            "Visa Awaited",
+            "Visa Granted",
+            "Visa Refused",
+        ]
+    ] = None
     
     offer_date: Optional[str] = None
     offer_reference_number: Optional[str] = None
