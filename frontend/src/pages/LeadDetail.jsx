@@ -74,6 +74,14 @@ const [depositForm, setDepositForm] = useState({
   payment_id: "",
 });
 
+const [visaForm, setVisaForm] = useState({
+  visa_applied: false,
+  applied_date: "",
+  reference_number: "",
+  visa_type: "",
+  visa_decision: "",
+});
+
 const [depositReceiptFile, setDepositReceiptFile] =
   useState(null);
 
@@ -302,6 +310,23 @@ setDepositForm({
 
   payment_id:
     data.deposit_payment_id || "",
+});
+
+setVisaForm({
+  visa_applied:
+    data.visa_applied || false,
+
+  applied_date:
+    data.visa_applied_date || "",
+
+  reference_number:
+    data.visa_reference_number || "",
+
+  visa_type:
+    data.visa_type || "",
+
+  visa_decision:
+    data.visa_decision || "",
 });
 
   
