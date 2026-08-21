@@ -2596,6 +2596,219 @@ const uploadedDocumentCount = new Set(
     </div>
   </details>
 )}            
+
+{/* Visa Application */}
+{["VS", "EN"].includes(lead.stage) && (
+  <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
+    <summary className="cursor-pointer list-none flex items-center justify-between px-6 py-5 hover:bg-stone-50">
+      <div>
+        <h3 className="font-display font-semibold text-lg">
+          Visa Application
+        </h3>
+
+        <p className="text-xs text-stone-400 mt-1">
+          Record visa application and decision details.
+        </p>
+      </div>
+
+      <span className="text-stone-500 text-sm transition-transform group-open:rotate-180">
+        ▼
+      </span>
+    </summary>
+
+    <div className="border-t border-stone-200 p-6">
+
+      <div>
+        <Label className="text-xs">
+          Visa Applied *
+        </Label>
+
+        <Select
+          value={
+            visaForm.visa_applied
+              ? "Yes"
+              : "No"
+          }
+          onValueChange={(value) =>
+            setVisaForm((prev) => ({
+              ...prev,
+              visa_applied: value === "Yes",
+            }))
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select Yes or No" />
+          </SelectTrigger>
+
+          <SelectContent>
+            <SelectItem value="No">
+              No
+            </SelectItem>
+
+            <SelectItem value="Yes">
+              Yes
+            </SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {visaForm.visa_applied && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+
+          <div>
+            <Label className="text-xs">
+              Applied Date *
+            </Label>
+
+            <Input
+              type="date"
+              value={visaForm.applied_date}
+              onChange={(e) =>
+                setVisaForm((prev) => ({
+                  ...prev,
+                  applied_date: e.target.value,
+                }))
+              }
+            />
+          </div>
+
+          <div>
+            <Label className="text-xs">
+              Visa Application / Reference Number
+            </Label>
+
+            <Input
+              value={visaForm.reference_number}
+              onChange={(e) =>
+                setVisaForm((prev) => ({
+                  ...prev,
+                  reference_number: e.target.value,
+                }))
+              }
+              placeholder="Enter visa reference number"
+            />
+          </div>
+
+          <div>
+            <Label className="text-xs">
+              Visa Type *
+            </Label>
+
+            <Select
+              value={visaForm.visa_type}
+              onValueChange={(value) =>
+                setVisaForm((prev) => ({
+                  ...prev,
+                  visa_type: value,
+                }))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select visa type" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="General">
+                  General
+                </SelectItem>
+
+                <SelectItem value="Priority">
+                  Priority
+                </SelectItem>
+
+                <SelectItem value="VIP">
+                  VIP
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label className="text-xs">
+              Visa Decision *
+            </Label>
+
+            <Select
+              value={visaForm.visa_decision}
+              onValueChange={(value) =>
+                setVisaForm((prev) => ({
+                  ...prev,
+                  visa_decision: value,
+                }))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select visa decision" />
+              </SelectTrigger>
+
+              <SelectContent>
+                <SelectItem value="Visa Awaited">
+                  Visa Awaited
+                </SelectItem>
+
+                <SelectItem value="Visa Granted">
+                  Visa Granted
+                </SelectItem>
+
+                <SelectItem value="Visa Refused">
+                  Visa Refused
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="md:col-span-2">
+            <Button
+              type="button"
+              className="w-full bg-[#1B365D] hover:bg-[#152a4a]"
+              onClick={async () => {
+                if (
+                  !visaForm.applied_date ||
+                  !visaForm.visa_type ||
+                  !visaForm.visa_decision
+                ) {
+                  toast.error(
+                    "Please complete all compulsory Visa Application details."
+                  );
+                  return;
+                }
+
+                try {
+                  await updateField({
+                    visa_applied: true,
+                    visa_applied_date:
+                      visaForm.applied_date,
+                    visa_reference_number:
+                      visaForm.reference_number,
+                    visa_type:
+                      visaForm.visa_type,
+                    visa_decision:
+                      visaForm.visa_decision,
+                  });
+
+                  toast.success(
+                    "Visa details saved successfully."
+                  );
+
+                  await load();
+                } catch (error) {
+                  toast.error(
+                    error?.response?.data?.detail ||
+                      "Unable to save Visa details."
+                  );
+                }
+              }}
+            >
+              Save Visa Details
+            </Button>
+          </div>
+
+        </div>
+      )}
+
+    </div>
+  </details>
+)}            
             
 </TabsContent>
             
