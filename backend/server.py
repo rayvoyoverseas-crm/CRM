@@ -1086,16 +1086,14 @@ async def update_lead(
                         "before moving this lead to Deposit Paid."
                     ),
                 )
-
-        if requested_stage not in allowed_stages:
-            raise HTTPException(
-                status_code=400,
-                detail=(
-                    f"Stage cannot move from "
-                    f"{current_stage} to {requested_stage}"
-                ),
-            )        
-                    
+                if requested_stage not in allowed_stages:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=(
+                            f"Stage cannot move from "
+                            f"{current_stage} to {requested_stage}"
+                        ),
+                    )
         activity_entries.append({
             "type": "stage_change",
             "text": (
