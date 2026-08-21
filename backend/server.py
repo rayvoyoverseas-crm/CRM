@@ -199,6 +199,23 @@ class LeadUpdateIn(BaseModel):
     accepted_for_deposit: Optional[bool] = None
     payment_made: Optional[bool] = None
     
+    deposit_payment_method: Optional[
+        Literal[
+            "Online Bank Transfer",
+            "Offline Bank Transfer",
+            "Visa Card",
+            "Master Card",
+            "Cash to Rayvoy",
+            "Bank Transfers to Rayvoy",
+            "UPI to Rayvoy",
+        ]
+    ] = None
+    
+    deposit_payment_amount: Optional[str] = None
+    deposit_payment_date: Optional[str] = None
+    deposit_payment_id: Optional[str] = None
+    deposit_details_saved: Optional[bool] = None
+    
     offer_date: Optional[str] = None
     offer_reference_number: Optional[str] = None
     offer_details_verified: Optional[bool] = None
