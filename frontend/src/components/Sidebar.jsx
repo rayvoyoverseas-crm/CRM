@@ -25,76 +25,200 @@ const adminNav = [
 export default function Sidebar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  const [collapsed, setCollapsed] = useState(false);
+
   if (!user) return null;
 
+  const visibleNav = nav.filter(
+    (n) =>
+      !n.perm ||
+      user.role === "admin" ||
+      user.permissions?.[n.perm]
+  );
+
   return (
-    <aside className="w-64 shrink-0 bg-[#F5F2ED] border-r border-stone-200 h-screen sticky top-0 flex flex-col">
-      <div className="px-5 py-6 border-b border-stone-200/70">
-        <div className="flex items-center gap-2">
-          <div className="w-9 h-9 rounded-xl bg-[#C05B43] text-white grid place-items-center font-display font-bold text-lg">R</div>
-          <div>
-            <div className="font-display font-bold text-[15px] leading-tight text-stone-900">Rayvoy</div>
-            <div className="text-[11px] text-stone-500 tracking-widest uppercase">Overseas CRM</div>
+    <aside
+      className={`${
+        collapsed ? "w-20" : "w-64"
+      } shrink-0 bg-[#F5F2ED] border-r border-stone-200 h-screen sticky top-0 flex flex-col transition-all duration-300`}
+    >
+      {/* Logo / Collapse */}
+      <div
+        className={`${
+          collapsed ? "px-3" : "px-5"
+        } py-6 border-b border-stone-200/70`}
+      >
+        <div
+          className={`flex items-center ${
+            collapsed
+              ? "justify-center"
+              : "justify-between"
+          }`}
+        >
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-9 h-9 shrink-0 rounded-xl bg-[#C05B43] text-white grid place-items-center font-display font-bold text-lg">
+              R
+            </div>
+
+            {!collapsed && (
+              <div className="min-w-0">
+                <div className="font-display font-bold text-[15px] leading-tight text-stone-900">
+                  Rayvoy
+                </div>
+
+                <div className="text-[11px] text-stone-500 tracking-widest uppercase">
+                  Overseas CRM
+                </div>
+              </div>
+            )}
           </div>
+
+          {!collapsed && (
+            <button
+              type="button"
+              onClick={() => setCollapsed(true)}
+              className="p-2 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-white transition-colors"
+              title="Collapse sidebar"
+            >
+              <PanelLeftClose className="w-4 h-4" />
+            </button>
+          )}
         </div>
+
+        {collapsed && (
+          <button
+            type="button"
+            onClick={() => setCollapsed(false)}
+            className="mt-3 w-full flex justify-center p-2 rounded-lg text-stone-500 hover:text-stone-900 hover:bg-white transition-colors"
+            title="Open sidebar"
+          >
+            <PanelLeftOpen className="w-4 h-4" />
+          </button>
+        )}
       </div>
 
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        <div className="text-[10px] uppercase tracking-widest text-stone-400 font-semibold px-2 mb-1.5">Workspace</div>
-        {nav.filter((n) => !n.perm || user.role === "admin" || user.permissions?.[n.perm]).map((n) => (
+      {/* Navigation */}
+      <nav
+        className={`flex-1 ${
+          collapsed ? "px-2" : "px-3"
+        } py-4 space-y-1 overflow-y-auto`}
+      >
+        {!collapsed && (
+          <div className="text-[10px] uppercase tracking-widest text-stone-400 font-semibold px-2 mb-1.5">
+            Workspace
+          </div>
+        )}
+
+        {visibleNav.map((n) => (
           <NavLink
             key={n.to}
             to={n.to}
             end={n.to === "/"}
             data-testid={n.testId}
+            title={collapsed ? n.label : undefined}
             className={({ isActive }) =>
-              `flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors ${
+              `flex items-center ${
+                collapsed
+                  ? "justify-center px-2"
+                  : "gap-2.5 px-3"
+              } py-2 rounded-xl text-sm transition-colors ${
                 isActive
                   ? "bg-white border border-stone-200 text-[#C05B43] shadow-sm font-semibold"
                   : "text-stone-600 hover:bg-white/70 hover:text-stone-900"
               }`
             }
           >
-            <n.icon className="w-4 h-4" strokeWidth={2} />
-            <span>{n.label}</span>
+            <n.icon
+              className="w-4 h-4 shrink-0"
+              strokeWidth={2}
+            />
+
+            {!collapsed && (
+              <span>{n.label}</span>
+            )}
           </NavLink>
         ))}
 
         {user.role === "admin" && (
           <>
-            <div className="text-[10px] uppercase tracking-widest text-stone-400 font-semibold px-2 mt-6 mb-1.5">Admin</div>
+            {!collapsed && (
+              <div className="text-[10px] uppercase tracking-widest text-stone-400 font-semibold px-2 mt-6 mb-1.5">
+                Admin
+              </div>
+            )}
+
             {adminNav.map((n) => (
               <NavLink
                 key={n.to}
                 to={n.to}
                 data-testid={n.testId}
+                title={collapsed ? n.label : undefined}
                 className={({ isActive }) =>
-                  `flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm transition-colors ${
+                  `flex items-center ${
+                    collapsed
+                      ? "justify-center px-2"
+                      : "gap-2.5 px-3"
+                  } py-2 rounded-xl text-sm transition-colors ${
                     isActive
                       ? "bg-white border border-stone-200 text-[#C05B43] shadow-sm font-semibold"
                       : "text-stone-600 hover:bg-white/70 hover:text-stone-900"
                   }`
                 }
               >
-                <n.icon className="w-4 h-4" strokeWidth={2} />
-                <span>{n.label}</span>
+                <n.icon
+                  className="w-4 h-4 shrink-0"
+                  strokeWidth={2}
+                />
+
+                {!collapsed && (
+                  <span>{n.label}</span>
+                )}
               </NavLink>
             ))}
           </>
         )}
       </nav>
 
-      <div className="px-3 py-4 border-t border-stone-200/70">
-        <div className="flex items-center gap-3 px-2 py-2">
-          <div className="w-9 h-9 rounded-full bg-[#1B365D] text-white grid place-items-center text-sm font-semibold">
-            {(user.name || user.email).slice(0, 1).toUpperCase()}
+      {/* User / Logout */}
+      <div
+        className={`${
+          collapsed ? "px-2" : "px-3"
+        } py-4 border-t border-stone-200/70`}
+      >
+        <div
+          className={`flex items-center ${
+            collapsed
+              ? "flex-col gap-2"
+              : "gap-3 px-2 py-2"
+          }`}
+        >
+          <div className="w-9 h-9 shrink-0 rounded-full bg-[#1B365D] text-white grid place-items-center text-sm font-semibold">
+            {(user.name || user.email)
+              .slice(0, 1)
+              .toUpperCase()}
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-semibold text-stone-800 truncate" data-testid="sidebar-user-name">{user.name}</div>
-            <div className="text-[11px] text-stone-500 uppercase tracking-wider">{user.role}</div>
-          </div>
+
+          {!collapsed && (
+            <div className="flex-1 min-w-0">
+              <div
+                className="text-sm font-semibold text-stone-800 truncate"
+                data-testid="sidebar-user-name"
+              >
+                {user.name}
+              </div>
+
+              <div className="text-[11px] text-stone-500 uppercase tracking-wider">
+                {user.role}
+              </div>
+            </div>
+          )}
+
           <button
-            onClick={async () => { await logout(); navigate("/login"); }}
+            onClick={async () => {
+              await logout();
+              navigate("/login");
+            }}
             data-testid="logout-button"
             className="p-2 rounded-lg text-stone-500 hover:text-[#C05B43] hover:bg-white transition-colors"
             title="Sign out"
