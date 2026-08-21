@@ -1094,9 +1094,8 @@ async def update_lead(
                     f"Stage cannot move from "
                     f"{current_stage} to {requested_stage}"
                 ),
-            )
+            )        
                     
-           
         activity_entries.append({
             "type": "stage_change",
             "text": (
