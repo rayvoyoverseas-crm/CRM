@@ -1018,13 +1018,13 @@ async def update_lead(
                 "application_records",
                 [],
             )
-        
+
             has_offer_letter_application = any(
                 application.get("application_status")
                 == "Offer Letter Received"
                 for application in application_records
             )
-        
+
             if not has_offer_letter_application:
                 raise HTTPException(
                     status_code=400,
@@ -1033,6 +1033,7 @@ async def update_lead(
                         "with Application Status = Offer Letter Received "
                         "before moving this lead to Offer Letter."
                     ),
+                )
                 
 
         # OL → RD requires BOTH:
@@ -1086,14 +1087,14 @@ async def update_lead(
                         "before moving this lead to Deposit Paid."
                     ),
                 )
-                if requested_stage not in allowed_stages:
-                    raise HTTPException(
-                        status_code=400,
-                        detail=(
-                            f"Stage cannot move from "
-                            f"{current_stage} to {requested_stage}"
-                        ),
-                    )
+        if requested_stage not in allowed_stages:
+            raise HTTPException(
+                status_code=400,
+                detail=(
+                    f"Stage cannot move from "
+                    f"{current_stage} to {requested_stage}"
+                ),
+            )
         activity_entries.append({
             "type": "stage_change",
             "text": (
