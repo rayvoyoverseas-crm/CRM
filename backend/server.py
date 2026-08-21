@@ -1157,6 +1157,64 @@ async def update_lead(
                     ),
                 )
 
+        # DP → VS requires complete Deposit Details
+        # and an uploaded Payment Receipt
+        if current_stage == "DP" and requested_stage == "VS":
+            required_deposit_fields = {
+                "Payment Method": existing.get(
+                    "deposit_payment_method"
+                ),
+                "Payment Amount": existing.get(
+                    "deposit_payment_amount"
+                ),
+                "Payment Date": existing.get(
+                    "deposit_payment_date"
+                ),
+                "Payment ID": existing.get(
+                    "deposit_payment_id"
+                ),
+            }
+
+            missing_deposit_fields = [
+                field_name
+                for field_name, value in required_deposit_fields.items()
+                if not str(value or "").strip()
+            ]
+
+            # Payment Receipt is compulsory
+            deposit_receipt = await db.documents.find_one(
+                {
+                    "lead_id": lead_id,
+                    "doc_type": "deposit_receipt",
+                    "is_deleted": False,
+                }
+            )
+
+            if not deposit_receipt:
+                missing_deposit_fields.append(
+                    "Payment Receipt"
+                )
+
+            if not existing.get(
+                "deposit_details_saved",
+                False,
+            ):
+                missing_deposit_fields.append(
+                    "Save Deposit Details"
+                )
+
+            if missing_deposit_fields:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        "Cannot move to Visa. "
+                        "Please complete: "
+                        + ", ".join(
+                            missing_deposit_fields
+                        )
+                    ),
+                )
+
         if requested_stage not in allowed_stages:
             raise HTTPException(
                 status_code=400,
