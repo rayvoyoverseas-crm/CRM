@@ -471,6 +471,27 @@ def serialize_lead(l: dict) -> dict:
             "deposit_details_saved",
             False,
         ),
+
+        "visa_applied": l.get(
+            "visa_applied",
+            False,
+        ),
+        "visa_applied_date": l.get(
+            "visa_applied_date",
+            "",
+        ),
+        "visa_reference_number": l.get(
+            "visa_reference_number",
+            "",
+        ),
+        "visa_type": l.get(
+            "visa_type",
+            "",
+        ),
+        "visa_decision": l.get(
+            "visa_decision",
+            "",
+        ),
         
         "offer_date": l.get("offer_date", ""),
         "offer_reference_number": l.get("offer_reference_number", ""),
