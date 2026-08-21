@@ -1011,6 +1011,7 @@ async def update_lead(
                     ),
                 )
 
+
         # AP → OL requires at least one application
         # to have Application Status = Offer Letter Received
         if current_stage == "AP" and requested_stage == "OL":
@@ -1034,7 +1035,6 @@ async def update_lead(
                         "before moving this lead to Offer Letter."
                     ),
                 )
-                
 
         # OL → RD requires BOTH:
         # 1. Unconditional Offer Letter
@@ -1087,6 +1087,7 @@ async def update_lead(
                         "before moving this lead to Deposit Paid."
                     ),
                 )
+
         if requested_stage not in allowed_stages:
             raise HTTPException(
                 status_code=400,
@@ -1095,6 +1096,7 @@ async def update_lead(
                     f"{current_stage} to {requested_stage}"
                 ),
             )
+        
         activity_entries.append({
             "type": "stage_change",
             "text": (
