@@ -1133,6 +1133,7 @@ const uploadedDocumentCount = new Set(
   <SelectContent>
     <SelectItem value="UK">UK</SelectItem>
     <SelectItem value="USA">USA</SelectItem>
+    <SelectItem value="UAE">UAE</SelectItem>
     <SelectItem value="Australia">Australia</SelectItem>
     <SelectItem value="Ireland">Ireland</SelectItem>
     <SelectItem value="Germany">Germany</SelectItem>
