@@ -7,6 +7,7 @@ import Dashboard from "@/pages/Dashboard";
 import PipelineBoard from "@/pages/PipelineBoard";
 import WebsiteLeads from "@/pages/WebsiteLeads";
 import Analytics from "@/pages/Analytics";
+import Calculation from "@/pages/Calculation";
 import Team from "@/pages/Team";
 import Targets from "@/pages/Targets";
 import Settings from "@/pages/Settings";
