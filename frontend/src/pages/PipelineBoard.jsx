@@ -31,9 +31,14 @@ function LeadCard({ lead, pipeline, onStageChange, users, onDelete, canDelete })
     <div className={`kanban-card ${lead.is_stale ? "!border-rose-400 !bg-rose-50/40" : ""}`} data-testid={`lead-card-${lead.id}`}>
       {lead.is_stale && <div className="text-[10px] uppercase tracking-widest text-rose-600 font-bold mb-1">⚠ Stale · needs update</div>}
       <div className="flex items-start justify-between gap-2">
-        <Link to={`/lead/${lead.id}`} className="font-semibold text-[15px] text-stone-900 hover:text-[#C05B43] truncate flex-1">
-          {lead.name}
-        </Link>
+      <Link
+        to={`/lead/${lead.id}`}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="font-semibold text-[15px] text-stone-900 hover:text-[#C05B43] truncate flex-1"
+      >
+        {lead.name}
+      </Link>
         {canDelete && (
           <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(lead); }} data-testid={`delete-lead-${lead.id}`} className="p-1 text-stone-300 hover:text-rose-600 shrink-0" title="Move to Bin">
             <Trash2 className="w-3.5 h-3.5" />
