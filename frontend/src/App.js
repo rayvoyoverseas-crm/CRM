@@ -31,6 +31,14 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/" element={<Protected><Dashboard /></Protected>} />
           <Route path="/pipeline/study" element={<Protected><PipelineBoard pipeline="study_abroad" /></Protected>} />
+          <Route
+          path="/calculation"
+          element={
+            <Protected>
+              <Calculation />
+            </Protected>
+          }
+        />
           <Route path="/pipeline/accommodation" element={<Protected><PipelineBoard pipeline="accommodation" /></Protected>} />
           <Route path="/pipeline/loan" element={<Protected><PipelineBoard pipeline="loan" /></Protected>} />
           <Route path="/website-leads" element={<Protected><WebsiteLeads /></Protected>} />
