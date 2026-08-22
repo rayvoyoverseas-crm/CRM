@@ -17,6 +17,10 @@ import bcrypt
 import jwt
 from bson import ObjectId
 from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Depends, Header, UploadFile, File, Query
+
+from fastapi.responses import RedirectResponse
+from google_auth_oauthlib.flow import Flow
+
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, EmailStr
@@ -41,6 +45,32 @@ ROLE_PERMS = {
 }
 APP_NAME = os.environ.get("APP_NAME", "rayvoy-crm")
 
+# --- Google Calendar OAuth --------------------------------------------------
+
+GOOGLE_CLIENT_ID = os.environ.get(
+    "GOOGLE_CLIENT_ID",
+    "",
+)
+
+GOOGLE_CLIENT_SECRET = os.environ.get(
+    "GOOGLE_CLIENT_SECRET",
+    "",
+)
+
+GOOGLE_REDIRECT_URI = os.environ.get(
+    "GOOGLE_REDIRECT_URI",
+    "",
+)
+
+FRONTEND_URL = os.environ.get(
+    "FRONTEND_URL",
+    "https://crm.rayvoyoverseas.com",
+).rstrip("/")
+
+GOOGLE_CALENDAR_SCOPES = [
+    "https://www.googleapis.com/auth/calendar.events.owned",
+]
+
 R2_ACCOUNT_ID = os.environ["R2_ACCOUNT_ID"]
 R2_ACCESS_KEY_ID = os.environ["R2_ACCESS_KEY_ID"]
 R2_SECRET_ACCESS_KEY = os.environ["R2_SECRET_ACCESS_KEY"]
@@ -64,6 +94,35 @@ api = APIRouter(prefix="/api")
 
 # --- Utilities --------------------------------------------------------------
 
+def build_google_calendar_flow() -> Flow:
+    if (
+        not GOOGLE_CLIENT_ID
+        or not GOOGLE_CLIENT_SECRET
+        or not GOOGLE_REDIRECT_URI
+    ):
+        raise HTTPException(
+            status_code=500,
+            detail="Google Calendar integration is not configured.",
+        )
+
+    client_config = {
+        "web": {
+            "client_id": GOOGLE_CLIENT_ID,
+            "client_secret": GOOGLE_CLIENT_SECRET,
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "redirect_uris": [
+                GOOGLE_REDIRECT_URI,
+            ],
+        }
+    }
+
+    return Flow.from_client_config(
+        client_config,
+        scopes=GOOGLE_CALENDAR_SCOPES,
+        redirect_uri=GOOGLE_REDIRECT_URI,
+    )
+
 def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
@@ -80,6 +139,48 @@ def create_access_token(user_id: str, email: str, role: str) -> str:
         "exp": datetime.now(timezone.utc) + timedelta(hours=12), "type": "access",
     }
     return jwt.encode(payload, jwt_secret(), algorithm=JWT_ALGORITHM)
+
+def create_google_oauth_state(user_id: str) -> str:
+    payload = {
+        "sub": user_id,
+        "type": "google_calendar_oauth",
+        "nonce": py_secrets.token_urlsafe(24),
+        "exp": (
+            datetime.now(timezone.utc)
+            + timedelta(minutes=10)
+        ),
+    }
+
+    return jwt.encode(
+        payload,
+        jwt_secret(),
+        algorithm=JWT_ALGORITHM,
+    )
+
+
+def verify_google_oauth_state(state: str) -> str:
+    try:
+        payload = jwt.decode(
+            state,
+            jwt_secret(),
+            algorithms=[JWT_ALGORITHM],
+        )
+
+        if payload.get("type") != "google_calendar_oauth":
+            raise ValueError("Invalid OAuth state")
+
+        user_id = payload.get("sub")
+
+        if not user_id:
+            raise ValueError("Missing user")
+
+        return user_id
+
+    except Exception:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid or expired Google Calendar connection.",
+        )
 
 def create_refresh_token(user_id: str) -> str:
     payload = {
@@ -2133,6 +2234,145 @@ async def root():
 async def stages_meta():
     return {"study_abroad": STUDY_STAGES, "accommodation": ACCOM_STAGES, "loan": LOAN_STAGES}
 
+# --- Google Calendar Integration -------------------------------------------
+
+@api.get("/google/calendar/connect")
+async def connect_google_calendar(
+    user: dict = Depends(get_current_user),
+):
+    if user.get("role") != "counsellor":
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Google Calendar connection is available "
+                "only for counsellors."
+            ),
+        )
+
+    flow = build_google_calendar_flow()
+
+    state = create_google_oauth_state(
+        str(user["_id"])
+    )
+
+    authorization_url, _ = flow.authorization_url(
+        access_type="offline",
+        include_granted_scopes="true",
+        prompt="consent",
+        state=state,
+    )
+
+    return {
+        "authorization_url": authorization_url,
+    }
+    
+
+@api.get("/google/calendar/callback")
+async def google_calendar_callback(
+    request: Request,
+):
+    error = request.query_params.get("error")
+
+    if error:
+        return RedirectResponse(
+            url=(
+                f"{FRONTEND_URL}/tasks"
+                "?google_calendar=cancelled"
+            )
+        )
+
+    state = request.query_params.get("state")
+    code = request.query_params.get("code")
+
+    if not state or not code:
+        return RedirectResponse(
+            url=(
+                f"{FRONTEND_URL}/tasks"
+                "?google_calendar=error"
+            )
+        )
+
+    try:
+        user_id = verify_google_oauth_state(state)
+
+        flow = build_google_calendar_flow()
+
+        flow.fetch_token(
+            code=code,
+        )
+
+        credentials = flow.credentials
+
+        refresh_token = credentials.refresh_token
+
+        if not refresh_token:
+            raise ValueError(
+                "Google did not return a refresh token."
+            )
+
+        await db.users.update_one(
+            {
+                "_id": ObjectId(user_id),
+                "role": "counsellor",
+            },
+            {
+                "$set": {
+                    "google_calendar_connected": True,
+                    "google_calendar_refresh_token": refresh_token,
+                    "google_calendar_connected_at": (
+                        datetime.now(timezone.utc)
+                    ),
+                }
+            },
+        )
+
+        return RedirectResponse(
+            url=(
+                f"{FRONTEND_URL}/tasks"
+                "?google_calendar=connected"
+            )
+        )
+
+    except Exception:
+        logging.exception(
+            "Google Calendar OAuth callback failed"
+        )
+
+        return RedirectResponse(
+            url=(
+                f"{FRONTEND_URL}/tasks"
+                "?google_calendar=error"
+            )
+        )
+
+@api.get("/google/calendar/status")
+async def google_calendar_status(
+    user: dict = Depends(get_current_user),
+):
+    if user.get("role") != "counsellor":
+        return {
+            "available": False,
+            "connected": False,
+        }
+
+    fresh_user = await db.users.find_one(
+        {
+            "_id": user["_id"],
+        }
+    )
+
+    return {
+        "available": True,
+        "connected": bool(
+            fresh_user
+            and fresh_user.get(
+                "google_calendar_connected",
+                False,
+            )
+        ),
+    }
+
+
 # --- Tasks / Reminders / Notifications ------------------------------------
 
 class TaskIn(BaseModel):
@@ -2190,6 +2430,7 @@ async def create_task(payload: TaskIn, user: dict = Depends(get_current_user)):
         "$set": {"updated_at": datetime.now(timezone.utc)},
     })
     return serialize_task(doc)
+    
 
 @api.get("/tasks")
 async def list_tasks(lead_id: Optional[str] = None, status: Optional[str] = None, user: dict = Depends(get_current_user)):
