@@ -378,7 +378,14 @@ const handleBulkUpload = async (event) => {
               {filteredLeads.map((l) => (
                 <tr key={l.id} className="border-b border-stone-100 hover:bg-stone-50">
                   <td className="px-5 py-3.5">
-                    <Link to={`/lead/${l.id}`} className="font-semibold text-stone-800 hover:text-[#C05B43]">{l.name}</Link>
+                  <Link
+                  to={`/lead/${l.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-stone-800 hover:text-[#C05B43]"
+                >
+                  {l.name}
+                </Link>
                     <div className="text-xs text-stone-500">{l.country_interest} · {l.course_interest}</div>
                   </td>
                   <td className="px-5 py-3.5 text-xs text-stone-600">{l.phone || "—"}<br /><span className="text-stone-400">{l.email || ""}</span></td>
