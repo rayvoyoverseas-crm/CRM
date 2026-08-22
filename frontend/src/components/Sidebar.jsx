@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import {
-  LayoutDashboard, Users2, Home, Landmark, Globe, BarChart3, UserCog, Target, LogOut, Settings2, Trash2, PanelLeftClose, PanelLeftOpen,
+  LayoutDashboard, Users2, Home, Landmark, Globe, BarChart3, Calculator, UserCog, Target, LogOut, Settings2, Trash2, PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 
 const nav = [
@@ -12,6 +12,7 @@ const nav = [
   { to: "/pipeline/loan", label: "Education Loan", icon: Landmark, testId: "nav-loan", perm: null },
   { to: "/website-leads", label: "Website Leads", icon: Globe, testId: "nav-website", perm: "see_website_leads" },
   { to: "/analytics", label: "Analytics", icon: BarChart3, testId: "nav-analytics", perm: "see_analytics" },
+  { to: "/calculation", label: "Calculation", icon: Calculator, testId: "nav-calculation", perm: null },
   { to: "/tasks", label: "My Tasks", icon: Users2, testId: "nav-tasks", perm: null },
 ];
 
