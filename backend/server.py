@@ -128,249 +128,220 @@ def build_google_calendar_flow() -> Flow:
         autogenerate_code_verifier=False,
     )
 
-    async def create_google_calendar_event(
-        google_user: dict,
-        task: dict,
-        lead: dict,
-    ):
-        """
-        Create a Google Calendar event for a CRM task.
-    
-        CRM due_at:
-            - Calendar event start
-            - Popup reminder exactly at due time
-    
-        CRM remind_at:
-            - Additional popup at the selected CRM reminder time
-        """
-    
-        refresh_token = google_user.get(
-            "google_calendar_refresh_token"
+
+async def create_google_calendar_event(
+    google_user: dict,
+    task: dict,
+    lead: dict,
+):
+    refresh_token = google_user.get(
+        "google_calendar_refresh_token"
+    )
+
+    connected = google_user.get(
+        "google_calendar_connected",
+        False,
+    )
+
+    if not connected or not refresh_token:
+        logging.warning(
+            "Google Calendar sync skipped: user is not connected"
         )
-    
-        connected = google_user.get(
-            "google_calendar_connected",
-            False,
+        return None
+
+    if not GOOGLE_CLIENT_ID:
+        logging.error(
+            "Google Calendar sync failed: GOOGLE_CLIENT_ID missing"
         )
-    
-        if not connected or not refresh_token:
-            logging.warning(
-                "Google Calendar sync skipped: user is not connected"
+        return None
+
+    if not GOOGLE_CLIENT_SECRET:
+        logging.error(
+            "Google Calendar sync failed: GOOGLE_CLIENT_SECRET missing"
+        )
+        return None
+
+    due_raw = task.get("due_at")
+
+    if not due_raw:
+        logging.warning(
+            "Google Calendar sync skipped: task has no due_at"
+        )
+        return None
+
+    try:
+        due_at = datetime.fromisoformat(
+            str(due_raw).replace(
+                "Z",
+                "+00:00",
             )
-            return None
-    
-        if not GOOGLE_CLIENT_ID:
-            logging.error(
-                "Google Calendar sync failed: GOOGLE_CLIENT_ID missing"
+        )
+
+        if due_at.tzinfo is None:
+            due_at = due_at.replace(
+                tzinfo=timezone.utc
             )
-            return None
-    
-        if not GOOGLE_CLIENT_SECRET:
-            logging.error(
-                "Google Calendar sync failed: GOOGLE_CLIENT_SECRET missing"
-            )
-            return None
-    
-        due_raw = task.get("due_at")
-    
-        if not due_raw:
-            logging.warning(
-                "Google Calendar sync skipped: task has no due_at"
-            )
-            return None
-    
+
+    except Exception:
+        logging.exception(
+            "Google Calendar sync failed: invalid due_at"
+        )
+        return None
+
+    end_at = due_at + timedelta(
+        minutes=30
+    )
+
+    description_parts = []
+
+    if task.get("description"):
+        description_parts.append(
+            task.get("description")
+        )
+
+    if lead.get("name"):
+        description_parts.append(
+            f"Student: {lead.get('name')}"
+        )
+
+    if lead.get("phone"):
+        description_parts.append(
+            f"Phone: {lead.get('phone')}"
+        )
+
+    if lead.get("email"):
+        description_parts.append(
+            f"Email: {lead.get('email')}"
+        )
+
+    description_parts.append(
+        "Created from Rayvoy Overseas CRM"
+    )
+
+    description_parts.append(
+        f"Lead: {FRONTEND_URL}/lead/{str(lead['_id'])}"
+    )
+
+    reminder_overrides = [
+        {
+            "method": "popup",
+            "minutes": 0,
+        }
+    ]
+
+    remind_raw = task.get("remind_at")
+
+    if remind_raw:
         try:
-            # CRM sends ISO datetime values.
-            # Convert Z to a Python-compatible UTC offset.
-            due_at = datetime.fromisoformat(
-                str(due_raw).replace(
+            remind_at = datetime.fromisoformat(
+                str(remind_raw).replace(
                     "Z",
                     "+00:00",
                 )
             )
-    
-            if due_at.tzinfo is None:
-                due_at = due_at.replace(
+
+            if remind_at.tzinfo is None:
+                remind_at = remind_at.replace(
                     tzinfo=timezone.utc
                 )
-    
-        except Exception:
-            logging.exception(
-                "Google Calendar sync failed: invalid due_at"
-            )
-            return None
-    
-        # Calendar event will occupy 30 minutes.
-        # This does NOT affect the reminder.
-        end_at = due_at + timedelta(
-            minutes=30
-        )
-    
-        description_parts = []
-    
-        if task.get("description"):
-            description_parts.append(
-                task.get("description")
-            )
-    
-        lead_name = lead.get("name")
-    
-        if lead_name:
-            description_parts.append(
-                f"Student: {lead_name}"
-            )
-    
-        if lead.get("phone"):
-            description_parts.append(
-                f"Phone: {lead.get('phone')}"
-            )
-    
-        if lead.get("email"):
-            description_parts.append(
-                f"Email: {lead.get('email')}"
-            )
-    
-        description_parts.append(
-            "Created from Rayvoy Overseas CRM"
-        )
-    
-        description_parts.append(
-            f"Lead: {FRONTEND_URL}/lead/{str(lead['_id'])}"
-        )
-    
-        # Due-time popup is ALWAYS included.
-        reminder_overrides = [
-            {
-                "method": "popup",
-                "minutes": 0,
-            }
-        ]
-    
-        remind_raw = task.get(
-            "remind_at"
-        )
-    
-        if remind_raw:
-            try:
-                remind_at = datetime.fromisoformat(
-                    str(remind_raw).replace(
-                        "Z",
-                        "+00:00",
-                    )
-                )
-    
-                if remind_at.tzinfo is None:
-                    remind_at = remind_at.replace(
-                        tzinfo=timezone.utc
-                    )
-    
-                reminder_seconds = (
-                    due_at - remind_at
-                ).total_seconds()
-    
-                # Google Calendar reminders are expressed
-                # as minutes BEFORE the event.
-                if reminder_seconds > 0:
-                    minutes_before = int(
-                        reminder_seconds / 60
-                    )
-    
-                    # Avoid accidentally adding duplicate
-                    # "0 minutes before" reminders.
-                    if minutes_before > 0:
-                        reminder_overrides.insert(
-                            0,
-                            {
-                                "method": "popup",
-                                "minutes": minutes_before,
-                            },
-                        )
-    
-                elif reminder_seconds == 0:
-                    # Due popup already exists.
-                    pass
-    
-                else:
-                    logging.warning(
-                        "CRM reminder occurs after due time; "
-                        "only due-time Google popup will be created."
-                    )
-    
-            except Exception:
-                logging.exception(
-                    "Could not calculate CRM reminder "
-                    "for Google Calendar"
-                )
-    
-        event_body = {
-            "summary": task.get(
-                "title"
-            ) or "CRM Task",
-    
-            "description": "\n".join(
-                description_parts
-            ),
-    
-            "start": {
-                "dateTime": due_at.isoformat(),
-            },
-    
-            "end": {
-                "dateTime": end_at.isoformat(),
-            },
-    
-            "reminders": {
-                "useDefault": False,
-                "overrides": reminder_overrides,
-            },
-        }
-    
-        credentials = Credentials(
-            token=None,
-            refresh_token=refresh_token,
-            token_uri=(
-                "https://oauth2.googleapis.com/token"
-            ),
-            client_id=GOOGLE_CLIENT_ID,
-            client_secret=GOOGLE_CLIENT_SECRET,
-            scopes=GOOGLE_CALENDAR_SCOPES,
-        )
-    
-        def _insert_event():
-            service = build(
-                "calendar",
-                "v3",
-                credentials=credentials,
-                cache_discovery=False,
-            )
-    
-            return (
-                service.events()
-                .insert(
-                    calendarId="primary",
-                    body=event_body,
-                )
-                .execute()
-            )
-    
-        try:
-            google_event = await asyncio.to_thread(
-                _insert_event
-            )
-    
-            logging.info(
-                "Google Calendar event created successfully: %s",
-                google_event.get("id"),
-            )
-    
-            return google_event
-    
-        except Exception:
-            logging.exception(
-                "Failed to create Google Calendar event"
-            )
-            return None
 
+            reminder_seconds = (
+                due_at - remind_at
+            ).total_seconds()
+
+            if reminder_seconds > 0:
+                minutes_before = int(
+                    reminder_seconds / 60
+                )
+
+                if minutes_before > 0:
+                    reminder_overrides.insert(
+                        0,
+                        {
+                            "method": "popup",
+                            "minutes": minutes_before,
+                        },
+                    )
+
+            elif reminder_seconds == 0:
+                pass
+
+            else:
+                logging.warning(
+                    "CRM reminder occurs after due time; "
+                    "only due-time Google popup will be created."
+                )
+
+        except Exception:
+            logging.exception(
+                "Could not calculate CRM reminder "
+                "for Google Calendar"
+            )
+
+    event_body = {
+        "summary": task.get("title") or "CRM Task",
+
+        "description": "\n".join(
+            description_parts
+        ),
+
+        "start": {
+            "dateTime": due_at.isoformat(),
+        },
+
+        "end": {
+            "dateTime": end_at.isoformat(),
+        },
+
+        "reminders": {
+            "useDefault": False,
+            "overrides": reminder_overrides,
+        },
+    }
+
+    credentials = Credentials(
+        token=None,
+        refresh_token=refresh_token,
+        token_uri="https://oauth2.googleapis.com/token",
+        client_id=GOOGLE_CLIENT_ID,
+        client_secret=GOOGLE_CLIENT_SECRET,
+        scopes=GOOGLE_CALENDAR_SCOPES,
+    )
+
+    def _insert_event():
+        service = build(
+            "calendar",
+            "v3",
+            credentials=credentials,
+            cache_discovery=False,
+        )
+
+        return (
+            service.events()
+            .insert(
+                calendarId="primary",
+                body=event_body,
+            )
+            .execute()
+        )
+
+    try:
+        google_event = await asyncio.to_thread(
+            _insert_event
+        )
+
+        logging.info(
+            "Google Calendar event created successfully: %s",
+            google_event.get("id"),
+        )
+
+        return google_event
+
+    except Exception:
+        logging.exception(
+            "Failed to create Google Calendar event"
+        )
+        return None
 
 def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()
