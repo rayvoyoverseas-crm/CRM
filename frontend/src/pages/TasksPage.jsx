@@ -65,12 +65,12 @@ export default function TasksPage() {
   };
   
   useEffect(() => {
-    load();
-  
-    if (user?.role === "counsellor") {
-      loadGoogleCalendarStatus();
-    }
-  }, [user?.role]);
+  load();
+
+  if (["counsellor", "team_lead"].includes(user?.role)) {
+    loadGoogleCalendarStatus();
+  }
+}, [user?.role]);
   const complete = async (t) => { await api.patch(`/tasks/${t.id}`, { status: "done" }); load(); };
 
   const connectGoogleCalendar = async () => {
