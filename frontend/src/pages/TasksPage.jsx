@@ -110,7 +110,7 @@ export default function TasksPage() {
     >
   
       {/* Google Calendar - Counsellor Only */}
-      {user?.role === "counsellor" && (
+      {["counsellor", "team_lead"].includes(user?.role) && (
         <div className="mb-5 bg-white border border-stone-200 rounded-2xl p-5 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
   
