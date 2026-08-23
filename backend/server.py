@@ -117,11 +117,12 @@ def build_google_calendar_flow() -> Flow:
         }
     }
 
-    return Flow.from_client_config(
-        client_config,
-        scopes=GOOGLE_CALENDAR_SCOPES,
-        redirect_uri=GOOGLE_REDIRECT_URI,
-    )
+return Flow.from_client_config(
+    client_config,
+    scopes=GOOGLE_CALENDAR_SCOPES,
+    redirect_uri=GOOGLE_REDIRECT_URI,
+    autogenerate_code_verifier=False,
+)
 
 def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()
