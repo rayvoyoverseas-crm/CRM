@@ -6,6 +6,7 @@ load_dotenv(ROOT_DIR / ".env")
 
 import os
 import logging
+import asyncio
 import uuid
 import csv
 import io
@@ -20,6 +21,8 @@ from fastapi import FastAPI, APIRouter, HTTPException, Request, Response, Depend
 
 from fastapi.responses import RedirectResponse
 from google_auth_oauthlib.flow import Flow
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
 
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -125,6 +128,248 @@ def build_google_calendar_flow() -> Flow:
         autogenerate_code_verifier=False,
     )
 
+    async def create_google_calendar_event(
+        google_user: dict,
+        task: dict,
+        lead: dict,
+    ):
+        """
+        Create a Google Calendar event for a CRM task.
+    
+        CRM due_at:
+            - Calendar event start
+            - Popup reminder exactly at due time
+    
+        CRM remind_at:
+            - Additional popup at the selected CRM reminder time
+        """
+    
+        refresh_token = google_user.get(
+            "google_calendar_refresh_token"
+        )
+    
+        connected = google_user.get(
+            "google_calendar_connected",
+            False,
+        )
+    
+        if not connected or not refresh_token:
+            logging.warning(
+                "Google Calendar sync skipped: user is not connected"
+            )
+            return None
+    
+        if not GOOGLE_CLIENT_ID:
+            logging.error(
+                "Google Calendar sync failed: GOOGLE_CLIENT_ID missing"
+            )
+            return None
+    
+        if not GOOGLE_CLIENT_SECRET:
+            logging.error(
+                "Google Calendar sync failed: GOOGLE_CLIENT_SECRET missing"
+            )
+            return None
+    
+        due_raw = task.get("due_at")
+    
+        if not due_raw:
+            logging.warning(
+                "Google Calendar sync skipped: task has no due_at"
+            )
+            return None
+    
+        try:
+            # CRM sends ISO datetime values.
+            # Convert Z to a Python-compatible UTC offset.
+            due_at = datetime.fromisoformat(
+                str(due_raw).replace(
+                    "Z",
+                    "+00:00",
+                )
+            )
+    
+            if due_at.tzinfo is None:
+                due_at = due_at.replace(
+                    tzinfo=timezone.utc
+                )
+    
+        except Exception:
+            logging.exception(
+                "Google Calendar sync failed: invalid due_at"
+            )
+            return None
+    
+        # Calendar event will occupy 30 minutes.
+        # This does NOT affect the reminder.
+        end_at = due_at + timedelta(
+            minutes=30
+        )
+    
+        description_parts = []
+    
+        if task.get("description"):
+            description_parts.append(
+                task.get("description")
+            )
+    
+        lead_name = lead.get("name")
+    
+        if lead_name:
+            description_parts.append(
+                f"Student: {lead_name}"
+            )
+    
+        if lead.get("phone"):
+            description_parts.append(
+                f"Phone: {lead.get('phone')}"
+            )
+    
+        if lead.get("email"):
+            description_parts.append(
+                f"Email: {lead.get('email')}"
+            )
+    
+        description_parts.append(
+            "Created from Rayvoy Overseas CRM"
+        )
+    
+        description_parts.append(
+            f"Lead: {FRONTEND_URL}/lead/{str(lead['_id'])}"
+        )
+    
+        # Due-time popup is ALWAYS included.
+        reminder_overrides = [
+            {
+                "method": "popup",
+                "minutes": 0,
+            }
+        ]
+    
+        remind_raw = task.get(
+            "remind_at"
+        )
+    
+        if remind_raw:
+            try:
+                remind_at = datetime.fromisoformat(
+                    str(remind_raw).replace(
+                        "Z",
+                        "+00:00",
+                    )
+                )
+    
+                if remind_at.tzinfo is None:
+                    remind_at = remind_at.replace(
+                        tzinfo=timezone.utc
+                    )
+    
+                reminder_seconds = (
+                    due_at - remind_at
+                ).total_seconds()
+    
+                # Google Calendar reminders are expressed
+                # as minutes BEFORE the event.
+                if reminder_seconds > 0:
+                    minutes_before = int(
+                        reminder_seconds / 60
+                    )
+    
+                    # Avoid accidentally adding duplicate
+                    # "0 minutes before" reminders.
+                    if minutes_before > 0:
+                        reminder_overrides.insert(
+                            0,
+                            {
+                                "method": "popup",
+                                "minutes": minutes_before,
+                            },
+                        )
+    
+                elif reminder_seconds == 0:
+                    # Due popup already exists.
+                    pass
+    
+                else:
+                    logging.warning(
+                        "CRM reminder occurs after due time; "
+                        "only due-time Google popup will be created."
+                    )
+    
+            except Exception:
+                logging.exception(
+                    "Could not calculate CRM reminder "
+                    "for Google Calendar"
+                )
+    
+        event_body = {
+            "summary": task.get(
+                "title"
+            ) or "CRM Task",
+    
+            "description": "\n".join(
+                description_parts
+            ),
+    
+            "start": {
+                "dateTime": due_at.isoformat(),
+            },
+    
+            "end": {
+                "dateTime": end_at.isoformat(),
+            },
+    
+            "reminders": {
+                "useDefault": False,
+                "overrides": reminder_overrides,
+            },
+        }
+    
+        credentials = Credentials(
+            token=None,
+            refresh_token=refresh_token,
+            token_uri=(
+                "https://oauth2.googleapis.com/token"
+            ),
+            client_id=GOOGLE_CLIENT_ID,
+            client_secret=GOOGLE_CLIENT_SECRET,
+            scopes=GOOGLE_CALENDAR_SCOPES,
+        )
+    
+        def _insert_event():
+            service = build(
+                "calendar",
+                "v3",
+                credentials=credentials,
+                cache_discovery=False,
+            )
+    
+            return (
+                service.events()
+                .insert(
+                    calendarId="primary",
+                    body=event_body,
+                )
+                .execute()
+            )
+    
+        try:
+            google_event = await asyncio.to_thread(
+                _insert_event
+            )
+    
+            logging.info(
+                "Google Calendar event created successfully: %s",
+                google_event.get("id"),
+            )
+    
+            return google_event
+    
+        except Exception:
+            logging.exception(
+                "Failed to create Google Calendar event"
+            )
+            return None
 
 
 def hash_password(password: str) -> str:
@@ -2411,30 +2656,270 @@ async def _notify(user_id: str, title: str, body: str, link: Optional[str] = Non
     })
 
 @api.post("/tasks")
-async def create_task(payload: TaskIn, user: dict = Depends(get_current_user)):
-    lead = await db.leads.find_one({"_id": ObjectId(payload.lead_id)})
+async def create_task(
+    payload: TaskIn,
+    user: dict = Depends(get_current_user),
+):
+    lead = await db.leads.find_one(
+        {
+            "_id": ObjectId(
+                payload.lead_id
+            )
+        }
+    )
+
     if not lead:
-        raise HTTPException(404, "Lead not found")
-    assignee_id = payload.assigned_to or lead.get("assigned_to") or str(user["_id"])
-    assignee = await db.users.find_one({"_id": ObjectId(assignee_id)}) if assignee_id else None
+        raise HTTPException(
+            404,
+            "Lead not found",
+        )
+
+    assignee_id = (
+        payload.assigned_to
+        or lead.get("assigned_to")
+        or str(user["_id"])
+    )
+
+    assignee = None
+
+    if assignee_id:
+        assignee = await db.users.find_one(
+            {
+                "_id": ObjectId(
+                    assignee_id
+                )
+            }
+        )
+
     doc = {
-        "lead_id": payload.lead_id, "lead_name": lead.get("name", ""),
-        "title": payload.title, "description": payload.description or "",
-        "due_at": payload.due_at, "remind_at": payload.remind_at,
-        "assigned_to": assignee_id, "assigned_to_name": assignee.get("name", "") if assignee else "",
-        "status": "pending", "created_at": datetime.now(timezone.utc), "created_by": user.get("name", ""),
+        "lead_id": payload.lead_id,
+
+        "lead_name": lead.get(
+            "name",
+            "",
+        ),
+
+        "title": payload.title,
+
+        "description": (
+            payload.description
+            or ""
+        ),
+
+        "due_at": payload.due_at,
+
+        "remind_at": (
+            payload.remind_at
+        ),
+
+        "assigned_to": (
+            assignee_id
+        ),
+
+        "assigned_to_name": (
+            assignee.get(
+                "name",
+                "",
+            )
+            if assignee
+            else ""
+        ),
+
+        "status": "pending",
+
+        "created_at": (
+            datetime.now(
+                timezone.utc
+            )
+        ),
+
+        "created_by": user.get(
+            "name",
+            "",
+        ),
+
+        # Initially false.
+        # Changed to true after Google confirms creation.
+        "google_calendar_synced": False,
     }
-    res = await db.tasks.insert_one(doc)
-    doc["_id"] = res.inserted_id
-    if assignee_id and assignee_id != str(user["_id"]):
-        await _notify(assignee_id, "New Task Assigned", f"{payload.title} · {lead.get('name', '')}", link=f"/lead/{payload.lead_id}", kind="task")
-    # Add to lead activity
-    await db.leads.update_one({"_id": ObjectId(payload.lead_id)}, {
-        "$push": {"activity": {"type": "task", "text": f"Task: {payload.title} (due {payload.due_at})", "at": datetime.now(timezone.utc).isoformat(), "by": user.get("name", "")}},
-        "$set": {"updated_at": datetime.now(timezone.utc)},
-    })
-    return serialize_task(doc)
-    
+
+    result = await db.tasks.insert_one(
+        doc
+    )
+
+    doc["_id"] = (
+        result.inserted_id
+    )
+
+    # ---------------------------------------------------------
+    # GOOGLE CALENDAR SYNC
+    # ---------------------------------------------------------
+    #
+    # Only Counsellors and Team Leads have
+    # personal Google Calendar connections.
+    #
+    # The logged-in person creating the CRM task
+    # gets the event in THEIR connected calendar.
+    # ---------------------------------------------------------
+
+    if user.get("role") in (
+        "counsellor",
+        "team_lead",
+    ):
+        fresh_google_user = (
+            await db.users.find_one(
+                {
+                    "_id": user["_id"],
+                }
+            )
+        )
+
+        if (
+            fresh_google_user
+            and fresh_google_user.get(
+                "google_calendar_connected",
+                False,
+            )
+            and fresh_google_user.get(
+                "google_calendar_refresh_token"
+            )
+        ):
+            google_event = (
+                await create_google_calendar_event(
+                    fresh_google_user,
+                    doc,
+                    lead,
+                )
+            )
+
+            if google_event:
+                google_event_id = (
+                    google_event.get(
+                        "id"
+                    )
+                )
+
+                google_event_link = (
+                    google_event.get(
+                        "htmlLink"
+                    )
+                )
+
+                google_update = {
+                    "google_calendar_synced": True,
+                    "google_calendar_event_id": (
+                        google_event_id
+                    ),
+                    "google_calendar_event_link": (
+                        google_event_link
+                    ),
+                    "google_calendar_synced_at": (
+                        datetime.now(
+                            timezone.utc
+                        )
+                    ),
+                }
+
+                await db.tasks.update_one(
+                    {
+                        "_id": doc["_id"],
+                    },
+                    {
+                        "$set": (
+                            google_update
+                        )
+                    },
+                )
+
+                doc.update(
+                    google_update
+                )
+
+            else:
+                logging.error(
+                    "CRM task %s was created but "
+                    "Google Calendar event creation failed.",
+                    str(doc["_id"]),
+                )
+
+        else:
+            logging.info(
+                "CRM task created without Google sync "
+                "because the user has no active "
+                "Google Calendar connection."
+            )
+
+    # ---------------------------------------------------------
+    # EXISTING CRM NOTIFICATION
+    # ---------------------------------------------------------
+
+    if (
+        assignee_id
+        and assignee_id
+        != str(user["_id"])
+    ):
+        await _notify(
+            assignee_id,
+            "New Task Assigned",
+            (
+                f"{payload.title} · "
+                f"{lead.get('name', '')}"
+            ),
+            link=(
+                f"/lead/"
+                f"{payload.lead_id}"
+            ),
+            kind="task",
+        )
+
+    # ---------------------------------------------------------
+    # ADD TASK TO LEAD ACTIVITY
+    # ---------------------------------------------------------
+
+    await db.leads.update_one(
+        {
+            "_id": ObjectId(
+                payload.lead_id
+            )
+        },
+        {
+            "$push": {
+                "activity": {
+                    "type": "task",
+
+                    "text": (
+                        f"Task: "
+                        f"{payload.title} "
+                        f"(due "
+                        f"{payload.due_at})"
+                    ),
+
+                    "at": (
+                        datetime.now(
+                            timezone.utc
+                        ).isoformat()
+                    ),
+
+                    "by": user.get(
+                        "name",
+                        "",
+                    ),
+                }
+            },
+
+            "$set": {
+                "updated_at": (
+                    datetime.now(
+                        timezone.utc
+                    )
+                )
+            },
+        },
+    )
+
+    return serialize_task(
+        doc
+    )
 
 @api.get("/tasks")
 async def list_tasks(lead_id: Optional[str] = None, status: Optional[str] = None, user: dict = Depends(get_current_user)):
