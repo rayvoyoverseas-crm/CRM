@@ -37,7 +37,7 @@ export default function TasksPage() {
   };
 
   const loadGoogleCalendarStatus = async () => {
-    if (user?.role !== "counsellor") {
+    if (!["counsellor", "team_lead"].includes(user?.role)) {
       return;
     }
   
