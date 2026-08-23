@@ -94,6 +94,7 @@ api = APIRouter(prefix="/api")
 
 # --- Utilities --------------------------------------------------------------
 
+
 def build_google_calendar_flow() -> Flow:
     if (
         not GOOGLE_CLIENT_ID
@@ -117,12 +118,14 @@ def build_google_calendar_flow() -> Flow:
         }
     }
 
-return Flow.from_client_config(
-    client_config,
-    scopes=GOOGLE_CALENDAR_SCOPES,
-    redirect_uri=GOOGLE_REDIRECT_URI,
-    autogenerate_code_verifier=False,
-)
+    return Flow.from_client_config(
+        client_config,
+        scopes=GOOGLE_CALENDAR_SCOPES,
+        redirect_uri=GOOGLE_REDIRECT_URI,
+        autogenerate_code_verifier=False,
+    )
+
+
 
 def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()
