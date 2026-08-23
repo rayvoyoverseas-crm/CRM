@@ -2245,13 +2245,13 @@ async def connect_google_calendar(
     user: dict = Depends(get_current_user),
 ):
     if user.get("role") not in ("counsellor", "team_lead"):
-    raise HTTPException(
-        status_code=403,
-        detail=(
-            "Google Calendar connection is available "
-            "only for counsellors and team leads."
-        ),
-    )
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Google Calendar connection is available "
+                "only for counsellors and team leads."
+            ),
+        )
 
     flow = build_google_calendar_flow()
 
