@@ -2244,14 +2244,14 @@ async def stages_meta():
 async def connect_google_calendar(
     user: dict = Depends(get_current_user),
 ):
-    if user.get("role") != "counsellor":
-        raise HTTPException(
-            status_code=403,
-            detail=(
-                "Google Calendar connection is available "
-                "only for counsellors."
-            ),
-        )
+    if user.get("role") not in ("counsellor", "team_lead"):
+    raise HTTPException(
+        status_code=403,
+        detail=(
+            "Google Calendar connection is available "
+            "only for counsellors and team leads."
+        ),
+    )
 
     flow = build_google_calendar_flow()
 
@@ -2317,7 +2317,7 @@ async def google_calendar_callback(
         await db.users.update_one(
             {
                 "_id": ObjectId(user_id),
-                "role": "counsellor",
+                "role": {"$in": ["counsellor", "team_lead"]},
             },
             {
                 "$set": {
@@ -2353,7 +2353,7 @@ async def google_calendar_callback(
 async def google_calendar_status(
     user: dict = Depends(get_current_user),
 ):
-    if user.get("role") != "counsellor":
+    if user.get("role") not in ("counsellor", "team_lead"):
         return {
             "available": False,
             "connected": False,
