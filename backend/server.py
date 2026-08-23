@@ -2754,15 +2754,17 @@ app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
     allow_origins=[
-        "https://crm-3b52.vercel.app",
         "https://crm.rayvoyoverseas.com",
+        "https://crm-3b52.vercel.app",
     ],
     allow_origin_regex=r"https://crm-3b52.*\.vercel\.app",
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
 app.include_router(api)
+
+
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
