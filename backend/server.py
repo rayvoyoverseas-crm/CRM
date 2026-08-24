@@ -460,25 +460,18 @@ async def ensure_unique_lead_contact(
     phone: str = "",
     exclude_lead_id: Optional[str] = None,
 ):
-    normalized_email = normalize_email(
-        email
-    )
-
-    normalized_phone = validate_phone_number(
-        phone
-    )
+    normalized_email = normalize_email(email)
+    normalized_phone = validate_phone_number(phone)
 
     if normalized_email:
         email_query = {
             "email_normalized": normalized_email,
-            },
+            "is_deleted": {"$ne": True},
         }
 
         if exclude_lead_id:
             email_query["_id"] = {
-                "$ne": ObjectId(
-                    exclude_lead_id
-                )
+                "$ne": ObjectId(exclude_lead_id)
             }
 
         existing_email = await db.leads.find_one(
@@ -497,14 +490,12 @@ async def ensure_unique_lead_contact(
     if normalized_phone:
         phone_query = {
             "phone_normalized": normalized_phone,
-            },
+            "is_deleted": {"$ne": True},
         }
 
         if exclude_lead_id:
             phone_query["_id"] = {
-                "$ne": ObjectId(
-                    exclude_lead_id
-                )
+                "$ne": ObjectId(exclude_lead_id)
             }
 
         existing_phone = await db.leads.find_one(
