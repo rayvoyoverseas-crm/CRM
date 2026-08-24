@@ -2577,39 +2577,67 @@ async def revenue_ledger(
     result = []
 
     for record in records:
-        totals = record.get("totals", {})
+        totals = record.get(
+            "totals",
+            {},
+        )
 
         result.append(
             {
-                "id": str(record["_id"]),
-                "lead_id": record.get("lead_id"),
+                "id": str(
+                    record["_id"]
+                ),
+
+                "lead_id": record.get(
+                    "lead_id"
+                ),
+
                 "student_name": record.get(
                     "student_name",
                     "",
                 ),
+
                 "student_email": record.get(
                     "student_email",
                     "",
                 ),
+
+                # Full saved finance information.
+                # Revenue.jsx will use this to calculate
+                # each ledger column.
+                "revenue": record.get(
+                    "revenue",
+                    {},
+                ),
+
                 "expected_inr": totals.get(
                     "expected_inr",
                     0,
                 ),
+
                 "received_inr": totals.get(
                     "received_inr",
                     0,
                 ),
+
                 "balance_inr": totals.get(
                     "balance_inr",
                     0,
                 ),
+
                 "updated_at": (
-                    record["updated_at"].isoformat()
+                    record[
+                        "updated_at"
+                    ].isoformat()
                     if isinstance(
-                        record.get("updated_at"),
+                        record.get(
+                            "updated_at"
+                        ),
                         datetime,
                     )
-                    else record.get("updated_at")
+                    else record.get(
+                        "updated_at"
+                    )
                 ),
             }
         )
