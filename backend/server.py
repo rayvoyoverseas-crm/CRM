@@ -463,51 +463,79 @@ async def ensure_unique_lead_contact(
     normalized_email = normalize_email(email)
     normalized_phone = validate_phone_number(phone)
 
-    if normalized_email:
-        email_query = {
-            "email_normalized": normalized_email,
-            "is_deleted": {"$ne": True},
-        }
+    existing_leads = await db.leads.find(
+        {}
+    ).to_list(10000)
 
-        if exclude_lead_id:
-            email_query["_id"] = {
-                "$ne": ObjectId(exclude_lead_id)
-            }
-
-        existing_email = await db.leads.find_one(
-            email_query
+    for existing_lead in existing_leads:
+        existing_id = str(
+            existing_lead["_id"]
         )
 
-        if existing_email:
+        if (
+            exclude_lead_id
+            and existing_id == exclude_lead_id
+        ):
+            continue
+
+        existing_email = normalize_email(
+            existing_lead.get(
+                "email",
+                "",
+            )
+        )
+
+        existing_phone_raw = (
+            existing_lead.get(
+                "phone",
+                "",
+            )
+            or ""
+        )
+
+        existing_phone = normalize_phone(
+            existing_phone_raw
+        )
+
+        # Convert old 10-digit Indian numbers
+        # into the new +91 format for comparison.
+        if (
+            existing_phone
+            and not existing_phone.startswith("+")
+            and existing_phone.isdigit()
+            and len(existing_phone) == 10
+        ):
+            existing_phone = (
+                "+91" + existing_phone
+            )
+
+        if (
+            normalized_email
+            and existing_email
+            and existing_email
+            == normalized_email
+        ):
             raise HTTPException(
                 status_code=409,
                 detail=(
-                    "This email address is already registered "
-                    f"for {existing_email.get('name', 'another lead')}."
+                    "This email address is already "
+                    "registered for "
+                    f"{existing_lead.get('name', 'another lead')}."
                 ),
             )
 
-    if normalized_phone:
-        phone_query = {
-            "phone_normalized": normalized_phone,
-            "is_deleted": {"$ne": True},
-        }
-
-        if exclude_lead_id:
-            phone_query["_id"] = {
-                "$ne": ObjectId(exclude_lead_id)
-            }
-
-        existing_phone = await db.leads.find_one(
-            phone_query
-        )
-
-        if existing_phone:
+        if (
+            normalized_phone
+            and existing_phone
+            and existing_phone
+            == normalized_phone
+        ):
             raise HTTPException(
                 status_code=409,
                 detail=(
-                    "This phone number is already registered "
-                    f"for {existing_phone.get('name', 'another lead')}."
+                    "This phone number is already "
+                    "registered for "
+                    f"{existing_lead.get('name', 'another lead')}."
                 ),
             )
 
