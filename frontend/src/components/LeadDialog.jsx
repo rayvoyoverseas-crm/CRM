@@ -13,10 +13,17 @@ export default function LeadDialog({ open, onOpenChange, pipeline, onCreated, de
   const { user } = useAuth();
 const isCounsellor = user?.role === "counsellor";
   
-  const [form, setForm] = useState({
-    name: "", email: "", phone: "", country_interest: "", course_interest: "",
-    source: defaultSource, notes: "", assigned_to: "",
-  });
+const [form, setForm] = useState({
+  name: "",
+  email: "",
+  phone: "",
+  country_interest: "",
+  course_interest: "",
+  intake: "",
+  source: defaultSource,
+  notes: "",
+  assigned_to: "",
+});
   
   const [users, setUsers] = useState([]);
   const [saving, setSaving] = useState(false);
@@ -30,6 +37,7 @@ const isCounsellor = user?.role === "counsellor";
     phone: "",
     country_interest: "",
     course_interest: "",
+    intake: "",
     source: isCounsellor ? "referral" : defaultSource,
     notes: "",
     assigned_to: isCounsellor ? user.id : "",
@@ -43,6 +51,13 @@ const isCounsellor = user?.role === "counsellor";
   const submit = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) { toast.error("Name is required"); return; }
+    if (
+      pipeline === "study_abroad" &&
+      !form.intake
+    ) {
+      toast.error("Intake is required");
+      return;
+    }
     setSaving(true);
     try {
       const payload = { ...form, pipeline };
@@ -77,17 +92,96 @@ const isCounsellor = user?.role === "counsellor";
           </div>
           {pipeline === "study_abroad" && (
             <div className="grid grid-cols-2 gap-3">
+          
+              {/* Country */}
               <div>
-                <Label className="text-xs">Country Interest</Label>
-                <Select value={form.country_interest} onValueChange={(v) => setForm({ ...form, country_interest: v })}>
-                  <SelectTrigger data-testid="lead-country-select"><SelectValue placeholder="Select country" /></SelectTrigger>
-                  <SelectContent>{COUNTRIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
+                <Label className="text-xs">
+                  Country Interest
+                </Label>
+          
+                <Select
+                  value={form.country_interest}
+                  onValueChange={(v) =>
+                    setForm({
+                      ...form,
+                      country_interest: v,
+                    })
+                  }
+                >
+                  <SelectTrigger data-testid="lead-country-select">
+                    <SelectValue placeholder="Select country" />
+                  </SelectTrigger>
+          
+                  <SelectContent>
+                    {COUNTRIES.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
                 </Select>
               </div>
+          
+              {/* Course */}
               <div>
-                <Label className="text-xs">Course Interest</Label>
-                <Input value={form.course_interest} onChange={(e) => setForm({ ...form, course_interest: e.target.value })} />
+                <Label className="text-xs">
+                  Course Interest
+                </Label>
+          
+                <Input
+                  value={form.course_interest}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      course_interest: e.target.value,
+                    })
+                  }
+                />
               </div>
+          
+              {/* Intake */}
+              <div className="col-span-2">
+                <Label className="text-xs">
+                  Intake *
+                </Label>
+          
+                <Select
+                  value={form.intake}
+                  onValueChange={(value) =>
+                    setForm({
+                      ...form,
+                      intake: value,
+                    })
+                  }
+                >
+                  <SelectTrigger data-testid="lead-intake-select">
+                    <SelectValue placeholder="Select intake" />
+                  </SelectTrigger>
+          
+                  <SelectContent>
+                    <SelectItem value="September 2026">
+                      September 2026
+                    </SelectItem>
+          
+                    <SelectItem value="January 2027">
+                      January 2027
+                    </SelectItem>
+          
+                    <SelectItem value="September 2027">
+                      September 2027
+                    </SelectItem>
+          
+                    <SelectItem value="January 2028">
+                      January 2028
+                    </SelectItem>
+          
+                    <SelectItem value="September 2028">
+                      September 2028
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+          
             </div>
           )}
           <div className="grid grid-cols-2 gap-3">
