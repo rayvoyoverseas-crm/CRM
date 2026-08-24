@@ -13,6 +13,7 @@ import io
 import secrets as py_secrets
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
+from pymongo import ReturnDocument
 from typing import List, Optional, Literal
 
 import bcrypt
@@ -343,6 +344,53 @@ async def create_google_calendar_event(
             "Failed to create Google Calendar event"
         )
         return None
+
+
+async def generate_lead_code(
+    created_at: Optional[datetime] = None,
+) -> str:
+    """
+    Generate a permanent sequential Rayvoy student ID.
+
+    Examples:
+    RV001/01-26
+    RV002/09-26
+    RV003/09-26
+    RV004/11-26
+    """
+
+    dt = created_at or datetime.now(
+        timezone.utc
+    )
+
+    counter = await db.counters.find_one_and_update(
+        {
+            "_id": "lead_code",
+        },
+        {
+            "$inc": {
+                "seq": 1,
+            }
+        },
+        upsert=True,
+        return_document=ReturnDocument.AFTER,
+    )
+
+    sequence = int(
+        counter.get(
+            "seq",
+            1,
+        )
+    )
+
+    month = dt.month
+    year = dt.year % 100
+
+    return (
+        f"RV{sequence:03d}/"
+        f"{month:02d}-{year:02d}"
+    )
+
 
 def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()
