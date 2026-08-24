@@ -10,6 +10,7 @@ import Analytics from "@/pages/Analytics";
 import Calculation from "@/pages/Calculation";
 import Team from "@/pages/Team";
 import Targets from "@/pages/Targets";
+import Revenue from "@/pages/Revenue";
 import Settings from "@/pages/Settings";
 import LeadDetail from "@/pages/LeadDetail";
 import TasksPage from "@/pages/TasksPage";
@@ -45,6 +46,14 @@ function App() {
           <Route path="/analytics" element={<Protected><Analytics /></Protected>} />
           <Route path="/team" element={<Protected><Team /></Protected>} />
           <Route path="/targets" element={<Protected><Targets /></Protected>} />
+          <Route
+            path="/revenue"
+            element={
+              <Protected>
+                <Revenue />
+              </Protected>
+            }
+          />
           <Route path="/settings" element={<Protected><Settings /></Protected>} />
           <Route path="/lead/:id" element={<Protected><LeadDetail /></Protected>} />
           <Route path="/tasks" element={<Protected><TasksPage /></Protected>} />
