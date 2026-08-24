@@ -1273,15 +1273,59 @@ async def bulk_upload_leads(
 
 
 @api.get("/leads/{lead_id}")
-async def get_lead(lead_id: str, user: dict = Depends(get_current_user)):
-    q = {"_id": ObjectId(lead_id)}
-    if user.get("role") != "admin" and not (user.get("permissions") or {}).get("see_all_leads"):
-        q["assigned_to"] = str(user["_id"])
-    l = await db.leads.find_one(q)
-    if not l:
-        raise HTTPException(404, "Lead not found")
-    return serialize_lead(l)
+async def get_lead(
+    lead_id: str,
+    user: dict = Depends(get_current_user),
+):
+    # Accept either MongoDB ObjectId
+    # or public Rayvoy URL ID like RV001-09-27
 
+    if ObjectId.is_valid(lead_id):
+        q = {
+            "_id": ObjectId(lead_id)
+        }
+
+    else:
+        parts = lead_id.split("-")
+
+        if (
+            len(parts) != 3
+            or not parts[0].startswith("RV")
+        ):
+            raise HTTPException(
+                status_code=404,
+                detail="Lead not found",
+            )
+
+        stored_lead_code = (
+            f"{parts[0]}/"
+            f"{parts[1]}-"
+            f"{parts[2]}"
+        )
+
+        q = {
+            "lead_code": stored_lead_code
+        }
+
+    if (
+        user.get("role") != "admin"
+        and not (
+            user.get("permissions") or {}
+        ).get("see_all_leads")
+    ):
+        q["assigned_to"] = str(
+            user["_id"]
+        )
+
+    lead = await db.leads.find_one(q)
+
+    if not lead:
+        raise HTTPException(
+            status_code=404,
+            detail="Lead not found",
+        )
+
+    return serialize_lead(lead)
 STAGE_TRANSITIONS = {
     "NL": ["CC"],
     "CC": ["SL"],
