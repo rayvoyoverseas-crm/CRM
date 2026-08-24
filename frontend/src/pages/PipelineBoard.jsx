@@ -33,7 +33,11 @@ function LeadCard({ lead, pipeline, onStageChange, users, onDelete, canDelete })
       <div className="flex items-start justify-between gap-2">
       <div className="flex-1 min-w-0">
         <Link
-          to={`/lead/${lead.id}`}
+          to={`/lead/${
+            lead.lead_code
+              ? lead.lead_code.replace("/", "-")
+              : lead.id
+          }`}
           target="_blank"
           rel="noopener noreferrer"
           className="font-semibold text-[15px] text-stone-900 hover:text-[#C05B43] truncate block"
