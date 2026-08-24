@@ -279,10 +279,6 @@ export default function Revenue() {
     loadStudents();
   }, [user?.role]);
 
-  if (user && user.role !== "admin") {
-    return <Navigate to="/" replace />;
-  }
-
   const updateSection = (
     section,
     field,
@@ -523,6 +519,10 @@ export default function Revenue() {
       balanceInr,
     };
   }, [revenue]);
+
+  if (user && user.role !== "admin") {
+    return <Navigate to="/" replace />;
+  }
 
   const selectedStudentData =
     students.find(
