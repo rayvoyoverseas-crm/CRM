@@ -496,9 +496,16 @@ export default function LeadRevenueFinance({
             data?.exists &&
             data?.revenue
           ) {
-            setRevenue(
-              data.revenue
-            );
+            setRevenue({
+              ...data.revenue,
+          
+              education_loan: {
+                ...data.revenue.education_loan,
+                currency: "INR",
+                exchange_rate: 1,
+              },
+            });
+          
             return;
           }
 
@@ -986,6 +993,7 @@ export default function LeadRevenueFinance({
           result={
             calculations.educationLoan
           }
+            inrOnly={true}
         />
       </SectionToggle>
 
@@ -1455,6 +1463,7 @@ function PercentageSection({
   amountLabel,
   amountField,
   result,
+  inrOnly = false,
 }) {
   const rate =
     getRate(data);
@@ -1487,11 +1496,12 @@ function PercentageSection({
           />
         </div>
 
-        <CurrencyFields
-          data={data}
-          update={update}
-        />
-
+        {!inrOnly && (
+          <CurrencyFields
+            data={data}
+            update={update}
+          />
+        )}
         <div>
           <label className="block text-xs font-medium text-stone-600 mb-1.5">
             {amountLabel}
