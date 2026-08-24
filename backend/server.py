@@ -2429,6 +2429,193 @@ async def set_target(payload: TargetIn, admin: dict = Depends(require_admin)):
     await db.targets.update_one(key, {"$set": payload.model_dump()}, upsert=True)
     return {"ok": True}
 
+# --- Revenue / Finance ------------------------------------------------------
+
+class RevenueSaveIn(BaseModel):
+    revenue: dict
+    totals: dict
+
+
+@api.get("/revenue/{lead_id}")
+async def get_student_revenue(
+    lead_id: str,
+    admin: dict = Depends(require_admin),
+):
+    if not ObjectId.is_valid(lead_id):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid student ID",
+        )
+
+    lead = await db.leads.find_one(
+        {"_id": ObjectId(lead_id)}
+    )
+
+    if not lead:
+        raise HTTPException(
+            status_code=404,
+            detail="Student not found",
+        )
+
+    record = await db.student_revenue.find_one(
+        {"lead_id": lead_id}
+    )
+
+    if not record:
+        return {
+            "exists": False,
+            "lead_id": lead_id,
+            "student_name": lead.get("name", ""),
+            "revenue": None,
+            "totals": None,
+        }
+
+    return {
+        "exists": True,
+        "id": str(record["_id"]),
+        "lead_id": record.get("lead_id"),
+        "student_name": record.get(
+            "student_name",
+            lead.get("name", ""),
+        ),
+        "revenue": record.get("revenue", {}),
+        "totals": record.get("totals", {}),
+        "created_at": (
+            record["created_at"].isoformat()
+            if isinstance(
+                record.get("created_at"),
+                datetime,
+            )
+            else record.get("created_at")
+        ),
+        "updated_at": (
+            record["updated_at"].isoformat()
+            if isinstance(
+                record.get("updated_at"),
+                datetime,
+            )
+            else record.get("updated_at")
+        ),
+    }
+
+
+@api.post("/revenue/{lead_id}")
+async def save_student_revenue(
+    lead_id: str,
+    payload: RevenueSaveIn,
+    admin: dict = Depends(require_admin),
+):
+    if not ObjectId.is_valid(lead_id):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid student ID",
+        )
+
+    lead = await db.leads.find_one(
+        {"_id": ObjectId(lead_id)}
+    )
+
+    if not lead:
+        raise HTTPException(
+            status_code=404,
+            detail="Student not found",
+        )
+
+    now = datetime.now(timezone.utc)
+
+    existing = await db.student_revenue.find_one(
+        {"lead_id": lead_id}
+    )
+
+    update_data = {
+        "lead_id": lead_id,
+        "student_name": lead.get("name", ""),
+        "student_email": lead.get("email", ""),
+        "revenue": payload.revenue,
+        "totals": payload.totals,
+        "updated_at": now,
+        "updated_by": str(admin["_id"]),
+        "updated_by_name": admin.get("name", ""),
+    }
+
+    if not existing:
+        update_data["created_at"] = now
+
+    await db.student_revenue.update_one(
+        {"lead_id": lead_id},
+        {
+            "$set": update_data,
+        },
+        upsert=True,
+    )
+
+    saved = await db.student_revenue.find_one(
+        {"lead_id": lead_id}
+    )
+
+    return {
+        "ok": True,
+        "id": str(saved["_id"]),
+        "lead_id": lead_id,
+        "student_name": lead.get("name", ""),
+        "revenue": saved.get("revenue", {}),
+        "totals": saved.get("totals", {}),
+    }
+
+
+@api.get("/revenue")
+async def revenue_ledger(
+    admin: dict = Depends(require_admin),
+):
+    records = await db.student_revenue.find(
+        {}
+    ).sort(
+        "updated_at",
+        -1,
+    ).to_list(2000)
+
+    result = []
+
+    for record in records:
+        totals = record.get("totals", {})
+
+        result.append(
+            {
+                "id": str(record["_id"]),
+                "lead_id": record.get("lead_id"),
+                "student_name": record.get(
+                    "student_name",
+                    "",
+                ),
+                "student_email": record.get(
+                    "student_email",
+                    "",
+                ),
+                "expected_inr": totals.get(
+                    "expected_inr",
+                    0,
+                ),
+                "received_inr": totals.get(
+                    "received_inr",
+                    0,
+                ),
+                "balance_inr": totals.get(
+                    "balance_inr",
+                    0,
+                ),
+                "updated_at": (
+                    record["updated_at"].isoformat()
+                    if isinstance(
+                        record.get("updated_at"),
+                        datetime,
+                    )
+                    else record.get("updated_at")
+                ),
+            }
+        )
+
+    return result
+
 # --- Config / Webhook Info -------------------------------------------------
 
 @api.get("/config/webhook")
