@@ -12,6 +12,7 @@ import csv
 import io
 import secrets as py_secrets
 from datetime import datetime, timezone, timedelta
+from zoneinfo import ZoneInfo
 from typing import List, Optional, Literal
 
 import bcrypt
@@ -177,11 +178,10 @@ async def create_google_calendar_event(
             )
         )
 
-        if due_at.tzinfo is None:
-            due_at = due_at.replace(
-                tzinfo=timezone.utc
-            )
-
+    if due_at.tzinfo is None:
+        due_at = due_at.replace(
+            tzinfo=ZoneInfo("Asia/Kolkata")
+        )
     except Exception:
         logging.exception(
             "Google Calendar sync failed: invalid due_at"
@@ -242,7 +242,7 @@ async def create_google_calendar_event(
 
             if remind_at.tzinfo is None:
                 remind_at = remind_at.replace(
-                    tzinfo=timezone.utc
+                    tzinfo=ZoneInfo("Asia/Kolkata")
                 )
 
             reminder_seconds = (
@@ -287,10 +287,12 @@ async def create_google_calendar_event(
 
         "start": {
             "dateTime": due_at.isoformat(),
+            "timeZone": "Asia/Kolkata",
         },
-
+        
         "end": {
             "dateTime": end_at.isoformat(),
+            "timeZone": "Asia/Kolkata",
         },
 
         "reminders": {
