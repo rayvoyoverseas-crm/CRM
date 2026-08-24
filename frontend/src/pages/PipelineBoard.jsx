@@ -402,7 +402,11 @@ const handleBulkUpload = async (event) => {
                 <tr key={l.id} className="border-b border-stone-100 hover:bg-stone-50">
                   <td className="px-5 py-3.5">
                   <Link
-                  to={`/lead/${l.id}`}
+                  to={`/lead/${
+                    l.lead_code
+                      ? l.lead_code.replace("/", "-")
+                      : l.id
+                  }`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-semibold text-stone-800 hover:text-[#C05B43]"
