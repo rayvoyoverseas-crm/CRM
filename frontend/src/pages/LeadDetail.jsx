@@ -33,7 +33,11 @@ const STAGE_TRANSITIONS = {
 
 export default function LeadDetail() {
   const { user } = useAuth();
-  const { id } = useParams();
+  const { id: routeId } = useParams();
+  
+  const [id, setId] = useState(
+    routeId
+  );
   const [lead, setLead] = useState(null);
   const [leadDocs, setLeadDocs] = useState([]);
   const [users, setUsers] = useState([]);
@@ -148,9 +152,19 @@ const [savingShortlistIndex, setSavingShortlistIndex] = useState(null);
   const [edit, setEdit] = useState({ name: "", email: "", phone: "", country_interest: "", course_interest: "" });
 
 const load = useCallback(async () => {
-  const { data } = await api.get(`/leads/${id}`);
+  const { data } = await api.get(
+    `/leads/${id}`
+  );
 
   setLead(data);
+
+  if (
+    data?.id &&
+    data.id !== id
+  ) {
+    setId(data.id);
+    return;
+  }
 
   try {
     const tasksResponse = await api.get("/tasks", {
