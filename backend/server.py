@@ -801,6 +801,7 @@ def default_stage(pipeline: str) -> str:
 def serialize_lead(l: dict) -> dict:
     return {
         "id": str(l["_id"]),
+        "lead_code": l.get("lead_code", ""),
         "name": l.get("name", ""),
         "email": l.get("email", ""),
         "phone": l.get("phone", ""),
@@ -941,6 +942,8 @@ async def create_lead(
 ):
     now = datetime.now(timezone.utc)
 
+    lead_code = await generate_lead_code(now)
+
     lead_data = payload.model_dump()
     assigned_name = ""
 
@@ -963,6 +966,7 @@ async def create_lead(
 
     doc = {
         **lead_data,
+        "lead_code": lead_code,
         "stage": default_stage(payload.pipeline),
         "assigned_to_name": assigned_name,
         "created_at": now,
