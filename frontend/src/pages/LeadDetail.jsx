@@ -785,9 +785,21 @@ const uploadedDocumentCount = new Set(
                 {lead.name.slice(0, 1).toUpperCase()}
               </div>
               <div className="flex-1">
-                <div className="flex items-center gap-3">
-                  <h2 className="font-display font-bold text-2xl">{lead.name}</h2>
-                  <StageBadge pipeline={lead.pipeline} stage={lead.stage} />
+                <div className="flex items-center gap-3 flex-wrap">
+                  <h2 className="font-display font-bold text-2xl">
+                    {lead.name}
+                  </h2>
+                
+                  <StageBadge
+                    pipeline={lead.pipeline}
+                    stage={lead.stage}
+                  />
+                
+                  {lead.lead_code && (
+                    <span className="inline-flex items-center rounded-full border border-[#C05B43]/30 bg-[#C05B43]/5 px-3 py-1 text-xs font-semibold text-[#C05B43]">
+                      {lead.lead_code}
+                    </span>
+                  )}
                 </div>
                 <div className="text-sm text-stone-500 mt-1 flex flex-wrap gap-x-4 gap-y-1">
                   {lead.email && <span className="inline-flex items-center gap-1"><Mail className="w-3.5 h-3.5" /> {lead.email}</span>}
