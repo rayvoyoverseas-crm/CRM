@@ -471,8 +471,6 @@ async def ensure_unique_lead_contact(
     if normalized_email:
         email_query = {
             "email_normalized": normalized_email,
-            "is_deleted": {
-                "$ne": True
             },
         }
 
@@ -499,8 +497,6 @@ async def ensure_unique_lead_contact(
     if normalized_phone:
         phone_query = {
             "phone_normalized": normalized_phone,
-            "is_deleted": {
-                "$ne": True
             },
         }
 
@@ -3679,6 +3675,168 @@ async def set_config(payload: ConfigIn, admin: dict = Depends(require_admin)):
         os.environ["STALE_LEAD_DAYS"] = str(upd["stale_lead_days"])
     await db.app_config.update_one({"_id": "app"}, {"$set": upd}, upsert=True)
     return {"ok": True}
+
+# --- Lead Contact Data Audit ------------------------------------------------
+
+@api.get("/admin/lead-contact-audit")
+async def audit_lead_contacts(
+    admin: dict = Depends(require_admin),
+):
+    leads = await db.leads.find(
+        {}
+    ).to_list(10000)
+
+    email_map = {}
+    phone_map = {}
+
+    invalid_phones = []
+    missing_contact = []
+
+    for lead in leads:
+        lead_id = str(lead["_id"])
+        lead_name = lead.get("name", "")
+
+        raw_email = (
+            lead.get("email") or ""
+        ).strip()
+
+        raw_phone = (
+            lead.get("phone") or ""
+        ).strip()
+
+        # ------------------------------------
+        # Email
+        # ------------------------------------
+
+        normalized_email = normalize_email(
+            raw_email
+        )
+
+        if normalized_email:
+            email_map.setdefault(
+                normalized_email,
+                [],
+            ).append(
+                {
+                    "lead_id": lead_id,
+                    "lead_code": lead.get(
+                        "lead_code",
+                        "",
+                    ),
+                    "name": lead_name,
+                    "email": raw_email,
+                }
+            )
+
+        # ------------------------------------
+        # Phone
+        # ------------------------------------
+
+        normalized_phone = normalize_phone(
+            raw_phone
+        )
+
+        if normalized_phone:
+            try:
+                valid_phone = validate_phone_number(
+                    raw_phone
+                )
+
+                phone_map.setdefault(
+                    valid_phone,
+                    [],
+                ).append(
+                    {
+                        "lead_id": lead_id,
+                        "lead_code": lead.get(
+                            "lead_code",
+                            "",
+                        ),
+                        "name": lead_name,
+                        "phone": raw_phone,
+                    }
+                )
+
+            except HTTPException as exc:
+                invalid_phones.append(
+                    {
+                        "lead_id": lead_id,
+                        "lead_code": lead.get(
+                            "lead_code",
+                            "",
+                        ),
+                        "name": lead_name,
+                        "phone": raw_phone,
+                        "reason": exc.detail,
+                    }
+                )
+
+        # ------------------------------------
+        # No email and no phone
+        # ------------------------------------
+
+        if (
+            not normalized_email
+            and not normalized_phone
+        ):
+            missing_contact.append(
+                {
+                    "lead_id": lead_id,
+                    "lead_code": lead.get(
+                        "lead_code",
+                        "",
+                    ),
+                    "name": lead_name,
+                }
+            )
+
+    duplicate_emails = [
+        {
+            "email": email,
+            "leads": items,
+        }
+        for email, items
+        in email_map.items()
+        if len(items) > 1
+    ]
+
+    duplicate_phones = [
+        {
+            "phone": phone,
+            "leads": items,
+        }
+        for phone, items
+        in phone_map.items()
+        if len(items) > 1
+    ]
+
+    return {
+        "total_leads": len(leads),
+
+        "duplicate_email_count":
+            len(duplicate_emails),
+
+        "duplicate_phone_count":
+            len(duplicate_phones),
+
+        "invalid_phone_count":
+            len(invalid_phones),
+
+        "missing_contact_count":
+            len(missing_contact),
+
+        "duplicate_emails":
+            duplicate_emails,
+
+        "duplicate_phones":
+            duplicate_phones,
+
+        "invalid_phones":
+            invalid_phones,
+
+        "missing_contact":
+            missing_contact,
+    }
 
 # --- App wiring -------------------------------------------------------------
 
