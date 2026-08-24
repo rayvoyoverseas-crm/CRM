@@ -5,6 +5,7 @@ ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / ".env")
 
 import os
+import re
 import logging
 import asyncio
 import uuid
@@ -402,6 +403,130 @@ async def generate_lead_code(intake: str) -> str:
     return (
         f"RV{sequence:03d}/"
         f"{month:02d}-{year:02d}"
+    )
+    
+
+def normalize_email(email: str) -> str:
+    return (email or "").strip().lower()
+
+
+def normalize_phone(phone: str) -> str:
+    return re.sub(
+        r"[\s\-\(\)]",
+        "",
+        (phone or "").strip(),
+    )
+
+
+def validate_phone_number(phone: str) -> str:
+    phone = normalize_phone(phone)
+
+    if not phone:
+        return ""
+
+    if not phone.startswith("+"):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Phone number must include country code. "
+                "Example: +919876543210"
+            ),
+        )
+
+    digits = phone[1:]
+
+    if not digits.isdigit():
+        raise HTTPException(
+            status_code=400,
+            detail="Phone number can contain only numbers after +.",
+        )
+
+    # Country code = 1 to 3 digits.
+    # Actual mobile number = exactly 10 digits.
+    if len(digits) < 11 or len(digits) > 13:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Phone number must contain a country code "
+                "followed by exactly 10 digits."
+            ),
+        )
+
+    return phone
+
+
+async def ensure_unique_lead_contact(
+    email: str = "",
+    phone: str = "",
+    exclude_lead_id: Optional[str] = None,
+):
+    normalized_email = normalize_email(
+        email
+    )
+
+    normalized_phone = validate_phone_number(
+        phone
+    )
+
+    if normalized_email:
+        email_query = {
+            "email_normalized": normalized_email,
+            "is_deleted": {
+                "$ne": True
+            },
+        }
+
+        if exclude_lead_id:
+            email_query["_id"] = {
+                "$ne": ObjectId(
+                    exclude_lead_id
+                )
+            }
+
+        existing_email = await db.leads.find_one(
+            email_query
+        )
+
+        if existing_email:
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "This email address is already registered "
+                    f"for {existing_email.get('name', 'another lead')}."
+                ),
+            )
+
+    if normalized_phone:
+        phone_query = {
+            "phone_normalized": normalized_phone,
+            "is_deleted": {
+                "$ne": True
+            },
+        }
+
+        if exclude_lead_id:
+            phone_query["_id"] = {
+                "$ne": ObjectId(
+                    exclude_lead_id
+                )
+            }
+
+        existing_phone = await db.leads.find_one(
+            phone_query
+        )
+
+        if existing_phone:
+            raise HTTPException(
+                status_code=409,
+                detail=(
+                    "This phone number is already registered "
+                    f"for {existing_phone.get('name', 'another lead')}."
+                ),
+            )
+
+    return (
+        normalized_email,
+        normalized_phone,
     )
 
 
@@ -961,6 +1086,27 @@ async def create_lead(
     )
 
     lead_data = payload.model_dump()
+
+    normalized_email, normalized_phone = (
+        await ensure_unique_lead_contact(
+            email=payload.email or "",
+            phone=payload.phone or "",
+        )
+    )
+    
+    lead_data["email"] = (
+        payload.email or ""
+    ).strip()
+    
+    lead_data["phone"] = normalized_phone
+    
+    lead_data["email_normalized"] = (
+        normalized_email
+    )
+    
+    lead_data["phone_normalized"] = (
+        normalized_phone
+    )
     assigned_name = ""
 
     # When a counsellor creates a lead:
