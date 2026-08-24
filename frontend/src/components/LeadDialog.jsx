@@ -27,6 +27,8 @@ const [form, setForm] = useState({
   
   const [users, setUsers] = useState([]);
   const [saving, setSaving] = useState(false);
+  const [phoneError, setPhoneError] =
+    useState("");
 
   useEffect(() => {
   if (!open) return;
@@ -51,6 +53,21 @@ const [form, setForm] = useState({
   const submit = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) { toast.error("Name is required"); return; }
+    if (
+      !form.email.trim() &&
+      !form.phone.trim()
+    ) {
+      toast.error(
+        "Please enter an email address or phone number."
+      );
+      return;
+    }
+    if (phoneError) {
+      toast.error(
+        "Please enter a valid phone number with country code."
+      );
+      return;
+    }
     if (
       pipeline === "study_abroad" &&
       !form.intake
@@ -86,8 +103,75 @@ const [form, setForm] = useState({
               <Input data-testid="lead-email-input" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
             </div>
             <div>
-              <Label className="text-xs">Phone</Label>
-              <Input data-testid="lead-phone-input" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <Label className="text-xs">
+                Phone
+              </Label>
+            
+              <Input
+                data-testid="lead-phone-input"
+                value={form.phone}
+                placeholder="+919876543210"
+                onChange={(e) => {
+                  const value = e.target.value;
+            
+                  setForm({
+                    ...form,
+                    phone: value,
+                  });
+            
+                  const clean = value.replace(
+                    /[\s\-()]/g,
+                    ""
+                  );
+            
+                  if (!clean) {
+                    setPhoneError("");
+                    return;
+                  }
+            
+                  if (!clean.startsWith("+")) {
+                    setPhoneError(
+                      "Add country code. Example: +919876543210"
+                    );
+                    return;
+                  }
+            
+                  const digits =
+                    clean.slice(1);
+            
+                  if (
+                    !/^\d+$/.test(digits)
+                  ) {
+                    setPhoneError(
+                      "Phone number can contain numbers only."
+                    );
+                    return;
+                  }
+            
+                  if (
+                    digits.length < 11 ||
+                    digits.length > 13
+                  ) {
+                    setPhoneError(
+                      "Enter country code + exactly 10-digit phone number."
+                    );
+                    return;
+                  }
+            
+                  setPhoneError("");
+                }}
+                className={
+                  phoneError
+                    ? "border-red-500 focus-visible:ring-red-500"
+                    : ""
+                }
+              />
+            
+              {phoneError && (
+                <p className="text-xs text-red-600 mt-1">
+                  {phoneError}
+                </p>
+              )}
             </div>
           </div>
           {pipeline === "study_abroad" && (
