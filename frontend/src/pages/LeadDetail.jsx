@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { ArrowLeft, Mail, Phone, Globe, MessageSquare, Clock } from "lucide-react";
+import { ArrowLeft, Mail, Phone, Globe, MessageSquare, Clock, IndianRupee } from "lucide-react";
 import StageBadge from "@/components/StageBadge";
 import { useAuth } from "@/context/AuthContext";
 import LeadDocuments from "@/components/LeadDocuments";
 import LeadTasks from "@/components/LeadTasks";
+import LeadRevenueFinance from "@/components/LeadRevenueFinance";
 import { LeadReferees, LeadLoanInfo } from "@/components/LeadExtras";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -1451,7 +1452,41 @@ const uploadedDocumentCount = new Set(
 </div>
 </details>
 
-
+        {/* Revenue & Finance - Admin Only */}
+        {user?.role === "admin" &&
+          lead.pipeline === "study_abroad" && (
+            <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
+              <summary className="cursor-pointer list-none flex items-center justify-between px-6 py-5 hover:bg-stone-50">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-50 grid place-items-center">
+                    <IndianRupee className="w-4 h-4 text-emerald-700" />
+                  </div>
+        
+                  <div>
+                    <h3 className="font-display font-semibold text-lg">
+                      Revenue & Finance
+                    </h3>
+        
+                    <p className="text-xs text-stone-400 mt-1">
+                      Track university commission, service revenue,
+                      accommodation, loans and student charges.
+                    </p>
+                  </div>
+                </div>
+        
+                <span className="text-stone-500 text-sm transition-transform group-open:rotate-180">
+                  ▼
+                </span>
+              </summary>
+        
+              <div className="border-t border-stone-200 p-6">
+                <LeadRevenueFinance
+                  lead={lead}
+                  leadId={id}
+                />
+              </div>
+            </details>
+          )}
           {/* Activity dropdown */}
           <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
             <summary className="cursor-pointer list-none flex items-center justify-between px-6 py-5 hover:bg-stone-50">
