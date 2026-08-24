@@ -3828,107 +3828,107 @@ async def audit_lead_contacts(
             missing_contact,
     }
 
-    @api.get("/admin/lead-contact-normalization-preview")
-        async def preview_lead_contact_normalization(
-            admin: dict = Depends(require_admin),
-        ):
-        leads = await db.leads.find({}).to_list(10000)
-    
-        preview = []
-        normalized_email_map = {}
-        normalized_phone_map = {}
-    
-        for lead in leads:
-            lead_id = str(lead["_id"])
-            name = lead.get("name", "")
-            lead_code = lead.get("lead_code", "")
-    
-            raw_email = (lead.get("email") or "").strip()
-            raw_phone = (lead.get("phone") or "").strip()
-    
-            normalized_email = normalize_email(raw_email)
-    
-            compact_phone = normalize_phone(raw_phone)
-    
-            proposed_phone = ""
-    
-            if compact_phone:
-                if compact_phone.startswith("+"):
-                    proposed_phone = compact_phone
-    
-                elif (
-                    compact_phone.isdigit()
-                    and len(compact_phone) == 10
-                ):
-                    proposed_phone = "+91" + compact_phone
-    
-                else:
-                    proposed_phone = compact_phone
-    
-            if normalized_email:
-                normalized_email_map.setdefault(
-                    normalized_email,
-                    [],
-                ).append(
-                    {
-                        "lead_id": lead_id,
-                        "lead_code": lead_code,
-                        "name": name,
-                    }
-                )
-    
-            if proposed_phone:
-                normalized_phone_map.setdefault(
-                    proposed_phone,
-                    [],
-                ).append(
-                    {
-                        "lead_id": lead_id,
-                        "lead_code": lead_code,
-                        "name": name,
-                    }
-                )
-    
-            preview.append(
+@api.get("/admin/lead-contact-normalization-preview")
+async def preview_lead_contact_normalization(
+    admin: dict = Depends(require_admin),
+):
+    leads = await db.leads.find({}).to_list(10000)
+
+    preview = []
+    normalized_email_map = {}
+    normalized_phone_map = {}
+
+    for lead in leads:
+        lead_id = str(lead["_id"])
+        name = lead.get("name", "")
+        lead_code = lead.get("lead_code", "")
+
+        raw_email = (lead.get("email") or "").strip()
+        raw_phone = (lead.get("phone") or "").strip()
+
+        normalized_email = normalize_email(raw_email)
+        compact_phone = normalize_phone(raw_phone)
+
+        proposed_phone = ""
+
+        if compact_phone:
+            if compact_phone.startswith("+"):
+                proposed_phone = compact_phone
+
+            elif (
+                compact_phone.isdigit()
+                and len(compact_phone) == 10
+            ):
+                proposed_phone = "+91" + compact_phone
+
+            else:
+                proposed_phone = compact_phone
+
+        if normalized_email:
+            normalized_email_map.setdefault(
+                normalized_email,
+                [],
+            ).append(
                 {
                     "lead_id": lead_id,
                     "lead_code": lead_code,
                     "name": name,
-                    "current_email": raw_email,
-                    "proposed_email_normalized": normalized_email,
-                    "current_phone": raw_phone,
-                    "proposed_phone_normalized": proposed_phone,
                 }
             )
-    
-        duplicate_emails_after_normalization = [
+
+        if proposed_phone:
+            normalized_phone_map.setdefault(
+                proposed_phone,
+                [],
+            ).append(
+                {
+                    "lead_id": lead_id,
+                    "lead_code": lead_code,
+                    "name": name,
+                }
+            )
+
+        preview.append(
             {
-                "email": email,
-                "leads": items,
+                "lead_id": lead_id,
+                "lead_code": lead_code,
+                "name": name,
+                "current_email": raw_email,
+                "proposed_email_normalized": normalized_email,
+                "current_phone": raw_phone,
+                "proposed_phone_normalized": proposed_phone,
             }
-            for email, items
-            in normalized_email_map.items()
-            if len(items) > 1
-        ]
-    
-        duplicate_phones_after_normalization = [
-            {
-                "phone": phone,
-                "leads": items,
-            }
-            for phone, items
-            in normalized_phone_map.items()
-            if len(items) > 1
-        ]
-    
-        return {
-            "total_leads": len(leads),
-            "preview": preview,
-            "duplicate_emails_after_normalization":
-                duplicate_emails_after_normalization,
-            "duplicate_phones_after_normalization":
-                duplicate_phones_after_normalization,
+        )
+
+    duplicate_emails_after_normalization = [
+        {
+            "email": email,
+            "leads": items,
         }
+        for email, items in normalized_email_map.items()
+        if len(items) > 1
+    ]
+
+    duplicate_phones_after_normalization = [
+        {
+            "phone": phone,
+            "leads": items,
+        }
+        for phone, items in normalized_phone_map.items()
+        if len(items) > 1
+    ]
+
+    return {
+        "total_leads": len(leads),
+        "preview": preview,
+        "duplicate_emails_after_normalization":
+            duplicate_emails_after_normalization,
+        "duplicate_phones_after_normalization":
+            duplicate_phones_after_normalization,
+    }
+
+
+# --- App wiring -------------------------------------------------------------
 
 # --- App wiring -------------------------------------------------------------
 
