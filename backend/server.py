@@ -3830,9 +3830,9 @@ async def audit_lead_contacts(
     }
 
     @api.get("/admin/lead-contact-normalization-preview")
-    async def preview_lead_contact_normalization(
-        admin: dict = Depends(require_admin),
-    ):
+        async def preview_lead_contact_normalization(
+            admin: dict = Depends(require_admin),
+        ):
         leads = await db.leads.find({}).to_list(10000)
     
         preview = []
