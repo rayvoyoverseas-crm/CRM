@@ -475,6 +475,56 @@ const [
     loadStudents();
   }, [user?.role]);
 
+  useEffect(() => {
+  if (
+    user?.role !== "admin" ||
+    !selectedStudent
+  ) {
+    return;
+  }
+
+  const loadSavedRevenue =
+    async () => {
+      try {
+        setLoadingRevenue(true);
+
+        const { data } =
+          await api.get(
+            `/revenue/${selectedStudent}`
+          );
+
+        if (
+          data?.exists &&
+          data?.revenue
+        ) {
+          setRevenue(
+            data.revenue
+          );
+        } else {
+          setRevenue(
+            initialRevenue
+          );
+        }
+      } catch (error) {
+        console.error(
+          "Unable to load saved revenue",
+          error
+        );
+
+        setRevenue(
+          initialRevenue
+        );
+      } finally {
+        setLoadingRevenue(false);
+      }
+    };
+
+  loadSavedRevenue();
+}, [
+  selectedStudent,
+  user?.role,
+]);
+
   const updateSection = (
     section,
     field,
@@ -753,6 +803,54 @@ const [
       };
     }, [revenue]);
 
+const saveRevenue =
+  async () => {
+    if (!selectedStudent) {
+      alert(
+        "Please select a student first."
+      );
+      return;
+    }
+
+    try {
+      setSavingRevenue(true);
+
+      await api.post(
+        `/revenue/${selectedStudent}`,
+        {
+          revenue,
+
+          totals: {
+            expected_inr:
+              calculations.expectedInr,
+
+            received_inr:
+              calculations.receivedInr,
+
+            balance_inr:
+              calculations.balanceInr,
+          },
+        }
+      );
+
+      alert(
+        "Revenue saved successfully."
+      );
+    } catch (error) {
+      console.error(
+        "Unable to save revenue",
+        error
+      );
+
+      alert(
+        error?.response?.data?.detail ||
+          "Unable to save revenue."
+      );
+    } finally {
+      setSavingRevenue(false);
+    }
+  };
+
   if (
     user &&
     user.role !== "admin"
@@ -816,19 +914,15 @@ const [
           <label className="block text-sm font-medium text-stone-700 mb-1.5">
             Select Student
           </label>
-
+          
           <select
-            value={
-              selectedStudent
-            }
+            value={selectedStudent}
             onChange={(e) => {
-              setSelectedStudent(
-                e.target.value
-              );
-
-              setRevenue(
-                initialRevenue
-              );
+              const studentId = e.target.value;
+          
+              setSelectedStudent(studentId);
+          
+              setRevenue(initialRevenue);
             }}
             className="w-full max-w-xl h-12 px-3 rounded-xl border border-stone-200 bg-white"
           >
@@ -857,16 +951,22 @@ const [
             )}
           </select>
 
-          {selectedStudentData && (
-            <div className="mt-3 text-sm text-stone-500">
-              Revenue record for{" "}
-              <strong className="text-stone-800">
-                {
-                  selectedStudentData.name
-                }
-              </strong>
-            </div>
-          )}
+      {selectedStudentData && (
+        <div className="mt-3 text-sm text-stone-500">
+          {loadingRevenue
+            ? "Loading saved revenue..."
+            : (
+              <>
+                Revenue record for{" "}
+                <strong className="text-stone-800">
+                  {
+                    selectedStudentData.name
+                  }
+                </strong>
+              </>
+            )}
+        </div>
+      )}
         </div>
 
         {!selectedStudent ? (
@@ -1131,18 +1231,21 @@ const [
             </div>
 
             <div className="flex justify-end">
-              <Button
-                type="button"
-                className="bg-[#C05B43] hover:bg-[#a94e39] rounded-xl px-6"
-                onClick={() => {
-                  alert(
-                    "Calculator is ready. Database saving will be connected in the next step."
-                  );
-                }}
-              >
-                <Save className="w-4 h-4 mr-2" />
-                Save Revenue
-              </Button>
+            <Button
+              type="button"
+              onClick={saveRevenue}
+              disabled={
+                savingRevenue ||
+                loadingRevenue
+              }
+              className="bg-[#C05B43] hover:bg-[#a94e39] rounded-xl px-6"
+            >
+              <Save className="w-4 h-4 mr-2" />
+            
+              {savingRevenue
+                ? "Saving..."
+                : "Save Revenue"}
+            </Button>
             </div>
           </>
         )}
