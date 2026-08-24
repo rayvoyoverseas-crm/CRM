@@ -346,22 +346,35 @@ async def create_google_calendar_event(
         return None
 
 
-async def generate_lead_code(
-    created_at: Optional[datetime] = None,
-) -> str:
+async def generate_lead_code(intake: str) -> str:
     """
     Generate a permanent sequential Rayvoy student ID.
 
     Examples:
-    RV001/01-26
-    RV002/09-26
-    RV003/09-26
-    RV004/11-26
+    RV001/01-27
+    RV002/09-27
+    RV003/09-27
+
+    The RV number increases globally.
+    The /MM-YY suffix comes from the selected intake.
     """
 
-    dt = created_at or datetime.now(
-        timezone.utc
-    )
+    if not intake:
+        raise HTTPException(
+            status_code=400,
+            detail="Intake is required to generate Student ID.",
+        )
+
+    try:
+        intake_date = datetime.strptime(
+            intake,
+            "%B %Y",
+        )
+    except ValueError:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid intake format. Expected format like January 2027.",
+        )
 
     counter = await db.counters.find_one_and_update(
         {
@@ -383,8 +396,8 @@ async def generate_lead_code(
         )
     )
 
-    month = dt.month
-    year = dt.year % 100
+    month = intake_date.month
+    year = intake_date.year % 100
 
     return (
         f"RV{sequence:03d}/"
@@ -532,6 +545,7 @@ class LeadCreateIn(BaseModel):
     phone: Optional[str] = ""
     country_interest: Optional[str] = ""
     course_interest: Optional[str] = ""
+    intake: Optional[str] = ""
     source: Literal["website", "manual", "referral", "walk-in", "social"] = "manual"
     pipeline: Literal["study_abroad", "accommodation", "loan"] = "study_abroad"
     notes: Optional[str] = ""
@@ -942,7 +956,9 @@ async def create_lead(
 ):
     now = datetime.now(timezone.utc)
 
-    lead_code = await generate_lead_code(now)
+    lead_code = await generate_lead_code(
+        payload.intake
+    )
 
     lead_data = payload.model_dump()
     assigned_name = ""
