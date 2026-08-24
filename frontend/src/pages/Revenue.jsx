@@ -31,6 +31,8 @@ const initialRevenue = {
     ...emptyMoneySection,
     university_name: "",
     tuition_fee: "",
+    scholarship: "no",
+    scholarship_amount: "",
     commission_percent: "",
   },
 
@@ -75,8 +77,16 @@ const initialRevenue = {
 };
 
 function numberValue(value) {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : 0;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function getRate(section) {
+  if (section.currency === "INR") {
+    return 1;
+  }
+
+  return numberValue(section.exchange_rate);
 }
 
 function formatMoney(amount, currency = "INR") {
@@ -85,6 +95,7 @@ function formatMoney(amount, currency = "INR") {
   return `${CURRENCY_SYMBOLS[currency] || ""}${value.toLocaleString(
     "en-IN",
     {
+      minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     }
   )}`;
@@ -161,17 +172,26 @@ function CurrencyFields({
           onChange={(e) => {
             const currency = e.target.value;
 
-            update("currency", currency);
+            update(
+              "currency",
+              currency
+            );
 
             if (currency === "INR") {
-              update("exchange_rate", 1);
+              update(
+                "exchange_rate",
+                1
+              );
             }
           }}
           className="w-full h-11 px-3 rounded-xl border border-stone-200 bg-white"
         >
-          {CURRENCIES.map((c) => (
-            <option key={c} value={c}>
-              {c} ({CURRENCY_SYMBOLS[c]})
+          {CURRENCIES.map((currency) => (
+            <option
+              key={currency}
+              value={currency}
+            >
+              {currency} ({CURRENCY_SYMBOLS[currency]})
             </option>
           ))}
         </select>
@@ -187,7 +207,9 @@ function CurrencyFields({
           step="0.01"
           min="0"
           value={data.exchange_rate}
-          disabled={data.currency === "INR"}
+          disabled={
+            data.currency === "INR"
+          }
           onChange={(e) =>
             update(
               "exchange_rate",
@@ -195,8 +217,17 @@ function CurrencyFields({
             )
           }
           className="w-full h-11 px-3 rounded-xl border border-stone-200 disabled:bg-stone-100"
-          placeholder="Example: 118.40"
+          placeholder="Example: 130.51"
         />
+
+        {data.currency !== "INR" && (
+          <div className="text-[11px] text-stone-400 mt-1">
+            1 {data.currency} = ₹
+            {numberValue(
+              data.exchange_rate
+            ).toLocaleString("en-IN")}
+          </div>
+        )}
       </div>
     </>
   );
@@ -206,6 +237,13 @@ function ReceivedField({
   data,
   update,
 }) {
+  const rate = getRate(data);
+
+  const received =
+    numberValue(
+      data.received_amount
+    );
+
   return (
     <div>
       <label className="block text-sm font-medium text-stone-700 mb-1.5">
@@ -226,6 +264,141 @@ function ReceivedField({
         className="w-full h-11 px-3 rounded-xl border border-stone-200"
         placeholder={`Amount received in ${data.currency}`}
       />
+
+      <div className="text-[11px] text-stone-400 mt-1">
+        INR:{" "}
+        {formatMoney(
+          received * rate,
+          "INR"
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AmountConversion({
+  label,
+  amount,
+  currency,
+  rate,
+}) {
+  return (
+    <div className="bg-stone-50 border border-stone-200 rounded-xl p-4">
+      <div className="text-xs uppercase tracking-wider text-stone-400 font-semibold">
+        {label}
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+        <div>
+          <div className="text-xs text-stone-500">
+            {currency}
+          </div>
+
+          <div className="font-semibold text-stone-900 text-lg">
+            {formatMoney(
+              amount,
+              currency
+            )}
+          </div>
+        </div>
+
+        <div>
+          <div className="text-xs text-stone-500">
+            INR Equivalent
+          </div>
+
+          <div className="font-semibold text-stone-900 text-lg">
+            {formatMoney(
+              amount * rate,
+              "INR"
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function RevenueResult({
+  label,
+  amount,
+  received,
+  currency,
+  rate,
+}) {
+  const outstanding =
+    Math.max(
+      0,
+      amount - received
+    );
+
+  return (
+    <div className="mt-5 bg-stone-50 border border-stone-200 rounded-xl p-5">
+      <div className="text-xs uppercase tracking-wider text-stone-400 font-semibold">
+        {label}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mt-4">
+        <div>
+          <div className="text-xs text-stone-500">
+            Calculated
+          </div>
+
+          <div className="font-semibold text-stone-900 mt-1">
+            {formatMoney(
+              amount,
+              currency
+            )}
+          </div>
+
+          <div className="text-xs text-stone-500 mt-1">
+            {formatMoney(
+              amount * rate,
+              "INR"
+            )}
+          </div>
+        </div>
+
+        <div>
+          <div className="text-xs text-stone-500">
+            Received
+          </div>
+
+          <div className="font-semibold text-emerald-700 mt-1">
+            {formatMoney(
+              received,
+              currency
+            )}
+          </div>
+
+          <div className="text-xs text-stone-500 mt-1">
+            {formatMoney(
+              received * rate,
+              "INR"
+            )}
+          </div>
+        </div>
+
+        <div>
+          <div className="text-xs text-stone-500">
+            Outstanding
+          </div>
+
+          <div className="font-semibold text-[#C05B43] mt-1">
+            {formatMoney(
+              outstanding,
+              currency
+            )}
+          </div>
+
+          <div className="text-xs text-[#C05B43] mt-1">
+            {formatMoney(
+              outstanding * rate,
+              "INR"
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -233,48 +406,61 @@ function ReceivedField({
 export default function Revenue() {
   const { user } = useAuth();
 
-  const [students, setStudents] = useState([]);
-  const [selectedStudent, setSelectedStudent] =
-    useState("");
+  const [students, setStudents] =
+    useState([]);
+
+  const [
+    selectedStudent,
+    setSelectedStudent,
+  ] = useState("");
 
   const [revenue, setRevenue] =
     useState(initialRevenue);
 
-  const [loadingStudents, setLoadingStudents] =
-    useState(true);
+  const [
+    loadingStudents,
+    setLoadingStudents,
+  ] = useState(true);
 
   useEffect(() => {
     if (user?.role !== "admin") {
       return;
     }
 
-    const loadStudents = async () => {
-      try {
-        setLoadingStudents(true);
+    const loadStudents =
+      async () => {
+        try {
+          setLoadingStudents(
+            true
+          );
 
-        const { data } = await api.get(
-          "/leads",
-          {
-            params: {
-              pipeline: "study_abroad",
-            },
-          }
-        );
+          const { data } =
+            await api.get(
+              "/leads",
+              {
+                params: {
+                  pipeline:
+                    "study_abroad",
+                },
+              }
+            );
 
-        setStudents(
-          Array.isArray(data)
-            ? data
-            : []
-        );
-      } catch (error) {
-        console.error(
-          "Unable to load students",
-          error
-        );
-      } finally {
-        setLoadingStudents(false);
-      }
-    };
+          setStudents(
+            Array.isArray(data)
+              ? data
+              : []
+          );
+        } catch (error) {
+          console.error(
+            "Unable to load students",
+            error
+          );
+        } finally {
+          setLoadingStudents(
+            false
+          );
+        }
+      };
 
     loadStudents();
   }, [user?.role]);
@@ -284,10 +470,11 @@ export default function Revenue() {
     field,
     value
   ) => {
-    setRevenue((prev) => ({
-      ...prev,
+    setRevenue((previous) => ({
+      ...previous,
+
       [section]: {
-        ...prev[section],
+        ...previous[section],
         [field]: value,
       },
     }));
@@ -297,231 +484,275 @@ export default function Revenue() {
     section,
     enabled
   ) => {
-    setRevenue((prev) => ({
-      ...prev,
+    setRevenue((previous) => ({
+      ...previous,
+
       [section]: {
-        ...prev[section],
+        ...previous[section],
         enabled,
       },
     }));
   };
 
-  const calculations = useMemo(() => {
-    const calculatePercentage = (
-      section,
-      baseField
-    ) => {
-      if (!section.enabled) {
+  const calculations =
+    useMemo(() => {
+      const university =
+        revenue.university;
+
+      const universityRate =
+        getRate(university);
+
+      const grossTuition =
+        university.enabled
+          ? numberValue(
+              university.tuition_fee
+            )
+          : 0;
+
+      const scholarship =
+        university.enabled &&
+        university.scholarship ===
+          "yes"
+          ? numberValue(
+              university.scholarship_amount
+            )
+          : 0;
+
+      const netTuition =
+        Math.max(
+          0,
+          grossTuition -
+            scholarship
+        );
+
+      const universityCommission =
+        netTuition *
+        (
+          numberValue(
+            university.commission_percent
+          ) / 100
+        );
+
+      const universityReceived =
+        numberValue(
+          university.received_amount
+        );
+
+      const percentageCalculation = (
+        section,
+        baseField
+      ) => {
+        if (!section.enabled) {
+          return {
+            amount: 0,
+            received: 0,
+            rate: getRate(section),
+          };
+        }
+
+        const base =
+          numberValue(
+            section[baseField]
+          );
+
+        const percentage =
+          numberValue(
+            section.commission_percent
+          );
+
         return {
-          original: 0,
-          inr: 0,
-          receivedOriginal: 0,
-          receivedInr: 0,
+          amount:
+            base *
+            (percentage / 100),
+
+          received:
+            numberValue(
+              section.received_amount
+            ),
+
+          rate:
+            getRate(section),
         };
-      }
+      };
 
-      const base =
-        numberValue(
-          section[baseField]
+      const profitCalculation = (
+        section,
+        payableField
+      ) => {
+        if (!section.enabled) {
+          return {
+            amount: 0,
+            received: 0,
+            rate: getRate(section),
+          };
+        }
+
+        const totalTaken =
+          numberValue(
+            section.total_taken
+          );
+
+        const payable =
+          numberValue(
+            section[
+              payableField
+            ]
+          );
+
+        return {
+          amount:
+            Math.max(
+              0,
+              totalTaken -
+                payable
+            ),
+
+          received:
+            numberValue(
+              section.received_amount
+            ),
+
+          rate:
+            getRate(section),
+        };
+      };
+
+      const educationLoan =
+        percentageCalculation(
+          revenue.education_loan,
+          "loan_amount"
         );
 
-      const percentage =
-        numberValue(
-          section.commission_percent
+      const accommodation =
+        percentageCalculation(
+          revenue.accommodation,
+          "booking_amount"
         );
 
-      const rate =
-        section.currency === "INR"
-          ? 1
-          : numberValue(
-              section.exchange_rate
-            );
+      const ielts =
+        profitCalculation(
+          revenue.ielts,
+          "actual_cost"
+        );
 
-      const original =
-        (base * percentage) / 100;
+      const tuitionFeeProfit =
+        profitCalculation(
+          revenue.tuition_fee_profit,
+          "amount_payable"
+        );
 
-      const receivedOriginal =
-        numberValue(
-          section.received_amount
+      const visaFeeProfit =
+        profitCalculation(
+          revenue.visa_fee_profit,
+          "amount_payable"
+        );
+
+      const serviceRate =
+        getRate(
+          revenue.service_package
+        );
+
+      const servicePackage = {
+        amount:
+          revenue.service_package
+            .enabled
+            ? numberValue(
+                revenue
+                  .service_package
+                  .package_fee
+              )
+            : 0,
+
+        received:
+          revenue.service_package
+            .enabled
+            ? numberValue(
+                revenue
+                  .service_package
+                  .received_amount
+              )
+            : 0,
+
+        rate: serviceRate,
+      };
+
+      const universityResult = {
+        amount:
+          universityCommission,
+
+        received:
+          universityReceived,
+
+        rate:
+          universityRate,
+      };
+
+      const allResults = [
+        universityResult,
+        educationLoan,
+        accommodation,
+        ielts,
+        tuitionFeeProfit,
+        visaFeeProfit,
+        servicePackage,
+      ];
+
+      const expectedInr =
+        allResults.reduce(
+          (sum, item) =>
+            sum +
+            item.amount *
+              item.rate,
+          0
+        );
+
+      const receivedInr =
+        allResults.reduce(
+          (sum, item) =>
+            sum +
+            item.received *
+              item.rate,
+          0
         );
 
       return {
-        original,
-        inr: original * rate,
-        receivedOriginal,
-        receivedInr:
-          receivedOriginal * rate,
+        grossTuition,
+        scholarship,
+        netTuition,
+
+        university:
+          universityResult,
+
+        educationLoan,
+        accommodation,
+        ielts,
+        tuitionFeeProfit,
+        visaFeeProfit,
+        servicePackage,
+
+        expectedInr,
+
+        receivedInr,
+
+        balanceInr:
+          Math.max(
+            0,
+            expectedInr -
+              receivedInr
+          ),
       };
-    };
+    }, [revenue]);
 
-    const calculateProfit = (
-      section
-    ) => {
-      if (!section.enabled) {
-        return {
-          original: 0,
-          inr: 0,
-          receivedOriginal: 0,
-          receivedInr: 0,
-        };
-      }
-
-      const totalTaken =
-        numberValue(
-          section.total_taken
-        );
-
-      const actualCost =
-        numberValue(
-          section.actual_cost ??
-            section.amount_payable
-        );
-
-      const rate =
-        section.currency === "INR"
-          ? 1
-          : numberValue(
-              section.exchange_rate
-            );
-
-      const original = Math.max(
-        0,
-        totalTaken - actualCost
-      );
-
-      const receivedOriginal =
-        numberValue(
-          section.received_amount
-        );
-
-      return {
-        original,
-        inr: original * rate,
-        receivedOriginal,
-        receivedInr:
-          receivedOriginal * rate,
-      };
-    };
-
-    const university =
-      calculatePercentage(
-        revenue.university,
-        "tuition_fee"
-      );
-
-    const educationLoan =
-      calculatePercentage(
-        revenue.education_loan,
-        "loan_amount"
-      );
-
-    const accommodation =
-      calculatePercentage(
-        revenue.accommodation,
-        "booking_amount"
-      );
-
-    const ielts =
-      calculateProfit(
-        revenue.ielts
-      );
-
-    const tuitionFeeProfit =
-      calculateProfit(
-        revenue.tuition_fee_profit
-      );
-
-    const visaFeeProfit =
-      calculateProfit(
-        revenue.visa_fee_profit
-      );
-
-    let servicePackage = {
-      original: 0,
-      inr: 0,
-      receivedOriginal: 0,
-      receivedInr: 0,
-    };
-
-    if (
-      revenue.service_package.enabled
-    ) {
-      const rate =
-        revenue.service_package
-          .currency === "INR"
-          ? 1
-          : numberValue(
-              revenue.service_package
-                .exchange_rate
-            );
-
-      const original =
-        numberValue(
-          revenue.service_package
-            .package_fee
-        );
-
-      const receivedOriginal =
-        numberValue(
-          revenue.service_package
-            .received_amount
-        );
-
-      servicePackage = {
-        original,
-        inr: original * rate,
-        receivedOriginal,
-        receivedInr:
-          receivedOriginal * rate,
-      };
-    }
-
-    const entries = [
-      university,
-      educationLoan,
-      accommodation,
-      ielts,
-      tuitionFeeProfit,
-      visaFeeProfit,
-      servicePackage,
-    ];
-
-    const expectedInr =
-      entries.reduce(
-        (sum, item) =>
-          sum + item.inr,
-        0
-      );
-
-    const receivedInr =
-      entries.reduce(
-        (sum, item) =>
-          sum + item.receivedInr,
-        0
-      );
-
-    const balanceInr =
-      Math.max(
-        0,
-        expectedInr - receivedInr
-      );
-
-    return {
-      university,
-      educationLoan,
-      accommodation,
-      ielts,
-      tuitionFeeProfit,
-      visaFeeProfit,
-      servicePackage,
-      expectedInr,
-      receivedInr,
-      balanceInr,
-    };
-  }, [revenue]);
-
-  if (user && user.role !== "admin") {
-    return <Navigate to="/" replace />;
+  if (
+    user &&
+    user.role !== "admin"
+  ) {
+    return (
+      <Navigate
+        to="/"
+        replace
+      />
+    );
   }
 
   const selectedStudentData =
@@ -538,49 +769,31 @@ export default function Revenue() {
     >
       <div className="space-y-5">
 
-        {/* Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white border border-stone-200 rounded-2xl p-5">
-            <div className="text-xs uppercase tracking-wider text-stone-400 font-semibold">
-              Expected Revenue
-            </div>
+          <SummaryCard
+            label="Expected Revenue"
+            amount={
+              calculations.expectedInr
+            }
+          />
 
-            <div className="mt-2 text-2xl font-display font-bold text-stone-900">
-              {formatMoney(
-                calculations.expectedInr,
-                "INR"
-              )}
-            </div>
-          </div>
+          <SummaryCard
+            label="Received"
+            amount={
+              calculations.receivedInr
+            }
+            variant="received"
+          />
 
-          <div className="bg-white border border-emerald-200 rounded-2xl p-5">
-            <div className="text-xs uppercase tracking-wider text-emerald-600 font-semibold">
-              Received
-            </div>
-
-            <div className="mt-2 text-2xl font-display font-bold text-emerald-700">
-              {formatMoney(
-                calculations.receivedInr,
-                "INR"
-              )}
-            </div>
-          </div>
-
-          <div className="bg-white border border-amber-200 rounded-2xl p-5">
-            <div className="text-xs uppercase tracking-wider text-amber-600 font-semibold">
-              Outstanding
-            </div>
-
-            <div className="mt-2 text-2xl font-display font-bold text-amber-700">
-              {formatMoney(
-                calculations.balanceInr,
-                "INR"
-              )}
-            </div>
-          </div>
+          <SummaryCard
+            label="Outstanding"
+            amount={
+              calculations.balanceInr
+            }
+            variant="outstanding"
+          />
         </div>
 
-        {/* Student */}
         <div className="bg-white border border-stone-200 rounded-2xl p-5">
           <div className="flex items-center gap-2 mb-4">
             <IndianRupee className="w-5 h-5 text-[#C05B43]" />
@@ -595,12 +808,18 @@ export default function Revenue() {
           </label>
 
           <select
-            value={selectedStudent}
-            onChange={(e) =>
+            value={
+              selectedStudent
+            }
+            onChange={(e) => {
               setSelectedStudent(
                 e.target.value
-              )
-            }
+              );
+
+              setRevenue(
+                initialRevenue
+              );
+            }}
             className="w-full max-w-xl h-12 px-3 rounded-xl border border-stone-200 bg-white"
           >
             <option value="">
@@ -612,8 +831,12 @@ export default function Revenue() {
             {students.map(
               (student) => (
                 <option
-                  key={student.id}
-                  value={student.id}
+                  key={
+                    student.id
+                  }
+                  value={
+                    student.id
+                  }
                 >
                   {student.name}
                   {student.email
@@ -628,7 +851,9 @@ export default function Revenue() {
             <div className="mt-3 text-sm text-stone-500">
               Revenue record for{" "}
               <strong className="text-stone-800">
-                {selectedStudentData.name}
+                {
+                  selectedStudentData.name
+                }
               </strong>
             </div>
           )}
@@ -641,142 +866,32 @@ export default function Revenue() {
             <div className="font-medium text-stone-700">
               Select a student first
             </div>
-
-            <div className="text-sm text-stone-400 mt-1">
-              Revenue options will appear after selecting a student.
-            </div>
           </div>
         ) : (
           <>
-
-            {/* University */}
-            <SectionToggle
-              title="University Commission"
-              enabled={
-                revenue.university.enabled
+            <UniversitySection
+              revenue={revenue}
+              calculations={
+                calculations
               }
-              onChange={(enabled) =>
-                toggleSection(
-                  "university",
-                  enabled
-                )
+              updateSection={
+                updateSection
               }
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">
-                    University Name
-                  </label>
+              toggleSection={
+                toggleSection
+              }
+            />
 
-                  <input
-                    value={
-                      revenue.university
-                        .university_name
-                    }
-                    onChange={(e) =>
-                      updateSection(
-                        "university",
-                        "university_name",
-                        e.target.value
-                      )
-                    }
-                    className="w-full h-11 px-3 rounded-xl border border-stone-200"
-                    placeholder="University name"
-                  />
-                </div>
-
-                <CurrencyFields
-                  data={
-                    revenue.university
-                  }
-                  update={(field, value) =>
-                    updateSection(
-                      "university",
-                      field,
-                      value
-                    )
-                  }
-                />
-
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">
-                    Total Tuition Fees
-                  </label>
-
-                  <input
-                    type="number"
-                    value={
-                      revenue.university
-                        .tuition_fee
-                    }
-                    onChange={(e) =>
-                      updateSection(
-                        "university",
-                        "tuition_fee",
-                        e.target.value
-                      )
-                    }
-                    className="w-full h-11 px-3 rounded-xl border border-stone-200"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">
-                    Commission %
-                  </label>
-
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={
-                      revenue.university
-                        .commission_percent
-                    }
-                    onChange={(e) =>
-                      updateSection(
-                        "university",
-                        "commission_percent",
-                        e.target.value
-                      )
-                    }
-                    className="w-full h-11 px-3 rounded-xl border border-stone-200"
-                  />
-                </div>
-
-                <ReceivedField
-                  data={
-                    revenue.university
-                  }
-                  update={(field, value) =>
-                    updateSection(
-                      "university",
-                      field,
-                      value
-                    )
-                  }
-                />
-              </div>
-
-              <CalculationBox
-                label="Calculated University Commission"
-                calculation={
-                  calculations.university
-                }
-                currency={
-                  revenue.university
-                    .currency
-                }
-              />
-            </SectionToggle>
-
-            {/* Loan */}
             <SectionToggle
               title="Education Loan"
               enabled={
-                revenue.education_loan
+                revenue
+                  .education_loan
                   .enabled
               }
-              onChange={(enabled) =>
+              onChange={(
+                enabled
+              ) =>
                 toggleSection(
                   "education_loan",
                   enabled
@@ -787,7 +902,10 @@ export default function Revenue() {
                 data={
                   revenue.education_loan
                 }
-                update={(field, value) =>
+                update={(
+                  field,
+                  value
+                ) =>
                   updateSection(
                     "education_loan",
                     field,
@@ -797,20 +915,22 @@ export default function Revenue() {
                 organisationLabel="Loan Organisation"
                 amountLabel="Loan Amount"
                 amountField="loan_amount"
-                calculation={
+                result={
                   calculations.educationLoan
                 }
               />
             </SectionToggle>
 
-            {/* Accommodation */}
             <SectionToggle
               title="Accommodation"
               enabled={
-                revenue.accommodation
+                revenue
+                  .accommodation
                   .enabled
               }
-              onChange={(enabled) =>
+              onChange={(
+                enabled
+              ) =>
                 toggleSection(
                   "accommodation",
                   enabled
@@ -821,7 +941,10 @@ export default function Revenue() {
                 data={
                   revenue.accommodation
                 }
-                update={(field, value) =>
+                update={(
+                  field,
+                  value
+                ) =>
                   updateSection(
                     "accommodation",
                     field,
@@ -831,19 +954,21 @@ export default function Revenue() {
                 organisationLabel="Accommodation Organisation"
                 amountLabel="Accommodation / Booking Amount"
                 amountField="booking_amount"
-                calculation={
+                result={
                   calculations.accommodation
                 }
               />
             </SectionToggle>
 
-            {/* IELTS */}
             <SectionToggle
               title="IELTS"
               enabled={
-                revenue.ielts.enabled
+                revenue.ielts
+                  .enabled
               }
-              onChange={(enabled) =>
+              onChange={(
+                enabled
+              ) =>
                 toggleSection(
                   "ielts",
                   enabled
@@ -851,8 +976,13 @@ export default function Revenue() {
               }
             >
               <ProfitSection
-                data={revenue.ielts}
-                update={(field, value) =>
+                data={
+                  revenue.ielts
+                }
+                update={(
+                  field,
+                  value
+                ) =>
                   updateSection(
                     "ielts",
                     field,
@@ -861,20 +991,22 @@ export default function Revenue() {
                 }
                 payableLabel="Actual IELTS Cost"
                 payableField="actual_cost"
-                calculation={
+                result={
                   calculations.ielts
                 }
               />
             </SectionToggle>
 
-            {/* Tuition */}
             <SectionToggle
               title="Tuition Fee Profit"
               enabled={
-                revenue.tuition_fee_profit
+                revenue
+                  .tuition_fee_profit
                   .enabled
               }
-              onChange={(enabled) =>
+              onChange={(
+                enabled
+              ) =>
                 toggleSection(
                   "tuition_fee_profit",
                   enabled
@@ -883,9 +1015,13 @@ export default function Revenue() {
             >
               <ProfitSection
                 data={
-                  revenue.tuition_fee_profit
+                  revenue
+                    .tuition_fee_profit
                 }
-                update={(field, value) =>
+                update={(
+                  field,
+                  value
+                ) =>
                   updateSection(
                     "tuition_fee_profit",
                     field,
@@ -894,20 +1030,23 @@ export default function Revenue() {
                 }
                 payableLabel="Tuition Fee Need to Pay University"
                 payableField="amount_payable"
-                calculation={
-                  calculations.tuitionFeeProfit
+                result={
+                  calculations
+                    .tuitionFeeProfit
                 }
               />
             </SectionToggle>
 
-            {/* Visa */}
             <SectionToggle
               title="Visa Fee Profit"
               enabled={
-                revenue.visa_fee_profit
+                revenue
+                  .visa_fee_profit
                   .enabled
               }
-              onChange={(enabled) =>
+              onChange={(
+                enabled
+              ) =>
                 toggleSection(
                   "visa_fee_profit",
                   enabled
@@ -916,9 +1055,13 @@ export default function Revenue() {
             >
               <ProfitSection
                 data={
-                  revenue.visa_fee_profit
+                  revenue
+                    .visa_fee_profit
                 }
-                update={(field, value) =>
+                update={(
+                  field,
+                  value
+                ) =>
                   updateSection(
                     "visa_fee_profit",
                     field,
@@ -927,186 +1070,53 @@ export default function Revenue() {
                 }
                 payableLabel="Visa Fee Need to Pay"
                 payableField="amount_payable"
-                calculation={
-                  calculations.visaFeeProfit
+                result={
+                  calculations
+                    .visaFeeProfit
                 }
               />
             </SectionToggle>
 
-            {/* Service Package */}
-            <SectionToggle
-              title="Rayvoy Service Package"
-              enabled={
-                revenue.service_package
-                  .enabled
+            <ServicePackageSection
+              revenue={revenue}
+              result={
+                calculations
+                  .servicePackage
               }
-              onChange={(enabled) =>
-                toggleSection(
-                  "service_package",
-                  enabled
-                )
+              updateSection={
+                updateSection
               }
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">
-                    Package Type
-                  </label>
+              toggleSection={
+                toggleSection
+              }
+            />
 
-                  <select
-                    value={
-                      revenue.service_package
-                        .package_type
-                    }
-                    onChange={(e) =>
-                      updateSection(
-                        "service_package",
-                        "package_type",
-                        e.target.value
-                      )
-                    }
-                    className="w-full h-11 px-3 rounded-xl border border-stone-200 bg-white"
-                  >
-                    <option value="">
-                      Select package
-                    </option>
-                    <option value="germany">
-                      Germany
-                    </option>
-                    <option value="top_university">
-                      Top University
-                    </option>
-                    <option value="custom">
-                      Custom
-                    </option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">
-                    Package Name
-                  </label>
-
-                  <input
-                    value={
-                      revenue.service_package
-                        .package_name
-                    }
-                    onChange={(e) =>
-                      updateSection(
-                        "service_package",
-                        "package_name",
-                        e.target.value
-                      )
-                    }
-                    className="w-full h-11 px-3 rounded-xl border border-stone-200"
-                    placeholder="Package name"
-                  />
-                </div>
-
-                <CurrencyFields
-                  data={
-                    revenue.service_package
-                  }
-                  update={(field, value) =>
-                    updateSection(
-                      "service_package",
-                      field,
-                      value
-                    )
-                  }
-                />
-
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">
-                    Package Fee
-                  </label>
-
-                  <input
-                    type="number"
-                    value={
-                      revenue.service_package
-                        .package_fee
-                    }
-                    onChange={(e) =>
-                      updateSection(
-                        "service_package",
-                        "package_fee",
-                        e.target.value
-                      )
-                    }
-                    className="w-full h-11 px-3 rounded-xl border border-stone-200"
-                  />
-                </div>
-
-                <ReceivedField
-                  data={
-                    revenue.service_package
-                  }
-                  update={(field, value) =>
-                    updateSection(
-                      "service_package",
-                      field,
-                      value
-                    )
-                  }
-                />
-              </div>
-
-              <CalculationBox
-                label="Service Package Revenue"
-                calculation={
-                  calculations.servicePackage
-                }
-                currency={
-                  revenue.service_package
-                    .currency
-                }
-              />
-            </SectionToggle>
-
-            {/* Final total */}
             <div className="bg-[#1B365D] text-white rounded-2xl p-6">
               <div className="text-sm text-white/70">
                 Student Revenue Summary
               </div>
 
               <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div>
-                  <div className="text-xs uppercase tracking-wider text-white/60">
-                    Expected
-                  </div>
-                  <div className="text-2xl font-bold mt-1">
-                    {formatMoney(
-                      calculations.expectedInr,
-                      "INR"
-                    )}
-                  </div>
-                </div>
+                <DarkTotal
+                  label="Expected"
+                  amount={
+                    calculations.expectedInr
+                  }
+                />
 
-                <div>
-                  <div className="text-xs uppercase tracking-wider text-white/60">
-                    Received
-                  </div>
-                  <div className="text-2xl font-bold mt-1">
-                    {formatMoney(
-                      calculations.receivedInr,
-                      "INR"
-                    )}
-                  </div>
-                </div>
+                <DarkTotal
+                  label="Received"
+                  amount={
+                    calculations.receivedInr
+                  }
+                />
 
-                <div>
-                  <div className="text-xs uppercase tracking-wider text-white/60">
-                    Balance
-                  </div>
-                  <div className="text-2xl font-bold mt-1">
-                    {formatMoney(
-                      calculations.balanceInr,
-                      "INR"
-                    )}
-                  </div>
-                </div>
+                <DarkTotal
+                  label="Balance"
+                  amount={
+                    calculations.balanceInr
+                  }
+                />
               </div>
             </div>
 
@@ -1131,14 +1141,248 @@ export default function Revenue() {
   );
 }
 
+function UniversitySection({
+  revenue,
+  calculations,
+  updateSection,
+  toggleSection,
+}) {
+  const data =
+    revenue.university;
+
+  const rate =
+    getRate(data);
+
+  return (
+    <SectionToggle
+      title="University Commission"
+      enabled={data.enabled}
+      onChange={(enabled) =>
+        toggleSection(
+          "university",
+          enabled
+        )
+      }
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div>
+          <label className="block text-sm font-medium mb-1.5">
+            University Name
+          </label>
+
+          <input
+            value={
+              data.university_name
+            }
+            onChange={(e) =>
+              updateSection(
+                "university",
+                "university_name",
+                e.target.value
+              )
+            }
+            className="w-full h-11 px-3 rounded-xl border border-stone-200"
+            placeholder="University name"
+          />
+        </div>
+
+        <CurrencyFields
+          data={data}
+          update={(
+            field,
+            value
+          ) =>
+            updateSection(
+              "university",
+              field,
+              value
+            )
+          }
+        />
+
+        <div>
+          <label className="block text-sm font-medium mb-1.5">
+            Total Tuition Fees
+          </label>
+
+          <input
+            type="number"
+            value={
+              data.tuition_fee
+            }
+            onChange={(e) =>
+              updateSection(
+                "university",
+                "tuition_fee",
+                e.target.value
+              )
+            }
+            className="w-full h-11 px-3 rounded-xl border border-stone-200"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1.5">
+            Scholarship
+          </label>
+
+          <select
+            value={
+              data.scholarship
+            }
+            onChange={(e) =>
+              updateSection(
+                "university",
+                "scholarship",
+                e.target.value
+              )
+            }
+            className="w-full h-11 px-3 rounded-xl border border-stone-200 bg-white"
+          >
+            <option value="no">
+              No
+            </option>
+
+            <option value="yes">
+              Yes
+            </option>
+          </select>
+        </div>
+
+        {data.scholarship ===
+          "yes" && (
+          <div>
+            <label className="block text-sm font-medium mb-1.5">
+              Scholarship Amount
+            </label>
+
+            <input
+              type="number"
+              value={
+                data.scholarship_amount
+              }
+              onChange={(e) =>
+                updateSection(
+                  "university",
+                  "scholarship_amount",
+                  e.target.value
+                )
+              }
+              className="w-full h-11 px-3 rounded-xl border border-stone-200"
+            />
+          </div>
+        )}
+
+        <div>
+          <label className="block text-sm font-medium mb-1.5">
+            Commission %
+          </label>
+
+          <input
+            type="number"
+            step="0.01"
+            value={
+              data.commission_percent
+            }
+            onChange={(e) =>
+              updateSection(
+                "university",
+                "commission_percent",
+                e.target.value
+              )
+            }
+            className="w-full h-11 px-3 rounded-xl border border-stone-200"
+          />
+        </div>
+
+        <ReceivedField
+          data={data}
+          update={(
+            field,
+            value
+          ) =>
+            updateSection(
+              "university",
+              field,
+              value
+            )
+          }
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 mt-5">
+        <AmountConversion
+          label="Original Tuition Fee"
+          amount={
+            calculations.grossTuition
+          }
+          currency={
+            data.currency
+          }
+          rate={rate}
+        />
+
+        <AmountConversion
+          label="Scholarship"
+          amount={
+            calculations.scholarship
+          }
+          currency={
+            data.currency
+          }
+          rate={rate}
+        />
+
+        <AmountConversion
+          label="Tuition After Scholarship"
+          amount={
+            calculations.netTuition
+          }
+          currency={
+            data.currency
+          }
+          rate={rate}
+        />
+      </div>
+
+      <RevenueResult
+        label="Calculated University Commission"
+        amount={
+          calculations
+            .university
+            .amount
+        }
+        received={
+          calculations
+            .university
+            .received
+        }
+        currency={
+          data.currency
+        }
+        rate={rate}
+      />
+    </SectionToggle>
+  );
+}
+
 function PercentageSection({
   data,
   update,
   organisationLabel,
   amountLabel,
   amountField,
-  calculation,
+  result,
 }) {
+  const rate =
+    getRate(data);
+
+  const baseAmount =
+    numberValue(
+      data[amountField]
+    );
+
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1148,7 +1392,9 @@ function PercentageSection({
           </label>
 
           <input
-            value={data.organisation}
+            value={
+              data.organisation
+            }
             onChange={(e) =>
               update(
                 "organisation",
@@ -1172,7 +1418,9 @@ function PercentageSection({
 
           <input
             type="number"
-            value={data[amountField]}
+            value={
+              data[amountField]
+            }
             onChange={(e) =>
               update(
                 amountField,
@@ -1210,10 +1458,27 @@ function PercentageSection({
         />
       </div>
 
-      <CalculationBox
+      <div className="mt-5">
+        <AmountConversion
+          label={amountLabel}
+          amount={baseAmount}
+          currency={
+            data.currency
+          }
+          rate={rate}
+        />
+      </div>
+
+      <RevenueResult
         label="Calculated Commission"
-        calculation={calculation}
-        currency={data.currency}
+        amount={result.amount}
+        received={
+          result.received
+        }
+        currency={
+          data.currency
+        }
+        rate={rate}
       />
     </>
   );
@@ -1224,8 +1489,21 @@ function ProfitSection({
   update,
   payableLabel,
   payableField,
-  calculation,
+  result,
 }) {
+  const rate =
+    getRate(data);
+
+  const payable =
+    numberValue(
+      data[payableField]
+    );
+
+  const totalTaken =
+    numberValue(
+      data.total_taken
+    );
+
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1241,7 +1519,9 @@ function ProfitSection({
 
           <input
             type="number"
-            value={data[payableField]}
+            value={
+              data[payableField]
+            }
             onChange={(e) =>
               update(
                 payableField,
@@ -1259,7 +1539,9 @@ function ProfitSection({
 
           <input
             type="number"
-            value={data.total_taken}
+            value={
+              data.total_taken
+            }
             onChange={(e) =>
               update(
                 "total_taken",
@@ -1276,71 +1558,271 @@ function ProfitSection({
         />
       </div>
 
-      <CalculationBox
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-5">
+        <AmountConversion
+          label={payableLabel}
+          amount={payable}
+          currency={
+            data.currency
+          }
+          rate={rate}
+        />
+
+        <AmountConversion
+          label="Total Amount Taken"
+          amount={
+            totalTaken
+          }
+          currency={
+            data.currency
+          }
+          rate={rate}
+        />
+      </div>
+
+      <RevenueResult
         label="Calculated Profit"
-        calculation={calculation}
-        currency={data.currency}
+        amount={result.amount}
+        received={
+          result.received
+        }
+        currency={
+          data.currency
+        }
+        rate={rate}
       />
     </>
   );
 }
 
-function CalculationBox({
-  label,
-  calculation,
-  currency,
+function ServicePackageSection({
+  revenue,
+  result,
+  updateSection,
+  toggleSection,
 }) {
-  const balance = Math.max(
-    0,
-    calculation.inr -
-      calculation.receivedInr
-  );
+  const data =
+    revenue.service_package;
+
+  const rate =
+    getRate(data);
 
   return (
-    <div className="mt-5 bg-stone-50 border border-stone-200 rounded-xl p-4">
+    <SectionToggle
+      title="Rayvoy Service Package"
+      enabled={data.enabled}
+      onChange={(enabled) =>
+        toggleSection(
+          "service_package",
+          enabled
+        )
+      }
+    >
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        <div>
+          <label className="block text-sm font-medium mb-1.5">
+            Package Type
+          </label>
+
+          <select
+            value={
+              data.package_type
+            }
+            onChange={(e) =>
+              updateSection(
+                "service_package",
+                "package_type",
+                e.target.value
+              )
+            }
+            className="w-full h-11 px-3 rounded-xl border border-stone-200 bg-white"
+          >
+            <option value="">
+              Select package
+            </option>
+
+            <option value="germany">
+              Germany
+            </option>
+
+            <option value="top_university">
+              Top University
+            </option>
+
+            <option value="custom">
+              Custom
+            </option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1.5">
+            Package Name
+          </label>
+
+          <input
+            value={
+              data.package_name
+            }
+            onChange={(e) =>
+              updateSection(
+                "service_package",
+                "package_name",
+                e.target.value
+              )
+            }
+            className="w-full h-11 px-3 rounded-xl border border-stone-200"
+            placeholder="Package name"
+          />
+        </div>
+
+        <CurrencyFields
+          data={data}
+          update={(
+            field,
+            value
+          ) =>
+            updateSection(
+              "service_package",
+              field,
+              value
+            )
+          }
+        />
+
+        <div>
+          <label className="block text-sm font-medium mb-1.5">
+            Package Fee
+          </label>
+
+          <input
+            type="number"
+            value={
+              data.package_fee
+            }
+            onChange={(e) =>
+              updateSection(
+                "service_package",
+                "package_fee",
+                e.target.value
+              )
+            }
+            className="w-full h-11 px-3 rounded-xl border border-stone-200"
+          />
+        </div>
+
+        <ReceivedField
+          data={data}
+          update={(
+            field,
+            value
+          ) =>
+            updateSection(
+              "service_package",
+              field,
+              value
+            )
+          }
+        />
+      </div>
+
+      <div className="mt-5">
+        <AmountConversion
+          label="Package Fee"
+          amount={
+            numberValue(
+              data.package_fee
+            )
+          }
+          currency={
+            data.currency
+          }
+          rate={rate}
+        />
+      </div>
+
+      <RevenueResult
+        label="Service Package Revenue"
+        amount={result.amount}
+        received={
+          result.received
+        }
+        currency={
+          data.currency
+        }
+        rate={rate}
+      />
+    </SectionToggle>
+  );
+}
+
+function SummaryCard({
+  label,
+  amount,
+  variant,
+}) {
+  let classes =
+    "border-stone-200";
+
+  let textClasses =
+    "text-stone-900";
+
+  if (
+    variant === "received"
+  ) {
+    classes =
+      "border-emerald-200";
+
+    textClasses =
+      "text-emerald-700";
+  }
+
+  if (
+    variant === "outstanding"
+  ) {
+    classes =
+      "border-amber-200";
+
+    textClasses =
+      "text-amber-700";
+  }
+
+  return (
+    <div
+      className={`bg-white border ${classes} rounded-2xl p-5`}
+    >
       <div className="text-xs uppercase tracking-wider text-stone-400 font-semibold">
         {label}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-3">
-        <div>
-          <div className="text-xs text-stone-500">
-            Original
-          </div>
+      <div
+        className={`mt-2 text-2xl font-display font-bold ${textClasses}`}
+      >
+        {formatMoney(
+          amount,
+          "INR"
+        )}
+      </div>
+    </div>
+  );
+}
 
-          <div className="font-semibold text-stone-900">
-            {formatMoney(
-              calculation.original,
-              currency
-            )}
-          </div>
-        </div>
+function DarkTotal({
+  label,
+  amount,
+}) {
+  return (
+    <div>
+      <div className="text-xs uppercase tracking-wider text-white/60">
+        {label}
+      </div>
 
-        <div>
-          <div className="text-xs text-stone-500">
-            INR Equivalent
-          </div>
-
-          <div className="font-semibold text-stone-900">
-            {formatMoney(
-              calculation.inr,
-              "INR"
-            )}
-          </div>
-        </div>
-
-        <div>
-          <div className="text-xs text-stone-500">
-            Outstanding
-          </div>
-
-          <div className="font-semibold text-[#C05B43]">
-            {formatMoney(
-              balance,
-              "INR"
-            )}
-          </div>
-        </div>
+      <div className="text-2xl font-bold mt-1">
+        {formatMoney(
+          amount,
+          "INR"
+        )}
       </div>
     </div>
   );
