@@ -178,19 +178,18 @@ async def create_google_calendar_event(
             )
         )
 
-    if due_at.tzinfo is None:
-        due_at = due_at.replace(
-            tzinfo=ZoneInfo("Asia/Kolkata")
-        )
+        if due_at.tzinfo is None:
+            due_at = due_at.replace(
+                tzinfo=ZoneInfo("Asia/Kolkata")
+            )
+
     except Exception:
         logging.exception(
             "Google Calendar sync failed: invalid due_at"
         )
         return None
 
-    end_at = due_at + timedelta(
-        minutes=30
-    )
+    end_at = due_at + timedelta(minutes=30)
 
     description_parts = []
 
@@ -289,7 +288,7 @@ async def create_google_calendar_event(
             "dateTime": due_at.isoformat(),
             "timeZone": "Asia/Kolkata",
         },
-        
+
         "end": {
             "dateTime": end_at.isoformat(),
             "timeZone": "Asia/Kolkata",
