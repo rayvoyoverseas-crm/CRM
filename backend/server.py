@@ -516,7 +516,6 @@ async def ensure_unique_lead_contact(
         normalized_phone,
     )
 
-
 def hash_password(password: str) -> str:
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(password.encode("utf-8"), salt).decode("utf-8")
