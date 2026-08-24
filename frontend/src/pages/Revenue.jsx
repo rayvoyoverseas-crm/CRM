@@ -422,6 +422,16 @@ export default function Revenue() {
     setLoadingStudents,
   ] = useState(true);
 
+  const [
+  loadingRevenue,
+  setLoadingRevenue,
+] = useState(false);
+
+const [
+  savingRevenue,
+  setSavingRevenue,
+] = useState(false);
+
   useEffect(() => {
     if (user?.role !== "admin") {
       return;
