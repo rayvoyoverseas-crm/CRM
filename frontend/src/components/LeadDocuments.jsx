@@ -47,6 +47,90 @@ const ACADEMIC_META = {
   ],
 };
 
+const validateAcademicDates = (
+  docType,
+  meta,
+  allDocs
+) => {
+  const startDate = meta?.start_date;
+  const endDate = meta?.end_date;
+
+  if (!startDate || !endDate) {
+    return null;
+  }
+
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+
+  if (end <= start) {
+    return "End date must be after the start date.";
+  }
+
+  const getMeta = (type) => {
+    const doc = allDocs.find(
+      (item) => item.doc_type === type
+    );
+
+    return doc?.meta || {};
+  };
+
+  if (docType === "12th") {
+    const tenthMeta = getMeta("10th");
+
+    if (tenthMeta?.end_date) {
+      const tenthEnd = new Date(
+        tenthMeta.end_date
+      );
+
+      if (start < tenthEnd) {
+        return "12th start date cannot be before 10th completion date.";
+      }
+    }
+  }
+
+  if (docType === "ug_sem") {
+    const twelfthMeta = getMeta("12th");
+
+    if (twelfthMeta?.end_date) {
+      const twelfthEnd = new Date(
+        twelfthMeta.end_date
+      );
+
+      if (start < twelfthEnd) {
+        return "Bachelor's start date cannot be before 12th completion date.";
+      }
+    }
+
+    const startYear =
+      start.getFullYear();
+
+    const endYear =
+      end.getFullYear();
+
+    if (
+      endYear - startYear < 3
+    ) {
+      return "Bachelor's course duration must be at least 3 years.";
+    }
+  }
+
+  if (docType === "pg_sem") {
+    const ugMeta = getMeta("ug_sem");
+
+    if (ugMeta?.end_date) {
+      const ugEnd = new Date(
+        ugMeta.end_date
+      );
+
+      if (start < ugEnd) {
+        return "Master's start date cannot be before Bachelor's completion date.";
+      }
+    }
+  }
+
+  return null;
+};
+
 const BASE_DOCS = [
   { key: "10th", label: "10th Certificate", qual: ["12th", "UG", "PG"], meta: ACADEMIC_META["10th"] },
   { key: "12th", label: "12th / Diploma Certificate", qual: ["12th", "UG", "PG"], meta: ACADEMIC_META["12th"] },
@@ -220,7 +304,29 @@ const detailsAreRequired = requiredDetailDocumentKeys.includes(cfg.key);
 
   setSaving(true);
 
-  try {
+try {
+    const academicError = validateAcademicDates(
+      cfg.key,
+      meta,
+      docs
+    );
+
+    if (academicError) {
+      toast.error(academicError);
+      return;
+    }
+
+    const academicError = validateAcademicDates(
+      cfg.key,
+      meta,
+      docs
+    );
+    
+    if (academicError) {
+      toast.error(academicError);
+      return;
+    }
+
     await api.put(
       `/leads/${leadId}/documents/${cfg.key}/meta`,
       meta
@@ -235,69 +341,69 @@ const detailsAreRequired = requiredDetailDocumentKeys.includes(cfg.key);
   }
 };
 
-  const upload = async (file) => {
-
- const upload = async (file) => {
-  if (
-    requiredDetailDocumentKeys.includes(cfg.key) &&
-    Array.isArray(cfg.meta)
-  ) {
-    const missingField = cfg.meta.find((field) => {
-      const value = meta[field.key];
-
-      return (
-        value === undefined ||
-        value === null ||
-        String(value).trim() === ""
-      );
-    });
-
-    if (missingField) {
-      toast.error(`${missingField.label} is required.`);
-      return;
-    }
-  }
-
-  setUploading(true);
-
-  // keep the rest of your upload code here
-};
+    const upload = async (file) => {
+      if (
+        requiredDetailDocumentKeys.includes(cfg.key) &&
+        Array.isArray(cfg.meta)
+      ) {
+        const missingField = cfg.meta.find((field) => {
+          const value = meta[field.key];
     
-
-if (
-  requiredDetailDocumentKeys.includes(cfg.key) &&
-  Array.isArray(cfg.meta)
-) {
-  const missingField = cfg.meta.find((field) => {
-    const value = meta[field.key];
-
-    return (
-      value === undefined ||
-      value === null ||
-      String(value).trim() === ""
-    );
-  });
-
-  if (missingField) {
-    toast.error(`${missingField.label} is required.`);
-    return;
-  }
-}
-    setUploading(true);
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      await api.post(`/leads/${leadId}/documents`, fd, {
-  params: {
-    doc_type: cfg.key,
-    meta: JSON.stringify(meta),
-  },
-});
-      toast.success(`${cfg.label} uploaded`);
-      onChange();
-    } catch (e) { toast.error("Upload failed"); }
-    finally { setUploading(false); }
-  };
+          return (
+            value === undefined ||
+            value === null ||
+            String(value).trim() === ""
+          );
+        });
+    
+        if (missingField) {
+          toast.error(
+            `${missingField.label} is required.`
+          );
+          return;
+        }
+      }
+    
+      // Academic date validation
+      const academicError = validateAcademicDates(
+        cfg.key,
+        meta,
+        docs
+      );
+    
+      if (academicError) {
+        toast.error(academicError);
+        return;
+      }
+    
+      setUploading(true);
+    
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+    
+        await api.post(
+          `/leads/${leadId}/documents`,
+          fd,
+          {
+            params: {
+              doc_type: cfg.key,
+              meta: JSON.stringify(meta),
+            },
+          }
+        );
+    
+        toast.success(
+          `${cfg.label} uploaded`
+        );
+    
+        await onChange();
+      } catch (e) {
+        toast.error("Upload failed");
+      } finally {
+        setUploading(false);
+      }
+    };
 
   const download = async () => {
     const res = await api.get(`/documents/${existing.id}/download`, { responseType: "blob" });
