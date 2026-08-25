@@ -2928,194 +2928,181 @@ const uploadedDocumentCount = new Set(
             </Select>
           </div>
         )}      
+      </div>
+  </details>
+)}
 
-      {/* Student ID Card */}
-      {lead.stage === "EN" && (
-        <div className="mt-5 border-t border-stone-200 pt-5">
-          <Label className="text-xs">
-            Student ID Card
-          </Label>
-      
-          <input
-            id="student-id-card-file"
-            type="file"
-            accept=".pdf,.jpg,.jpeg,.png"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0] || null;
-      
-              if (!file) return;
-      
-              setStudentIdFile(file);
-            }}
-          />
-      
-          {studentIdCardDoc ? (
-            <>
-              <div className="mt-3 p-3 rounded-lg border border-stone-200 bg-stone-50">
-                <p className="text-sm font-medium text-stone-700 break-all">
-                  {studentIdCardDoc.original_filename}
-                </p>
-              </div>
-      
-              <div className="flex flex-wrap gap-2 mt-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={async () => {
-                    try {
-                      const res = await api.get(
-                        `/documents/${studentIdCardDoc.id}/download`,
-                        {
-                          responseType: "blob",
-                        }
-                      );
-      
-                      const url = URL.createObjectURL(
-                        res.data
-                      );
-      
-                      window.open(url, "_blank");
-      
-                      setTimeout(() => {
-                        URL.revokeObjectURL(url);
-                      }, 60000);
-                    } catch (error) {
-                      toast.error(
-                        "Unable to view Student ID Card."
-                      );
-                    }
-                  }}
-                >
-                  View
-                </Button>
-      
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={async () => {
-                    try {
-                      const res = await api.get(
-                        `/documents/${studentIdCardDoc.id}/download`,
-                        {
-                          responseType: "blob",
-                        }
-                      );
-      
-                      const url = URL.createObjectURL(
-                        res.data
-                      );
-      
-                      const a =
-                        document.createElement("a");
-      
-                      a.href = url;
-                      a.download =
-                        studentIdCardDoc.original_filename;
-      
-                      a.click();
-      
-                      URL.revokeObjectURL(url);
-                    } catch (error) {
-                      toast.error(
-                        "Unable to download Student ID Card."
-                      );
-                    }
-                  }}
-                >
-                  Download
-                </Button>
-      
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() =>
-                    document
-                      .getElementById(
-                        "student-id-card-file"
-                      )
-                      ?.click()
-                  }
-                >
-                  Replace
-                </Button>
-              </div>
-            </>
-          ) : (
-            <div className="flex items-center gap-3 mt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() =>
-                  document
-                    .getElementById(
-                      "student-id-card-file"
-                    )
-                    ?.click()
-                }
-              >
-                Choose Student ID Card
-              </Button>
-      
-              {studentIdFile && (
-                <span className="text-xs text-stone-600 truncate">
-                  {studentIdFile.name}
-                </span>
-              )}
-            </div>
-          )}
-      
-          {studentIdFile && (
+{/* Student ID Card - Separate Dropdown */}
+{lead.stage === "EN" && (
+  <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
+    <summary className="cursor-pointer list-none flex items-center justify-between px-6 py-5 hover:bg-stone-50">
+      <h3 className="font-display font-semibold text-lg">
+        Student ID Card
+      </h3>
+
+      <span className="text-stone-500 text-sm transition-transform group-open:rotate-180">
+        ▼
+      </span>
+    </summary>
+
+    <div className="border-t border-stone-200 p-6">
+
+      <input
+        id="student-id-card-file"
+        type="file"
+        accept=".pdf,.jpg,.jpeg,.png"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0] || null;
+          if (!file) return;
+          setStudentIdFile(file);
+        }}
+      />
+
+      {studentIdCardDoc ? (
+        <>
+          <div className="text-sm break-all text-stone-700">
+            📄 {studentIdCardDoc.original_filename}
+          </div>
+
+          <div className="flex flex-wrap gap-2 mt-3">
             <Button
               type="button"
-              disabled={uploadingStudentId}
-              className="w-full mt-4 bg-[#1B365D] hover:bg-[#152a4a]"
+              variant="outline"
               onClick={async () => {
                 try {
-                  setUploadingStudentId(true);
-      
-                  const formData =
-                    new FormData();
-      
-                  formData.append(
-                    "file",
-                    studentIdFile
+                  const res = await api.get(
+                    `/documents/${studentIdCardDoc.id}/download`,
+                    { responseType: "blob" }
                   );
-      
-                  await api.post(
-                    `/leads/${id}/documents?doc_type=student_id_card`,
-                    formData
-                  );
-      
-                  toast.success(
-                    studentIdCardDoc
-                      ? "Student ID Card replaced successfully."
-                      : "Student ID Card uploaded successfully."
-                  );
-      
-                  setStudentIdFile(null);
-      
-                  await load();
+
+                  const url = URL.createObjectURL(res.data);
+
+                  window.open(url, "_blank");
+
+                  setTimeout(() => {
+                    URL.revokeObjectURL(url);
+                  }, 60000);
                 } catch (error) {
                   toast.error(
-                    error?.response?.data?.detail ||
-                      "Unable to upload Student ID Card."
+                    "Unable to view Student ID Card."
                   );
-                } finally {
-                  setUploadingStudentId(false);
                 }
               }}
             >
-              {uploadingStudentId
-                ? "Uploading Student ID Card..."
-                : studentIdCardDoc
-                  ? "Upload Replacement"
-                  : "Upload Student ID Card"}
+              👁 View
             </Button>
-          )}
-        </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={async () => {
+                try {
+                  const res = await api.get(
+                    `/documents/${studentIdCardDoc.id}/download`,
+                    { responseType: "blob" }
+                  );
+
+                  const url = URL.createObjectURL(res.data);
+
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download =
+                    studentIdCardDoc.original_filename;
+
+                  a.click();
+
+                  URL.revokeObjectURL(url);
+                } catch (error) {
+                  toast.error(
+                    "Unable to download Student ID Card."
+                  );
+                }
+              }}
+            >
+              ⬇ Download
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() =>
+                document
+                  .getElementById("student-id-card-file")
+                  ?.click()
+              }
+            >
+              🔄 Replace
+            </Button>
+          </div>
+        </>
+      ) : (
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() =>
+            document
+              .getElementById("student-id-card-file")
+              ?.click()
+          }
+        >
+          Choose Student ID Card
+        </Button>
       )}
-      
+
+      {studentIdFile && (
+        <>
+          <div className="mt-3 text-sm text-stone-700 break-all">
+            {studentIdFile.name}
+          </div>
+
+          <Button
+            type="button"
+            disabled={uploadingStudentId}
+            className="w-full mt-4 bg-[#1B365D] hover:bg-[#152a4a]"
+            onClick={async () => {
+              try {
+                setUploadingStudentId(true);
+
+                const formData = new FormData();
+
+                formData.append(
+                  "file",
+                  studentIdFile
+                );
+
+                await api.post(
+                  `/leads/${id}/documents?doc_type=student_id_card`,
+                  formData
+                );
+
+                toast.success(
+                  studentIdCardDoc
+                    ? "Student ID Card replaced successfully."
+                    : "Student ID Card uploaded successfully."
+                );
+
+                setStudentIdFile(null);
+
+                await load();
+              } catch (error) {
+                toast.error(
+                  error?.response?.data?.detail ||
+                    "Unable to upload Student ID Card."
+                );
+              } finally {
+                setUploadingStudentId(false);
+              }
+            }}
+          >
+            {uploadingStudentId
+              ? "Uploading Student ID Card..."
+              : studentIdCardDoc
+                ? "Upload Replacement"
+                : "Upload Student ID Card"}
+          </Button>
+        </>
+      )}     
     </div>
   </details>
 )}            
