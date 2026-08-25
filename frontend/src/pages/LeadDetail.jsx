@@ -1753,20 +1753,25 @@ const uploadedDocumentCount = new Set(
                     <SelectTrigger>
                       <SelectValue placeholder="Select submitted by" />
                     </SelectTrigger>
-
+                    
                     <SelectContent>
                       <SelectItem value="KC">
                         KC
                       </SelectItem>
-
+                    
                       <SelectItem value="Crizac">
                         Crizac
                       </SelectItem>
-
+                    
                       <SelectItem value="SI-UK">
                         SI-UK
                       </SelectItem>
+                    
+                      <SelectItem value="Rayvoy">
+                        Rayvoy
+                      </SelectItem>
                     </SelectContent>
+                    
                   </Select>
                 </div>
 
