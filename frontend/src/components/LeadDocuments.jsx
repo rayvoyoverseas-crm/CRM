@@ -847,12 +847,13 @@ const addReferee = () => {
 
         return (
           <DocumentDropdown key={cfg.key} title="10th Certificate">
-            <DocSlot
-              leadId={lead.id}
-              cfg={cfg}
-              existing={existing}
-              onChange={load}
-            />
+          <DocSlot
+            leadId={lead.id}
+            cfg={cfg}
+            existing={existing}
+            onChange={load}
+            docs={docs}
+          />
           </DocumentDropdown>
         );
       })}
@@ -864,12 +865,13 @@ const addReferee = () => {
 
     return (
       <DocumentDropdown key={cfg.key} title="12th / Diploma Certificate">
-        <DocSlot
-          leadId={lead.id}
-          cfg={cfg}
-          existing={existing}
-          onChange={load}
-        />
+      <DocSlot
+        leadId={lead.id}
+        cfg={cfg}
+        existing={existing}
+        onChange={load}
+        docs={docs}
+      />
       </DocumentDropdown>
     );
   })}
@@ -881,12 +883,13 @@ const addReferee = () => {
 
     return (
       <DocumentDropdown key={cfg.key} title="CV">
-        <DocSlot
-          leadId={lead.id}
-          cfg={cfg}
-          existing={existing}
-          onChange={load}
-        />
+      <DocSlot
+        leadId={lead.id}
+        cfg={cfg}
+        existing={existing}
+        onChange={load}
+        docs={docs}
+      />
       </DocumentDropdown>
     );
   })}
@@ -906,13 +909,14 @@ const addReferee = () => {
           const existing = docs.find((d) => d.doc_type === cfg.key);
 
           return (
-            <DocSlot
-              key={cfg.key}
-              leadId={lead.id}
-              cfg={cfg}
-              existing={existing}
-              onChange={load}
-            />
+          <DocSlot
+            key={cfg.key}
+            leadId={lead.id}
+            cfg={cfg}
+            existing={existing}
+            onChange={load}
+            docs={docs}
+          />
           );
         })}
     </div>
@@ -926,12 +930,13 @@ const addReferee = () => {
 
     return (
       <DocumentDropdown key={cfg.key} title="Passport">
-        <DocSlot
-          leadId={lead.id}
-          cfg={cfg}
-          existing={existing}
-          onChange={load}
-        />
+      <DocSlot
+        leadId={lead.id}
+        cfg={cfg}
+        existing={existing}
+        onChange={load}
+        docs={docs}
+      />
       </DocumentDropdown>
     );
   })}
@@ -949,13 +954,14 @@ const addReferee = () => {
           const existing = docs.find((d) => d.doc_type === cfg.key);
 
           return (
-            <DocSlot
-              key={cfg.key}
-              leadId={lead.id}
-              cfg={cfg}
-              existing={existing}
-              onChange={load}
-            />
+          <DocSlot
+            key={cfg.key}
+            leadId={lead.id}
+            cfg={cfg}
+            existing={existing}
+            onChange={load}
+            docs={docs}
+          />
           );
         })}
     </div>
@@ -1076,13 +1082,14 @@ const addReferee = () => {
           );
 
           return (
-            <DocSlot
-              key={cfg.key}
-              leadId={lead.id}
-              cfg={cfg}
-              existing={existing}
-              onChange={load}
-            />
+          <DocSlot
+            key={cfg.key}
+            leadId={lead.id}
+            cfg={cfg}
+            existing={existing}
+            onChange={load}
+            docs={docs}
+          />
           );
         })}
     </DocumentDropdown>
@@ -1100,12 +1107,13 @@ const addReferee = () => {
         );
 
         return (
-          <DocSlot
-            leadId={lead.id}
-            cfg={lorCfg}
-            existing={existingLor}
-            onChange={load}
-          />
+        <DocSlot
+          leadId={lead.id}
+          cfg={cfg}
+          existing={existing}
+          onChange={load}
+          docs={docs}
+        />
         );
       })()}
     </DocumentDropdown>
@@ -1121,13 +1129,14 @@ const addReferee = () => {
           );
 
           return (
-            <DocSlot
-              key={cfg.key}
-              leadId={lead.id}
-              cfg={cfg}
-              existing={existing}
-              onChange={load}
-            />
+          <DocSlot
+            key={cfg.key}
+            leadId={lead.id}
+            cfg={cfg}
+            existing={existing}
+            onChange={load}
+            docs={docs}
+          />
           );
         })}
     </DocumentDropdown>
@@ -1153,13 +1162,14 @@ const addReferee = () => {
             };
 
             return (
-              <DocSlot
-                key={cfg.key}
-                leadId={lead.id}
-                cfg={otherCfg}
-                existing={existing}
-                onChange={load}
-              />
+            <DocSlot
+              key={cfg.key}
+              leadId={lead.id}
+              cfg={cfg}
+              existing={existing}
+              onChange={load}
+              docs={docs}
+            />
             );
           })}
       </div>
@@ -1199,13 +1209,14 @@ const addReferee = () => {
           const existing = docs.find((d) => d.doc_type === cfg.key);
 
           return (
-            <DocSlot
-              key={cfg.key}
-              leadId={lead.id}
-              cfg={cfg}
-              existing={existing}
-              onChange={load}
-            />
+          <DocSlot
+            key={cfg.key}
+            leadId={lead.id}
+            cfg={cfg}
+            existing={existing}
+            onChange={load}
+            docs={docs}
+          />
           );
         })}
     </div>
