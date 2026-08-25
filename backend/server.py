@@ -780,11 +780,7 @@ class CallHistoryIn(BaseModel):
     call_time: str
     outcome: Literal[
         "Call Made",
-        "No Answer",
-        "Busy",
-        "Switched Off",
         "Wrong Number",
-        "Call Back Requested",
     ]
     notes: str
 
