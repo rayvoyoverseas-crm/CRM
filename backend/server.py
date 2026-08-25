@@ -817,6 +817,7 @@ class ApplicationRecordIn(BaseModel):
         "KC",
         "Crizac",
         "SI-UK",
+        "Rayvoy",
     ]
 
     application_status: Literal[
