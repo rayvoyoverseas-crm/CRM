@@ -69,6 +69,10 @@ const [savingOffer, setSavingOffer] = useState(false);
 
 const [offerFile, setOfferFile] = useState(null);
 const [uploadingOffer, setUploadingOffer] = useState(false);
+
+const [studentIdFile, setStudentIdFile] = useState(null);
+const [uploadingStudentId, setUploadingStudentId] = useState(false);
+  
 const [offerFileName, setOfferFileName] = useState("");
 
 
@@ -2919,6 +2923,101 @@ const uploadedDocumentCount = new Set(
           </div>
         )}      
 
+      {/* Student ID Card */}
+      {lead.stage === "EN" && (
+        <div className="mt-5 border-t border-stone-200 pt-5">
+          <Label className="text-xs">
+            Student ID Card
+          </Label>
+      
+          <input
+            id="student-id-card-file"
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0] || null;
+      
+              if (!file) return;
+      
+              setStudentIdFile(file);
+            }}
+          />
+      
+          <div className="flex items-center gap-3 mt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() =>
+                document
+                  .getElementById("student-id-card-file")
+                  ?.click()
+              }
+            >
+              Choose Student ID Card
+            </Button>
+      
+            {studentIdFile && (
+              <span className="text-xs text-stone-600 truncate">
+                {studentIdFile.name}
+              </span>
+            )}
+          </div>
+      
+          <Button
+            type="button"
+            disabled={
+              uploadingStudentId ||
+              !studentIdFile
+            }
+            className="w-full mt-4 bg-[#1B365D] hover:bg-[#152a4a]"
+            onClick={async () => {
+              if (!studentIdFile) {
+                toast.error(
+                  "Please choose the Student ID Card."
+                );
+                return;
+              }
+      
+              try {
+                setUploadingStudentId(true);
+      
+                const formData = new FormData();
+      
+                formData.append(
+                  "file",
+                  studentIdFile
+                );
+      
+                await api.post(
+                  `/leads/${id}/documents?doc_type=student_id_card`,
+                  formData
+                );
+      
+                toast.success(
+                  "Student ID Card uploaded successfully."
+                );
+      
+                setStudentIdFile(null);
+      
+                await load();
+              } catch (error) {
+                toast.error(
+                  error?.response?.data?.detail ||
+                    "Unable to upload Student ID Card."
+                );
+              } finally {
+                setUploadingStudentId(false);
+              }
+            }}
+          >
+            {uploadingStudentId
+              ? "Uploading Student ID Card..."
+              : "Upload Student ID Card"}
+          </Button>
+        </div>
+      )}      
+      
     </div>
   </details>
 )}            
