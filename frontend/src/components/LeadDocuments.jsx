@@ -169,6 +169,7 @@ const BASE_DOCS = [
   ],
 },
   { key: "aps", label: "APS", qual: ["12th", "UG", "PG"] },
+  { key: "student_id_card", label: "Student ID Card", qual: ["12th", "UG", "PG"] },
   { key: "other_1", label: "Other Document 1", qual: ["12th", "UG", "PG"] },
   { key: "other_2", label: "Other Document 2", qual: ["12th", "UG", "PG"] },
   { key: "other_3", label: "Other Document 3", qual: ["12th", "UG", "PG"] },
@@ -813,8 +814,24 @@ const addReferee = () => {
   };
 
   const isLoan = mode === "loan";
-  const docsFor = isLoan ? LOAN_DOCS : (qual ? BASE_DOCS.filter((d) => d.qual.includes(qual)) : []);
-
+  const docsFor = isLoan
+    ? LOAN_DOCS
+    : (
+        qual
+          ? BASE_DOCS.filter((d) => {
+              if (!d.qual.includes(qual)) return false;
+  
+              if (
+                d.key === "student_id_card" &&
+                lead.stage !== "EN"
+              ) {
+                return false;
+              }
+  
+              return true;
+            })
+          : []
+      );
   return (
     <div className="bg-white border border-stone-200 rounded-2xl p-6">
       <div className="flex items-center justify-between mb-4">
