@@ -1018,12 +1018,13 @@ const addReferee = () => {
         </label>
 
         <div className="mt-1">
-          <DocSlot
-            leadId={lead.id}
-            cfg={docsFor.find((d) => d.key === "ept")}
-            existing={docs.find((d) => d.doc_type === "ept")}
-            onChange={load}
-          />
+        <DocSlot
+          leadId={lead.id}
+          cfg={docsFor.find((d) => d.key === "ept")}
+          existing={docs.find((d) => d.doc_type === "ept")}
+          onChange={load}
+          docs={docs}
+        />
         </div>
       </div>
 
@@ -1054,12 +1055,13 @@ const addReferee = () => {
         </label>
 
         <div className="mt-1">
-          <DocSlot
-            leadId={lead.id}
-            cfg={docsFor.find((d) => d.key === "ept")}
-            existing={docs.find((d) => d.doc_type === "ept")}
-            onChange={load}
-          />
+        <DocSlot
+          leadId={lead.id}
+          cfg={docsFor.find((d) => d.key === "ept")}
+          existing={docs.find((d) => d.doc_type === "ept")}
+          onChange={load}
+          docs={docs}
+        />
         </div>
       </div>
 
@@ -1109,8 +1111,8 @@ const addReferee = () => {
         return (
         <DocSlot
           leadId={lead.id}
-          cfg={cfg}
-          existing={existing}
+          cfg={lorCfg}
+          existing={existingLor}
           onChange={load}
           docs={docs}
         />
