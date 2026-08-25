@@ -2934,7 +2934,7 @@ const uploadedDocumentCount = new Set(
 
 {/* Student ID Card - Separate Dropdown */}
 {lead.stage === "EN" && (
-  <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
+  <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden mt-4">
     <summary className="cursor-pointer list-none flex items-center justify-between px-6 py-5 hover:bg-stone-50">
       <h3 className="font-display font-semibold text-lg">
         Student ID Card
