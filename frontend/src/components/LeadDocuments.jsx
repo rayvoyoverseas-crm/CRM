@@ -190,7 +190,13 @@ const LOAN_DOCS = [
   { key: "existing_loan", label: "Existing Loan Statement (if any)" },
 ];
 
-function DocSlot({ leadId, cfg, existing, onChange }) {
+  function DocSlot({
+    leadId,
+    cfg,
+    existing,
+    onChange,
+    docs = [],
+  }) {
   const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
 
