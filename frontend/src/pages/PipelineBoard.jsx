@@ -3,7 +3,17 @@ import Layout from "@/components/Layout";
 import api, { PIPELINE_STAGES, PIPELINE_LABELS, STAGE_MAP } from "@/lib/api";
 import { Link } from "react-router-dom";
 import StageBadge, { StageChip } from "@/components/StageBadge";
-import { Plus, LayoutGrid, List, Filter, Trash2, Search, Upload } from "lucide-react";
+import {
+  Plus,
+  LayoutGrid,
+  List,
+  Filter,
+  Trash2,
+  Search,
+  Upload,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import LeadDialog from "@/components/LeadDialog";
@@ -103,6 +113,7 @@ export default function PipelineBoard({ pipeline }) {
   const [view, setView] = useState("kanban");
   const [openNew, setOpenNew] = useState(false);
   const bulkFileInputRef = useRef(null);
+  const kanbanScrollRef = useRef(null);
   const [bulkUploading, setBulkUploading] = useState(false);
   const [users, setUsers] = useState([]);
   const [filterAssignee, setFilterAssignee] = useState("__all__");
@@ -358,33 +369,131 @@ const handleBulkUpload = async (event) => {
       }
     >
       {view === "kanban" ? (
-        <div className="flex gap-4 overflow-x-auto pb-4">
-          {stages.map((s) => {
-            const cfg = STAGE_MAP[pipeline][s];
-            return (
-              <div key={s} className="kanban-column" data-testid={`column-${s}`}>
-                <div className={`flex items-center justify-between mb-3 px-3 py-2.5 rounded-xl ring-1 ring-inset ${cfg.classes}`}>
-                  <div className="flex items-center gap-2">
-                    <span className="font-display font-bold text-base tracking-wide">{s}</span>
-                    <span className="opacity-70">·</span>
-                    <span className="text-sm font-semibold">{cfg.label}</span>
-                  </div>
-                  <span className="text-sm font-bold px-2 py-0.5 rounded-full bg-white/60">{grouped[s].length}</span>
-                </div>
-                {grouped[s].map((l) => (
-                  <LeadCard key={l.id} lead={l} pipeline={pipeline} onStageChange={onStageChange} users={users} onDelete={onDelete} canDelete={user?.role === "admin"} />
-                ))}
+  <div className="flex items-start gap-2">
 
-                {grouped[s].length === 0 && (
-  <div className="text-[11px] text-stone-400 text-center py-4">
-    {searchTerm ? "No matching leads" : "Empty"}
-  </div>
-)}    
+    {/* LEFT ARROW */}
+    <button
+      type="button"
+      onClick={() =>
+        kanbanScrollRef.current?.scrollBy({
+          left: -500,
+          behavior: "smooth",
+        })
+      }
+      className="
+        sticky top-4 z-20
+        shrink-0
+        w-10 h-14
+        rounded-xl
+        border border-stone-200
+        bg-white
+        shadow-md
+        flex items-center justify-center
+        text-stone-600
+        hover:text-[#C05B43]
+        hover:border-[#C05B43]
+        transition-colors
+      "
+      title="Scroll left"
+    >
+      <ChevronLeft className="w-6 h-6" />
+    </button>
+
+    {/* SCROLLABLE KANBAN BOARD */}
+    <div
+      ref={kanbanScrollRef}
+      className="flex-1 min-w-0 overflow-x-auto"
+    >
+      <div className="flex gap-4 pb-4 w-max">
+        {stages.map((s) => {
+          const cfg =
+            STAGE_MAP[pipeline][s];
+
+          return (
+            <div
+              key={s}
+              className="kanban-column"
+              data-testid={`column-${s}`}
+            >
+              <div
+                className={`flex items-center justify-between mb-3 px-3 py-2.5 rounded-xl ring-1 ring-inset ${cfg.classes}`}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="font-display font-bold text-base tracking-wide">
+                    {s}
+                  </span>
+
+                  <span className="opacity-70">
+                    ·
+                  </span>
+
+                  <span className="text-sm font-semibold">
+                    {cfg.label}
+                  </span>
+                </div>
+
+                <span className="text-sm font-bold px-2 py-0.5 rounded-full bg-white/60">
+                  {grouped[s].length}
+                </span>
               </div>
-            );
-          })}
-        </div>
-      ) : (
+
+              {grouped[s].map((l) => (
+                <LeadCard
+                  key={l.id}
+                  lead={l}
+                  pipeline={pipeline}
+                  onStageChange={onStageChange}
+                  users={users}
+                  onDelete={onDelete}
+                  canDelete={
+                    user?.role === "admin"
+                  }
+                />
+              ))}
+
+              {grouped[s].length === 0 && (
+                <div className="text-[11px] text-stone-400 text-center py-4">
+                  {searchTerm
+                    ? "No matching leads"
+                    : "Empty"}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+
+    {/* RIGHT ARROW */}
+    <button
+      type="button"
+      onClick={() =>
+        kanbanScrollRef.current?.scrollBy({
+          left: 500,
+          behavior: "smooth",
+        })
+      }
+      className="
+        sticky top-4 z-20
+        shrink-0
+        w-10 h-14
+        rounded-xl
+        border border-stone-200
+        bg-white
+        shadow-md
+        flex items-center justify-center
+        text-stone-600
+        hover:text-[#C05B43]
+        hover:border-[#C05B43]
+        transition-colors
+      "
+      title="Scroll right"
+    >
+      <ChevronRight className="w-6 h-6" />
+    </button>
+
+  </div>
+) : (
         <div className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-sm">
           <table className="w-full text-sm">
             <thead>
