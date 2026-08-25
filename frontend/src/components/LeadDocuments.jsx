@@ -315,18 +315,6 @@ try {
       toast.error(academicError);
       return;
     }
-
-    const academicError = validateAcademicDates(
-      cfg.key,
-      meta,
-      docs
-    );
-    
-    if (academicError) {
-      toast.error(academicError);
-      return;
-    }
-
     await api.put(
       `/leads/${leadId}/documents/${cfg.key}/meta`,
       meta
