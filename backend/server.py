@@ -791,7 +791,12 @@ class ShortlistIn(BaseModel):
     university_name: str
     course: str
     course_link: str
-    shortlist_status: str
+    
+    shortlist_status: Literal[
+        "Recommended",
+        "Student Approved",
+    ]
+    
     tuition_fee: Optional[str] = ""
     application_fee: Optional[str] = ""
     counsellor_remarks: Optional[str] = ""
