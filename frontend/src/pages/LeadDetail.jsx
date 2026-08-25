@@ -1331,17 +1331,9 @@ const uploadedDocumentCount = new Set(
                 <SelectItem value="Recommended">
                   Recommended
                 </SelectItem>
-
+              
                 <SelectItem value="Student Approved">
                   Student Approved
-                </SelectItem>
-
-                <SelectItem value="Student Rejected">
-                  Student Rejected
-                </SelectItem>
-
-                <SelectItem value="Application Planned">
-                  Application Planned
                 </SelectItem>
               </SelectContent>
             </Select>
