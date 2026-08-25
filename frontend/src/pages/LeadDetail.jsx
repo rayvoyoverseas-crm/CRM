@@ -933,13 +933,7 @@ const uploadedDocumentCount = new Set(
 
       <SelectContent>
         <SelectItem value="Call Made">Call Made</SelectItem>
-        <SelectItem value="No Answer">No Answer</SelectItem>
-        <SelectItem value="Busy">Busy</SelectItem>
-        <SelectItem value="Switched Off">Switched Off</SelectItem>
         <SelectItem value="Wrong Number">Wrong Number</SelectItem>
-        <SelectItem value="Call Back Requested">
-          Call Back Requested
-        </SelectItem>
       </SelectContent>
     </Select>
 
