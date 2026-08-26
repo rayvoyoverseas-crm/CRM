@@ -1614,10 +1614,11 @@ const uploadedDocumentCount = new Set(
           </details>
         </TabsContent>
 
-          <TabsContent
-            value="application"
-            className="space-y-5"
-          >
+        {canSeeApplication && (
+        <TabsContent
+          value="application"
+          className="space-y-5"
+        >
 
 {["RA", "AP", "OL", "RD", "DP", "VS", "EN"].includes(lead.stage) && (
   <div className="bg-white border border-stone-200 rounded-2xl p-6">
