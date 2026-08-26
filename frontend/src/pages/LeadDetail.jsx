@@ -1075,6 +1075,7 @@ const uploadedDocumentCount = new Set(
           </details>
 
 {/* Shortlisting */}
+{canSeeShortlisting && (
 <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
   <summary className="cursor-pointer list-none flex items-center justify-between px-6 py-5 hover:bg-stone-50">
     <div>
@@ -1521,6 +1522,7 @@ const uploadedDocumentCount = new Set(
 </div>
 </div>
 </details>
+)}
 
         {/* Revenue & Finance - Admin Only */}
         {user?.role === "admin" &&
