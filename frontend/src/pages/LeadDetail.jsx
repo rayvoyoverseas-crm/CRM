@@ -74,6 +74,19 @@ export default function LeadDetail() {
     routeId
   );
   const [lead, setLead] = useState(null);
+
+  const canSeeShortlisting =
+    !!lead &&
+    SHORTLIST_VISIBLE_STAGES.includes(lead.stage);
+  
+  const canSeeDocuments =
+    !!lead &&
+    DOCUMENTS_VISIBLE_STAGES.includes(lead.stage);
+  
+  const canSeeApplication =
+    !!lead &&
+    APPLICATION_VISIBLE_STAGES.includes(lead.stage);
+  
   const [leadDocs, setLeadDocs] = useState([]);
   const [users, setUsers] = useState([]);
   const [note, setNote] = useState("");
