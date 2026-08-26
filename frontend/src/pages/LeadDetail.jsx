@@ -1048,8 +1048,9 @@ const uploadedDocumentCount = new Set(
 </details>
 
 
-          {/* Documents dropdown */}
-          <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
+            {/* Documents dropdown */}
+            {canSeeDocuments && (
+            <details className="group bg-white border border-stone-200 rounded-2xl overflow-hidden">
             <summary className="cursor-pointer list-none flex items-center justify-between px-6 py-5 hover:bg-stone-50">
               <div>
                 <h3 className="font-display font-semibold text-lg">
@@ -1073,6 +1074,7 @@ const uploadedDocumentCount = new Set(
               />
             </div>
           </details>
+          )}
 
 {/* Shortlisting */}
 {canSeeShortlisting && (
