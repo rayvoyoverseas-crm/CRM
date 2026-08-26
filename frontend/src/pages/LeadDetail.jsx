@@ -31,6 +31,41 @@ const STAGE_TRANSITIONS = {
   EN: [],
 };
 
+const SHORTLIST_VISIBLE_STAGES = [
+  "CC",
+  "SL",
+  "DR",
+  "RA",
+  "AP",
+  "OL",
+  "RD",
+  "DP",
+  "VS",
+  "EN",
+];
+
+const DOCUMENTS_VISIBLE_STAGES = [
+  "SL",
+  "DR",
+  "RA",
+  "AP",
+  "OL",
+  "RD",
+  "DP",
+  "VS",
+  "EN",
+];
+
+const APPLICATION_VISIBLE_STAGES = [
+  "RA",
+  "AP",
+  "OL",
+  "RD",
+  "DP",
+  "VS",
+  "EN",
+];
+
 export default function LeadDetail() {
   const { user } = useAuth();
   const { id: routeId } = useParams();
