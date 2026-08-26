@@ -921,21 +921,23 @@ const uploadedDocumentCount = new Set(
             </div>
           </div>
 
-  <TabsList className="mb-4">
-            <TabsTrigger
-              value="overview"
-              data-testid="tab-overview"
-            >
-              Overview
-            </TabsTrigger>
-          
-            <TabsTrigger
-              value="application"
-              data-testid="tab-application"
-            >
-              Application
-            </TabsTrigger>
-          </TabsList>
+    <TabsList className="mb-4">
+      <TabsTrigger
+        value="overview"
+        data-testid="tab-overview"
+      >
+        Overview
+      </TabsTrigger>
+    
+      {canSeeApplication && (
+        <TabsTrigger
+          value="application"
+          data-testid="tab-application"
+        >
+          Application
+        </TabsTrigger>
+      )}
+    </TabsList>
 
    <TabsContent value="overview" className="space-y-5">
 
