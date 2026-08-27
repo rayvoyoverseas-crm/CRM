@@ -117,6 +117,7 @@ export default function PipelineBoard({ pipeline }) {
   const [bulkUploading, setBulkUploading] = useState(false);
   const [users, setUsers] = useState([]);
   const [filterAssignee, setFilterAssignee] = useState("__all__");
+  const [viewingProfile, setViewingProfile] = useState("__self__");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [stats, setStats] = useState(null);
@@ -135,8 +136,20 @@ export default function PipelineBoard({ pipeline }) {
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => { api.get("/pipeline/stats").then((r) => setStats(r.data)).catch(() => {}); }, [leads.length]);
-  useEffect(() => { if (user?.role === "admin" || user?.permissions?.see_team) api.get("/users").then((r) => setUsers(r.data)).catch(() => {}); }, [user]);
-
+  
+  useEffect(() => {
+    const canLoadUsers =
+      user?.role === "admin" ||
+      user?.permissions?.see_team ||
+      user?.permissions?.profile_switch_enabled;
+  
+    if (canLoadUsers) {
+      api.get("/users")
+        .then((r) => setUsers(r.data))
+        .catch(() => {});
+    }
+  }, [user]);
+  
   const onStageChange = async (lead, newStage) => {
     try {
       await api.patch(`/leads/${lead.id}`, { stage: newStage });
