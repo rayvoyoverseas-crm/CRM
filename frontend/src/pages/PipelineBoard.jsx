@@ -164,7 +164,18 @@ export default function PipelineBoard({ pipeline }) {
   ]);
 
   useEffect(() => { load(); }, [load]);
-  useEffect(() => { api.get("/pipeline/stats").then((r) => setStats(r.data)).catch(() => {}); }, [leads.length]);
+
+  useEffect(() => {
+    const params = {};
+  
+    if (viewingProfile !== "__self__") {
+      params.view_as_user_id = viewingProfile;
+    }
+  
+    api.get("/pipeline/stats", { params })
+      .then((r) => setStats(r.data))
+      .catch(() => {});
+  }, [viewingProfile, leads.length]);
   
   useEffect(() => {
     const canLoadUsers =
