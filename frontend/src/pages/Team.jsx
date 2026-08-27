@@ -129,6 +129,51 @@ export default function Team() {
                           >{l}</button>
                         );
                       })}
+
+                  {u.permissions?.profile_switch_enabled && (
+                    <div className="w-full mt-2">
+                      <div className="text-[10px] uppercase tracking-wider text-stone-400 mb-1">
+                        Can view profiles
+                      </div>
+                  
+                      <div className="flex flex-wrap gap-1">
+                        {users
+                          .filter(
+                            (target) =>
+                              target.id !== u.id &&
+                              target.role !== "admin" &&
+                              target.active !== false
+                          )
+                          .map((target) => {
+                            const allowed =
+                              (
+                                u.permissions
+                                  ?.allowed_profile_user_ids || []
+                              ).includes(target.id);
+                  
+                            return (
+                              <button
+                                key={target.id}
+                                type="button"
+                                onClick={() =>
+                                  toggleAllowedProfile(
+                                    u,
+                                    target.id
+                                  )
+                                }
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-semibold ring-1 ring-inset ${
+                                  allowed
+                                    ? "bg-blue-50 text-blue-700 ring-blue-600/30"
+                                    : "bg-stone-100 text-stone-500 ring-stone-300"
+                                }`}
+                              >
+                                {target.name}
+                              </button>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  )}
                     </div>
                   )}
                 </td>
