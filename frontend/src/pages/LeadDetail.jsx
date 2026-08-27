@@ -3158,13 +3158,14 @@ const uploadedDocumentCount = new Set(
           </Button>
         </>
       )}     
-    </div>
-  </details>
-)}            
-            
-</TabsContent>
-            
-            {lead.pipeline === "loan" && <TabsContent value="loan"><LeadLoanInfo lead={lead} onUpdate={load} /></TabsContent>}
+        </div>
+      </details>
+    )}            
+                
+    </TabsContent>
+    )}
+    
+    {lead.pipeline === "loan" && <TabsContent value="loan"><LeadLoanInfo lead={lead} onUpdate={load} /></TabsContent>}
           </Tabs>
         </div>
 
