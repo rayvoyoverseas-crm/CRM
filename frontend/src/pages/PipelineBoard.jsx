@@ -369,6 +369,62 @@ const handleBulkUpload = async (event) => {
   </Button>
 )}
 
+{/* Profile Switch */}
+{(
+  user?.role === "admin" ||
+  user?.permissions?.profile_switch_enabled
+) && (
+  <Select
+    value={viewingProfile}
+    onValueChange={setViewingProfile}
+  >
+    <SelectTrigger
+      className="h-9 w-48 text-xs"
+      data-testid="profile-switch"
+    >
+      <SelectValue placeholder="Viewing profile" />
+    </SelectTrigger>
+
+    <SelectContent>
+      <SelectItem value="__self__">
+        My Profile
+      </SelectItem>
+
+      {user?.role === "admin"
+        ? users
+            .filter(
+              (u) =>
+                u.role !== "admin" &&
+                u.active !== false
+            )
+            .map((u) => (
+              <SelectItem
+                key={u.id}
+                value={u.id}
+              >
+                {u.name}
+              </SelectItem>
+            ))
+        : users
+            .filter((u) =>
+              (
+                user?.permissions
+                  ?.allowed_profile_user_ids || []
+              ).includes(u.id)
+            )
+            .map((u) => (
+              <SelectItem
+                key={u.id}
+                value={u.id}
+              >
+                {u.name}
+              </SelectItem>
+            ))}
+    </SelectContent>
+  </Select>
+)}
+         
+
 <Button
   onClick={() => setOpenNew(true)}
   data-testid="new-lead-button"
