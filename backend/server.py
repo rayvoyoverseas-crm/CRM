@@ -3951,18 +3951,82 @@ async def update_extras(lead_id: str, payload: LeadExtraIn, user: dict = Depends
 # --- Pipeline Stats & Stale --------------------------------------------------
 
 @api.get("/pipeline/stats")
-async def pipeline_stats(user: dict = Depends(get_current_user)):
-    q: dict = {"is_deleted": {"$ne": True}}
-    if not (user.get("role") == "admin" or (user.get("permissions") or {}).get("see_all_leads")):
-        q["assigned_to"] = str(user["_id"])
-    total_study = await db.leads.count_documents({**q, "pipeline": "study_abroad"})
-    in_pipeline = await db.leads.count_documents({**q, "pipeline": "study_abroad", "stage": {"$nin": ["EN", "LO", "DF", "DNP"]}})
-    deposit = await db.leads.count_documents({**q, "pipeline": "study_abroad", "stage": {"$in": ["DP", "VS", "EN"]}})
-    visa = await db.leads.count_documents({**q, "pipeline": "study_abroad", "stage": {"$in": ["VS", "EN"]}})
-    enrollment = await db.leads.count_documents({**q, "pipeline": "study_abroad", "stage": "EN"})
-    accom = await db.leads.count_documents({**q, "pipeline": "accommodation"})
-    loan = await db.leads.count_documents({**q, "pipeline": "loan"})
-    return {"total": total_study, "in_pipeline": in_pipeline, "deposit": deposit, "visa": visa, "enrollment": enrollment, "accommodation": accom, "loan": loan}
+async def pipeline_stats(
+    view_as_user_id: Optional[str] = None,
+    user: dict = Depends(get_current_user),
+):
+    q: dict = await _lead_visible_filter(
+        user,
+        view_as_user_id=view_as_user_id,
+    )
+
+    total_study = await db.leads.count_documents({
+        **q,
+        "pipeline": "study_abroad",
+    })
+
+    in_pipeline = await db.leads.count_documents({
+        **q,
+        "pipeline": "study_abroad",
+        "stage": {
+            "$nin": [
+                "EN",
+                "LO",
+                "DF",
+                "DNP",
+            ]
+        },
+    })
+
+    deposit = await db.leads.count_documents({
+        **q,
+        "pipeline": "study_abroad",
+        "stage": {
+            "$in": [
+                "DP",
+                "VS",
+                "EN",
+            ]
+        },
+    })
+
+    visa = await db.leads.count_documents({
+        **q,
+        "pipeline": "study_abroad",
+        "stage": {
+            "$in": [
+                "VS",
+                "EN",
+            ]
+        },
+    })
+
+    enrollment = await db.leads.count_documents({
+        **q,
+        "pipeline": "study_abroad",
+        "stage": "EN",
+    })
+
+    accom = await db.leads.count_documents({
+        **q,
+        "pipeline": "accommodation",
+    })
+
+    loan = await db.leads.count_documents({
+        **q,
+        "pipeline": "loan",
+    })
+
+    return {
+        "total": total_study,
+        "in_pipeline": in_pipeline,
+        "deposit": deposit,
+        "visa": visa,
+        "enrollment": enrollment,
+        "accommodation": accom,
+        "loan": loan,
+    }
+
 
 @api.get("/leads/stale/list")
 async def stale_leads(user: dict = Depends(get_current_user)):
