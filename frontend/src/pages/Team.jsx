@@ -77,13 +77,16 @@ export default function Team() {
                 <td className="px-6 py-4 text-xs text-stone-600">
                   {u.role !== "admin" && (
                     <div className="flex flex-wrap gap-1">
-                      {[
-                        ["see_all_leads", "All leads"],
-                        ["see_analytics", "Analytics"],
-                        ["see_website_leads", "Website"],
-                        ["see_targets", "Targets"],
-                        ["see_team", "Team"],
-                      ].map(([k, l]) => {
+                      {
+                        [
+                          ["see_all_leads", "All leads"],
+                          ["see_analytics", "Analytics"],
+                          ["see_website_leads", "Website"],
+                          ["see_targets", "Targets"],
+                          ["see_team", "Team"],
+                          ["profile_switch_enabled", "Profile Switch"],
+                          ["mention_tasks_enabled", "@ Task Mentions"],
+                        ].map(([k, l]) => {
                         const on = u.permissions?.[k];
                         return (
                           <button
