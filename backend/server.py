@@ -774,6 +774,7 @@ class LeadUpdateIn(BaseModel):
 
 class NoteIn(BaseModel):
     text: str
+    mentioned_user_ids: Optional[List[str]] = None
 
 class CallHistoryIn(BaseModel):
     call_date: str
@@ -2024,17 +2025,194 @@ async def update_lead(
     return serialize_lead(lead)
 
 @api.post("/leads/{lead_id}/notes")
-async def add_note(lead_id: str, payload: NoteIn, user: dict = Depends(get_current_user)):
-    q = {"_id": ObjectId(lead_id)}
-    if user.get("role") != "admin":
+async def add_note(
+    lead_id: str,
+    payload: NoteIn,
+    user: dict = Depends(get_current_user),
+):
+    q = {
+        "_id": ObjectId(lead_id)
+    }
+
+    if (
+        user.get("role") != "admin"
+        and not (user.get("permissions") or {}).get("see_all_leads")
+    ):
         q["assigned_to"] = str(user["_id"])
-    l = await db.leads.find_one(q)
-    if not l:
-        raise HTTPException(404, "Lead not found")
+
+    lead = await db.leads.find_one(q)
+
+    if not lead:
+        raise HTTPException(
+            status_code=404,
+            detail="Lead not found",
+        )
+
+    note_text = (
+        payload.text or ""
+    ).strip()
+
+    if not note_text:
+        raise HTTPException(
+            status_code=400,
+            detail="Note cannot be empty.",
+        )
+
     now = datetime.now(timezone.utc)
-    entry = {"type": "note", "text": payload.text, "at": now.isoformat(), "by": user.get("name", "")}
-    await db.leads.update_one({"_id": ObjectId(lead_id)}, {"$push": {"activity": entry}, "$set": {"updated_at": now}})
-    return {"ok": True, "entry": entry}
+
+    # ---------------------------------------------------------
+    # SAVE NORMAL NOTE
+    # ---------------------------------------------------------
+
+    entry = {
+        "type": "note",
+        "text": note_text,
+        "at": now.isoformat(),
+        "by": user.get("name", ""),
+        "by_user_id": str(user["_id"]),
+    }
+
+    await db.leads.update_one(
+        {
+            "_id": ObjectId(lead_id)
+        },
+        {
+            "$push": {
+                "activity": entry
+            },
+            "$set": {
+                "updated_at": now
+            },
+        },
+    )
+
+    # ---------------------------------------------------------
+    # CREATE TASKS FOR @MENTIONED TEAM MEMBERS
+    # ---------------------------------------------------------
+
+    mentioned_user_ids = list(
+        dict.fromkeys(
+            payload.mentioned_user_ids or []
+        )
+    )
+
+    created_tasks = []
+
+    for mentioned_user_id in mentioned_user_ids:
+
+        if not ObjectId.is_valid(
+            mentioned_user_id
+        ):
+            continue
+
+        mentioned_user = (
+            await db.users.find_one(
+                {
+                    "_id": ObjectId(
+                        mentioned_user_id
+                    ),
+                    "active": {
+                        "$ne": False
+                    },
+                }
+            )
+        )
+
+        if not mentioned_user:
+            continue
+
+        task_doc = {
+            "lead_id": lead_id,
+
+            "lead_name": lead.get(
+                "name",
+                "",
+            ),
+
+            "title": note_text,
+
+            "description": (
+                f"Internal task from "
+                f"{user.get('name', 'Team Member')}"
+            ),
+
+            # @mention tasks are ASAP tasks.
+            "due_at": now.isoformat(),
+
+            "remind_at": None,
+
+            "assigned_to": (
+                mentioned_user_id
+            ),
+
+            "assigned_to_name": (
+                mentioned_user.get(
+                    "name",
+                    "",
+                )
+            ),
+
+            "status": "pending",
+
+            "created_at": now,
+
+            "created_by": user.get(
+                "name",
+                "",
+            ),
+
+            "created_by_id": str(
+                user["_id"]
+            ),
+
+            "source": "mention",
+
+            "lead_stage": lead.get(
+                "stage",
+                "",
+            ),
+        }
+
+        result = await db.tasks.insert_one(
+            task_doc
+        )
+
+        task_doc["_id"] = (
+            result.inserted_id
+        )
+
+        created_tasks.append(
+            str(result.inserted_id)
+        )
+
+        # ---------------------------------------------
+        # NOTIFY MENTIONED TEAM MEMBER
+        # ---------------------------------------------
+
+        if (
+            mentioned_user_id
+            != str(user["_id"])
+        ):
+            await _notify(
+                mentioned_user_id,
+                "New Task Mention",
+                (
+                    f"{user.get('name', 'Team Member')}: "
+                    f"{note_text} · "
+                    f"{lead.get('name', '')}"
+                ),
+                link=f"/lead/{lead_id}",
+                kind="task",
+            )
+
+    return {
+        "ok": True,
+        "entry": entry,
+        "created_task_ids": created_tasks,
+        "created_task_count": len(
+            created_tasks
+        ),
+    }
 
 @api.post("/leads/{lead_id}/call-history")
 async def add_call_history(
