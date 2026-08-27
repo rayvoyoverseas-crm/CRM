@@ -42,6 +42,35 @@ export default function Team() {
     try { await api.patch(`/users/${u.id}`, { active: !u.active }); load(); } catch (e) { toast.error("Failed"); }
   };
 
+  const toggleAllowedProfile = async (u, targetUserId) => {
+    const currentAllowed =
+      u.permissions?.allowed_profile_user_ids || [];
+  
+    const alreadyAllowed =
+      currentAllowed.includes(targetUserId);
+  
+    const nextAllowed = alreadyAllowed
+      ? currentAllowed.filter(
+          (id) => id !== targetUserId
+        )
+      : [...currentAllowed, targetUserId];
+  
+    try {
+      await api.patch(`/users/${u.id}`, {
+        permissions: {
+          ...u.permissions,
+          allowed_profile_user_ids: nextAllowed,
+        },
+      });
+  
+      await load();
+    } catch (e) {
+      toast.error(
+        "Unable to update profile access"
+      );
+    }
+  };
+
   return (
     <Layout
       title="Team"
