@@ -1050,27 +1050,143 @@ def serialize_lead(l: dict) -> dict:
         "loan_info": l.get("loan_info", {}),
     }
 
-async def _lead_visible_filter(user: dict) -> dict:
-    base = {"is_deleted": {"$ne": True}}
-    if user.get("role") == "admin" or (user.get("permissions") or {}).get("see_all_leads"):
+async def _lead_visible_filter(
+    user: dict,
+    view_as_user_id: Optional[str] = None,
+) -> dict:
+    base = {
+        "is_deleted": {
+            "$ne": True
+        }
+    }
+
+    # Admin can view any selected profile.
+    if user.get("role") == "admin":
+        if view_as_user_id:
+            if not ObjectId.is_valid(
+                view_as_user_id
+            ):
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid profile user ID",
+                )
+
+            return {
+                **base,
+                "assigned_to": view_as_user_id,
+            }
+
         return base
-    return {**base, "assigned_to": str(user["_id"])}
+
+    permissions = (
+        user.get("permissions") or {}
+    )
+
+    # ---------------------------------------------------------
+    # PROFILE SWITCH
+    # ---------------------------------------------------------
+    if view_as_user_id:
+        if not permissions.get(
+            "profile_switch_enabled"
+        ):
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    "Profile switching is not "
+                    "enabled for this account."
+                ),
+            )
+
+        allowed_profile_user_ids = (
+            permissions.get(
+                "allowed_profile_user_ids"
+            )
+            or []
+        )
+
+        if (
+            view_as_user_id
+            not in allowed_profile_user_ids
+        ):
+            raise HTTPException(
+                status_code=403,
+                detail=(
+                    "You do not have permission "
+                    "to view this profile."
+                ),
+            )
+
+        if not ObjectId.is_valid(
+            view_as_user_id
+        ):
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid profile user ID",
+            )
+
+        target_user = (
+            await db.users.find_one(
+                {
+                    "_id": ObjectId(
+                        view_as_user_id
+                    ),
+                    "active": {
+                        "$ne": False
+                    },
+                }
+            )
+        )
+
+        if not target_user:
+            raise HTTPException(
+                status_code=404,
+                detail="Profile not found",
+            )
+
+        return {
+            **base,
+            "assigned_to": view_as_user_id,
+        }
+
+    # Existing All Leads permission stays unchanged.
+    if permissions.get(
+        "see_all_leads"
+    ):
+        return base
+
+    # Default: only the logged-in user's own leads.
+    return {
+        **base,
+        "assigned_to": str(
+            user["_id"]
+        ),
+    }
 
 @api.get("/leads")
 async def list_leads(
     pipeline: Optional[str] = None,
     stage: Optional[str] = None,
     assigned_to: Optional[str] = None,
+    view_as_user_id: Optional[str] = None,
     source: Optional[str] = None,
     reviewed: Optional[bool] = None,
     date_from: Optional[str] = None,
     date_to: Optional[str] = None,
     user: dict = Depends(get_current_user),
 ):
-    q: dict = await _lead_visible_filter(user)
+    q: dict = await _lead_visible_filter(
+        user,
+        view_as_user_id=view_as_user_id,
+    )
     if pipeline: q["pipeline"] = pipeline
     if stage: q["stage"] = stage
-    if assigned_to: q["assigned_to"] = assigned_to
+
+    if (
+        assigned_to
+        and not view_as_user_id
+    ):
+        q["assigned_to"] = assigned_to
+    
     if source: q["source"] = source
     if reviewed is not None: q["reviewed"] = reviewed
     if date_from or date_to:
