@@ -90,6 +90,9 @@ export default function LeadDetail() {
   const [leadDocs, setLeadDocs] = useState([]);
   const [users, setUsers] = useState([]);
   const [note, setNote] = useState("");
+  const [mentionOpen, setMentionOpen] = useState(false);
+  const [mentionSearch, setMentionSearch] = useState("");
+  const [mentionedUsers, setMentionedUsers] = useState([]);
   const [followupForm, setFollowupForm] = useState(null);
   const [leadTasks, setLeadTasks] = useState([]);
   const [callForm, setCallForm] = useState({
@@ -430,16 +433,60 @@ useEffect(() => {
 }
 };
 
-  const addNote = async () => {
-    if (!note.trim()) return;
-    try {
-      await api.post(`/leads/${id}/notes`, { text: note });
-      setNote("");
-      toast.success("Note added");
-      load();
-    } catch (e) { toast.error("Failed"); }
-  };
+    const addNote = async () => {
+      if (!note.trim()) return;
 
+      const hasTypedMention =
+        /(^|\s)@[A-Za-z0-9._-]+/.test(note);
+      
+      if (
+        hasTypedMention &&
+        mentionedUsers.length === 0
+      ) {
+        toast.error(
+          "Please select the team member from the @ mention dropdown."
+        );
+        return;
+      }
+    
+      try {
+        const response = await api.post(
+          `/leads/${id}/notes`,
+          {
+            text: note,
+            mentioned_user_ids: mentionedUsers.map(
+              (person) => person.id
+            ),
+          }
+        );
+    
+        const createdTaskCount =
+          response?.data?.created_task_count || 0;
+    
+        setNote("");
+        setMentionedUsers([]);
+        setMentionSearch("");
+        setMentionOpen(false);
+    
+        if (createdTaskCount > 0) {
+          toast.success(
+            createdTaskCount === 1
+              ? "Note added and task sent"
+              : `Note added and ${createdTaskCount} tasks sent`
+          );
+        } else {
+          toast.success("Note added");
+        }
+    
+        await load();
+      } catch (e) {
+        toast.error(
+          e?.response?.data?.detail ||
+            "Failed to add note"
+        );
+      }
+    };  
+  
   const saveCallHistory = async () => {
   if (
     !callForm.call_date ||
@@ -3230,19 +3277,116 @@ const uploadedDocumentCount = new Set(
     <div className="mb-4">
       <Textarea
         value={note}
-        onChange={(event) => {
-          setNote(event.target.value);
-
-          event.target.style.height = "auto";
-          event.target.style.height =
-            event.target.scrollHeight + "px";
-        }}
+          onChange={(event) => {
+            const value = event.target.value;
+          
+            setNote(value);
+          
+            // Detect the @mention currently being typed
+            const mentionMatch = value.match(
+              /(?:^|\s)@([^\s@]*)$/
+            );
+          
+            if (mentionMatch) {
+              setMentionSearch(mentionMatch[1]);
+              setMentionOpen(true);
+            } else {
+              setMentionSearch("");
+              setMentionOpen(false);
+            }
+          
+            // Keep your existing auto-resize
+            event.target.style.height = "auto";
+            event.target.style.height =
+              event.target.scrollHeight + "px";
+          }}
         placeholder="Write a note..."
         rows={2}
         className="min-h-[64px] resize-none overflow-hidden"
         data-testid="note-input"
       />
 
+        {mentionOpen && (
+          <div className="mt-2 border border-stone-200 rounded-xl bg-white shadow-sm overflow-hidden">
+            {users
+              .filter((u) => {
+                if (u.active === false) return false;
+        
+                const search =
+                  mentionSearch.trim().toLowerCase();
+        
+                if (!search) return true;
+        
+                return String(u.name || "")
+                  .toLowerCase()
+                  .includes(search);
+              })
+              .slice(0, 8)
+              .map((u) => (
+                <button
+                  key={u.id}
+                  type="button"
+                  className="w-full text-left px-3 py-2 text-sm hover:bg-stone-50 border-b border-stone-100 last:border-b-0"
+                  onClick={() => {
+                    const updatedNote = note.replace(
+                      /(?:^|\s)@([^\s@]*)$/,
+                      (match) => {
+                        const prefix =
+                          match.startsWith(" ")
+                            ? " "
+                            : "";
+        
+                        return `${prefix}@${u.name} `;
+                      }
+                    );
+        
+                    setNote(updatedNote);
+        
+                    setMentionedUsers((prev) => {
+                      const alreadyAdded = prev.some(
+                        (person) => person.id === u.id
+                      );
+        
+                      if (alreadyAdded) {
+                        return prev;
+                      }
+        
+                      return [...prev, u];
+                    });
+        
+                    setMentionSearch("");
+                    setMentionOpen(false);
+                  }}
+                >
+                  <div className="font-medium text-stone-800">
+                    {u.name}
+                  </div>
+        
+                  <div className="text-[11px] text-stone-400 capitalize">
+                    {u.role?.replace("_", " ")}
+                  </div>
+                </button>
+              ))}
+        
+            {users.filter((u) => {
+              if (u.active === false) return false;
+        
+              const search =
+                mentionSearch.trim().toLowerCase();
+        
+              if (!search) return true;
+        
+              return String(u.name || "")
+                .toLowerCase()
+                .includes(search);
+            }).length === 0 && (
+              <div className="px-3 py-3 text-xs text-stone-400">
+                No team member found
+              </div>
+            )}
+          </div>
+        )}
+      
       <div className="flex gap-2 mt-2">
         <Button
           type="button"
