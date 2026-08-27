@@ -127,12 +127,41 @@ export default function PipelineBoard({ pipeline }) {
 
   const load = useCallback(async () => {
     const params = { pipeline };
-    if (filterAssignee !== "__all__") params.assigned_to = filterAssignee;
-    if (dateFrom) params.date_from = new Date(dateFrom).toISOString();
-    if (dateTo) params.date_to = new Date(dateTo + "T23:59:59").toISOString();
-    const { data } = await api.get("/leads", { params });
+  
+    // Profile Switch
+    if (viewingProfile !== "__self__") {
+      params.view_as_user_id = viewingProfile;
+    }
+  
+    if (filterAssignee !== "__all__") {
+      params.assigned_to = filterAssignee;
+    }
+  
+    if (dateFrom) {
+      params.date_from =
+        new Date(dateFrom).toISOString();
+    }
+  
+    if (dateTo) {
+      params.date_to =
+        new Date(
+          dateTo + "T23:59:59"
+        ).toISOString();
+    }
+  
+    const { data } = await api.get(
+      "/leads",
+      { params }
+    );
+  
     setLeads(data);
-  }, [pipeline, filterAssignee, dateFrom, dateTo]);
+  }, [
+    pipeline,
+    viewingProfile,
+    filterAssignee,
+    dateFrom,
+    dateTo,
+  ]);
 
   useEffect(() => { load(); }, [load]);
   useEffect(() => { api.get("/pipeline/stats").then((r) => setStats(r.data)).catch(() => {}); }, [leads.length]);
