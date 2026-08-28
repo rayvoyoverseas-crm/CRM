@@ -6,6 +6,63 @@ import { X } from "lucide-react";
 
 export default function Layout({ children, title, subtitle, actions }) {
   const [rayaOpen, setRayaOpen] = useState(false);
+  const [rayaListening, setRayaListening] = useState(false);
+  const [rayaTranscript, setRayaTranscript] = useState("");
+  const [rayaError, setRayaError] = useState("");
+
+  const startRayaListening = () => {
+    setRayaError("");
+    setRayaTranscript("");
+  
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+  
+    if (!SpeechRecognition) {
+      setRayaError(
+        "Voice recognition is not supported in this browser."
+      );
+      return;
+    }
+  
+    const recognition = new SpeechRecognition();
+  
+    recognition.lang = "en-IN";
+    recognition.continuous = false;
+    recognition.interimResults = false;
+  
+    recognition.onstart = () => {
+      setRayaListening(true);
+    };
+  
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      setRayaTranscript(transcript);
+    };
+  
+    recognition.onerror = (event) => {
+      setRayaListening(false);
+  
+      if (event.error === "not-allowed") {
+        setRayaError(
+          "Microphone permission was denied. Please allow microphone access."
+        );
+        return;
+      }
+  
+      if (event.error === "no-speech") {
+        setRayaError("I couldn't hear anything. Please try again.");
+        return;
+      }
+  
+      setRayaError("I couldn't understand that. Please try again.");
+    };
+  
+    recognition.onend = () => {
+      setRayaListening(false);
+    };
+  
+    recognition.start();
+  };
   
   return (
     <div className="min-h-screen flex bg-[#F9F8F6]">
@@ -79,14 +136,37 @@ export default function Layout({ children, title, subtitle, actions }) {
                   <div className="mt-1 text-sm text-stone-500">
                     Your voice assistant for Rayvoy CRM.
                   </div>
-          
+
                   <button
                     type="button"
-                    className="mt-5 w-full h-11 rounded-xl bg-[#1B365D] hover:bg-[#152a4a] text-white text-sm font-semibold flex items-center justify-center gap-2"
+                    onClick={startRayaListening}
+                    disabled={rayaListening}
+                    className="mt-5 w-full h-11 rounded-xl bg-[#1B365D] hover:bg-[#152a4a] disabled:opacity-70 text-white text-sm font-semibold flex items-center justify-center gap-2"
                   >
-                  <span className="text-xl leading-none">🎙️</span>
-                  Start Listening
+                    <span className="text-xl leading-none">
+                      {rayaListening ? "🔴" : "🎙️"}
+                    </span>
+                  
+                    {rayaListening ? "Listening..." : "Start Listening"}
                   </button>
+
+                  {rayaTranscript && (
+                    <div className="mt-4 rounded-xl bg-stone-50 border border-stone-200 px-4 py-3 text-left">
+                      <div className="text-[11px] font-semibold text-stone-400 uppercase tracking-wide">
+                        I heard
+                      </div>
+                  
+                      <div className="mt-1 text-sm font-medium text-stone-800">
+                        “{rayaTranscript}”
+                      </div>
+                    </div>
+                  )}
+                  
+                  {rayaError && (
+                    <div className="mt-4 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-600">
+                      {rayaError}
+                    </div>
+                  )}
           
                   <div className="mt-4 text-[11px] text-stone-400">
                     Try saying: "Search for Manali"
