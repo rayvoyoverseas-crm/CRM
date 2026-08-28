@@ -311,35 +311,33 @@ export default function Layout({ children, title, subtitle, actions }) {
 
           {/* RAYA Persistent Voice Bar */}
           {rayaEnabled && !rayaOpen && (
-            <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[60]">
+            <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-[60]">
               <div
                 onMouseDown={startRayaListening}
-                className={`h-12 px-5 rounded-full text-white shadow-2xl border border-white/20 flex items-center gap-3 select-none cursor-pointer transition-all ${
+                onMouseUp={stopRayaListening}
+                onMouseLeave={() => {
+                  if (rayaListening) {
+                    stopRayaListening();
+                  }
+                }}
+                className={`h-5 w-20 rounded-full shadow-md border flex items-center justify-center gap-[2px] select-none cursor-pointer transition-all ${
                   rayaListening
-                    ? "bg-[#C05B43] scale-105"
-                    : "bg-[#1B365D]"
+                    ? "bg-[#C05B43] border-[#C05B43]"
+                    : "bg-stone-400 border-stone-300"
                 }`}
-                title="Hold to speak to RAYA"
+                title="RAYA"
               >
-                <span className="text-xl leading-none">🎙️</span>
-          
-                <div className="flex items-center gap-[3px] h-5">
-                  <span className="w-[3px] h-2 rounded-full bg-white/70" />
-                  <span className="w-[3px] h-4 rounded-full bg-white" />
-                  <span className="w-[3px] h-3 rounded-full bg-white/80" />
-                  <span className="w-[3px] h-5 rounded-full bg-white" />
-                  <span className="w-[3px] h-3 rounded-full bg-white/80" />
-                  <span className="w-[3px] h-4 rounded-full bg-white" />
-                  <span className="w-[3px] h-2 rounded-full bg-white/70" />
-                </div>
-          
-                <span className="text-[11px] font-semibold tracking-wide">
-                  {rayaListening ? "LISTENING..." : "HOLD TO TALK"}
-                </span>
+                <span className="w-[2px] h-1.5 rounded-full bg-white/80" />
+                <span className="w-[2px] h-2.5 rounded-full bg-white" />
+                <span className="w-[2px] h-3.5 rounded-full bg-white" />
+                <span className="w-[2px] h-2 rounded-full bg-white/90" />
+                <span className="w-[2px] h-3 rounded-full bg-white" />
+                <span className="w-[2px] h-2 rounded-full bg-white/90" />
+                <span className="w-[2px] h-1.5 rounded-full bg-white/80" />
               </div>
             </div>
           )}
-
+        
         <Toaster position="top-right" richColors />
       </main>
     </div>
