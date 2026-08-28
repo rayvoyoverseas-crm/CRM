@@ -19,7 +19,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const STAGE_TRANSITIONS = {
   NL: ["CC"],
-  CC: ["SL"],
+  CC: ["DNP", "SL"],
+  DNP: [],
   SL: ["DR"],
   DR: ["RA"],
   RA: ["AP"],
