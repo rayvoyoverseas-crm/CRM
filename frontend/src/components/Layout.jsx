@@ -336,8 +336,8 @@ export default function Layout({ children, title, subtitle, actions }) {
               }}
               className={`h-4 w-16 rounded-full border-2 select-none cursor-pointer transition-all ${
                 rayaListening
-                  ? "bg-black border-[#1B365D] scale-105"
-                  : "bg-black border-[#1B365D]"
+                  ? "bg-[#343434] border-[#1B365D] scale-105"
+                  : "bg-[#343434] border-[#1B365D]"
               }`}
               title="RAYA"
             >
