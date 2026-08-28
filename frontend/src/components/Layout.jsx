@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import NotificationBell from "@/components/NotificationBell";
@@ -13,6 +13,7 @@ export default function Layout({ children, title, subtitle, actions }) {
   const [rayaTranscript, setRayaTranscript] = useState("");
   const [rayaError, setRayaError] = useState("");
   const [rayaResult, setRayaResult] = useState("");
+  const rayaRecognitionRef = useRef(null);
 
   const [rayaEnabled, setRayaEnabled] = useState(() => {
     return localStorage.getItem("raya_enabled") === "true";
@@ -136,6 +137,7 @@ export default function Layout({ children, title, subtitle, actions }) {
     }
   
     const recognition = new SpeechRecognition();
+    rayaRecognitionRef.current = recognition;
   
     recognition.lang = "en-IN";
     recognition.continuous = false;
@@ -177,6 +179,18 @@ export default function Layout({ children, title, subtitle, actions }) {
     };
   
     recognition.start();
+  };
+
+  const stopRayaListening = () => {
+    const recognition = rayaRecognitionRef.current;
+  
+    if (!recognition) return;
+  
+    try {
+      recognition.stop();
+    } catch (error) {
+      // Recognition has already stopped.
+    }
   };
   
   return (
