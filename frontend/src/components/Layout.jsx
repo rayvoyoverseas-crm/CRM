@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/sonner";
 import NotificationBell from "@/components/NotificationBell";
 import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import api from "@/lib/api";
 
 export default function Layout({ children, title, subtitle, actions }) {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ export default function Layout({ children, title, subtitle, actions }) {
   const [rayaListening, setRayaListening] = useState(false);
   const [rayaTranscript, setRayaTranscript] = useState("");
   const [rayaError, setRayaError] = useState("");
+  const [rayaResult, setRayaResult] = useState("");
 
   const startRayaListening = () => {
     setRayaError("");
