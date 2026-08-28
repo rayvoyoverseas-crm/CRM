@@ -1,9 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import NotificationBell from "@/components/NotificationBell";
+import { Mic, X } from "lucide-react";
 
 export default function Layout({ children, title, subtitle, actions }) {
+  const [rayaOpen, setRayaOpen] = useState(false);
+  
   return (
     <div className="min-h-screen flex bg-[#F9F8F6]">
       <Sidebar />
@@ -15,10 +18,85 @@ export default function Layout({ children, title, subtitle, actions }) {
           </div>
           <div className="flex items-center gap-2">
             {actions}
+          
+            {/* RAYA Voice Assistant */}
+            <button
+              type="button"
+              onClick={() => setRayaOpen(true)}
+              className="h-9 px-3 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 flex items-center gap-2 text-xs font-semibold text-[#1B365D] transition-colors"
+              title="Open RAYA"
+            >
+              <Mic className="w-4 h-4 text-[#C05B43]" />
+              RAYA
+            </button>
+          
             <NotificationBell />
           </div>
         </header>
         <div className="px-8 py-6">{children}</div>
+          {/* RAYA Assistant Panel */}
+          {rayaOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-[2px]">
+              <div className="w-[420px] max-w-[calc(100vw-32px)] bg-white border border-stone-200 rounded-2xl shadow-2xl overflow-hidden">
+          
+                {/* Header */}
+                <div className="flex items-center justify-between px-5 py-4 border-b border-stone-200">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-[#1B365D] text-white grid place-items-center">
+                      <Mic className="w-4 h-4" />
+                    </div>
+          
+                    <div>
+                      <div className="font-display font-bold text-lg text-stone-900">
+                        RAYA
+                      </div>
+          
+                      <div className="text-[11px] text-stone-400">
+                        Your Rayvoy Assistant
+                      </div>
+                    </div>
+                  </div>
+          
+                  <button
+                    type="button"
+                    onClick={() => setRayaOpen(false)}
+                    className="w-8 h-8 rounded-lg hover:bg-stone-100 grid place-items-center text-stone-500"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+          
+                {/* Body */}
+                <div className="p-6 text-center">
+                  <div className="mx-auto w-16 h-16 rounded-full bg-[#C05B43]/10 grid place-items-center">
+                    <Mic className="w-7 h-7 text-[#C05B43]" />
+                  </div>
+          
+                  <div className="mt-4 font-semibold text-stone-800">
+                    Hi, I'm RAYA
+                  </div>
+          
+                  <div className="mt-1 text-sm text-stone-500">
+                    Your voice assistant for Rayvoy CRM.
+                  </div>
+          
+                  <button
+                    type="button"
+                    className="mt-5 w-full h-11 rounded-xl bg-[#1B365D] hover:bg-[#152a4a] text-white text-sm font-semibold flex items-center justify-center gap-2"
+                  >
+                    <Mic className="w-4 h-4" />
+                    Start Listening
+                  </button>
+          
+                  <div className="mt-4 text-[11px] text-stone-400">
+                    Try saying: "Search for Manali"
+                  </div>
+                </div>
+          
+              </div>
+            </div>
+          )}
+
         <Toaster position="top-right" richColors />
       </main>
     </div>
