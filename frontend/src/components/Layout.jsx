@@ -3,8 +3,10 @@ import Sidebar from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import NotificationBell from "@/components/NotificationBell";
 import { X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export default function Layout({ children, title, subtitle, actions }) {
+  const navigate = useNavigate();
   const [rayaOpen, setRayaOpen] = useState(false);
   const [rayaListening, setRayaListening] = useState(false);
   const [rayaTranscript, setRayaTranscript] = useState("");
