@@ -192,15 +192,30 @@ export default function Layout({ children, title, subtitle, actions }) {
             {actions}
           
             {/* RAYA Voice Assistant */}
-            <button
-              type="button"
-              onClick={() => setRayaOpen(true)}
-              className="h-9 px-3 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 flex items-center gap-2 text-xs font-semibold text-[#1B365D] transition-colors"
-              title="Open RAYA"
-            >
-            <span className="text-xl leading-none">🎙️</span>
-            RAYA
-            </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (rayaEnabled) {
+                      toggleRaya();
+                    } else {
+                      setRayaOpen(true);
+                    }
+                  }}
+                  className={`h-9 px-3 rounded-xl border flex items-center gap-2 text-xs font-semibold transition-colors ${
+                    rayaEnabled
+                      ? "border-green-200 bg-green-50 text-green-700"
+                      : "border-stone-200 bg-white hover:bg-stone-50 text-[#1B365D]"
+                  }`}
+                  title={rayaEnabled ? "Turn RAYA off" : "Turn RAYA on"}
+                >
+                  <span className="text-xl leading-none">🎙️</span>
+                  RAYA
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      rayaEnabled ? "bg-green-500" : "bg-stone-300"
+                    }`}
+                  />
+                </button>
           
             <NotificationBell />
           </div>
