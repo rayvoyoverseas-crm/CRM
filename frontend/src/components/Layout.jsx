@@ -122,10 +122,14 @@ export default function Layout({ children, title, subtitle, actions }) {
     recognition.onstart = () => {
       setRayaListening(true);
     };
-  
+
     recognition.onresult = (event) => {
       const transcript = event.results[0][0].transcript;
+    
       setRayaTranscript(transcript);
+    
+      // Send what RAYA heard to the CRM command processor
+      handleRayaCommand(transcript);
     };
   
     recognition.onerror = (event) => {
