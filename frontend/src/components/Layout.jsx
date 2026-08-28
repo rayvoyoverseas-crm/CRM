@@ -323,27 +323,54 @@ export default function Layout({ children, title, subtitle, actions }) {
             </div>
           )}
 
-          {/* RAYA Persistent Voice Bar */}
-          {rayaEnabled && !rayaOpen && (
-            <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[60]">
-            <div
-              onMouseDown={startRayaListening}
-              onMouseUp={stopRayaListening}
-              onMouseLeave={() => {
-                if (rayaListening) {
-                  stopRayaListening();
-                }
-              }}
-              className={`h-4 w-16 rounded-full border-2 select-none cursor-pointer transition-all ${
-                rayaListening
-                  ? "bg-[#343434] border-[#1B365D] scale-105"
-                  : "bg-[#343434] border-[#1B365D]"
-              }`}
-              title="RAYA"
-            >
-              </div>
-            </div>
-          )}
+              {/* RAYA Persistent Voice Button */}
+              {rayaEnabled && !rayaOpen && (
+                <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[60]">
+                  <div
+                    onMouseDown={startRayaListening}
+                    onMouseUp={stopRayaListening}
+                    onMouseLeave={() => {
+                      if (rayaListening) {
+                        stopRayaListening();
+                      }
+                    }}
+                    className={`w-12 h-12 rounded-full flex items-center justify-center cursor-pointer select-none shadow-lg transition-all duration-150 ${
+                      rayaListening
+                        ? "bg-[#2563EB] scale-105"
+                        : "bg-[#2F6FD6] hover:bg-[#2A64C8]"
+                    }`}
+                    title="RAYA"
+                  >
+                    <div className="flex items-center gap-[3px]">
+                      <span
+                        className={`w-[3px] rounded-full bg-white transition-all ${
+                          rayaListening ? "h-5" : "h-3"
+                        }`}
+                      />
+                      <span
+                        className={`w-[3px] rounded-full bg-white transition-all ${
+                          rayaListening ? "h-7" : "h-5"
+                        }`}
+                      />
+                      <span
+                        className={`w-[3px] rounded-full bg-white transition-all ${
+                          rayaListening ? "h-4" : "h-7"
+                        }`}
+                      />
+                      <span
+                        className={`w-[3px] rounded-full bg-white transition-all ${
+                          rayaListening ? "h-7" : "h-5"
+                        }`}
+                      />
+                      <span
+                        className={`w-[3px] rounded-full bg-white transition-all ${
+                          rayaListening ? "h-5" : "h-3"
+                        }`}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
         
         <Toaster position="top-right" richColors />
       </main>
