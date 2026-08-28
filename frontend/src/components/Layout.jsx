@@ -14,6 +14,28 @@ export default function Layout({ children, title, subtitle, actions }) {
   const [rayaError, setRayaError] = useState("");
   const [rayaResult, setRayaResult] = useState("");
 
+  const [rayaEnabled, setRayaEnabled] = useState(() => {
+    return localStorage.getItem("raya_enabled") === "true";
+  });
+
+  const toggleRaya = () => {
+    setRayaEnabled((current) => {
+      const next = !current;
+  
+      localStorage.setItem("raya_enabled", String(next));
+  
+      if (!next) {
+        setRayaListening(false);
+        setRayaTranscript("");
+        setRayaResult("");
+        setRayaError("");
+        setRayaOpen(false);
+      }
+  
+      return next;
+    });
+  };
+  
   const handleRayaCommand = async (command) => {
     const cleanCommand = command.trim();
     const lowerCommand = cleanCommand.toLowerCase();
