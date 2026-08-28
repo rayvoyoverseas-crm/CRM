@@ -313,8 +313,13 @@ export default function Layout({ children, title, subtitle, actions }) {
           {rayaEnabled && !rayaOpen && (
             <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[60]">
               <div
-                className="h-12 px-5 rounded-full bg-[#1B365D] text-white shadow-2xl border border-white/20 flex items-center gap-3 select-none"
-                title="RAYA is on"
+                onMouseDown={startRayaListening}
+                className={`h-12 px-5 rounded-full text-white shadow-2xl border border-white/20 flex items-center gap-3 select-none cursor-pointer transition-all ${
+                  rayaListening
+                    ? "bg-[#C05B43] scale-105"
+                    : "bg-[#1B365D]"
+                }`}
+                title="Hold to speak to RAYA"
               >
                 <span className="text-xl leading-none">🎙️</span>
           
@@ -329,7 +334,7 @@ export default function Layout({ children, title, subtitle, actions }) {
                 </div>
           
                 <span className="text-[11px] font-semibold tracking-wide">
-                  RAYA ON
+                  {rayaListening ? "LISTENING..." : "HOLD TO TALK"}
                 </span>
               </div>
             </div>
