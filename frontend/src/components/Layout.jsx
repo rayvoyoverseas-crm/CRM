@@ -328,6 +328,12 @@ export default function Layout({ children, title, subtitle, actions }) {
             <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[60]">
             <div
               onMouseDown={startRayaListening}
+              onMouseUp={stopRayaListening}
+              onMouseLeave={() => {
+                if (rayaListening) {
+                  stopRayaListening();
+                }
+              }}
               className={`h-5 w-20 rounded-full text-white shadow-md border border-white/20 flex items-center justify-center gap-[2px] select-none cursor-pointer transition-all ${
                 rayaListening
                   ? "bg-[#C05B43] scale-105"
