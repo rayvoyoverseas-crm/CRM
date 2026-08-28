@@ -334,24 +334,13 @@ export default function Layout({ children, title, subtitle, actions }) {
                   stopRayaListening();
                 }
               }}
-              className={`h-5 w-20 rounded-full text-white shadow-md border border-white/20 flex items-center justify-center gap-[2px] select-none cursor-pointer transition-all ${
+              className={`h-4 w-16 rounded-full border-2 select-none cursor-pointer transition-all ${
                 rayaListening
-                  ? "bg-[#C05B43] scale-105"
-                  : "bg-[#1B365D]"
+                  ? "bg-black border-[#1B365D] scale-105"
+                  : "bg-black border-[#1B365D]"
               }`}
               title="RAYA"
             >
-          
-                <div className="flex items-center gap-[3px] h-5">
-                  <span className="w-[3px] h-2 rounded-full bg-white/70" />
-                  <span className="w-[3px] h-4 rounded-full bg-white" />
-                  <span className="w-[3px] h-3 rounded-full bg-white/80" />
-                  <span className="w-[3px] h-5 rounded-full bg-white" />
-                  <span className="w-[3px] h-3 rounded-full bg-white/80" />
-                  <span className="w-[3px] h-4 rounded-full bg-white" />
-                  <span className="w-[3px] h-2 rounded-full bg-white/70" />
-                </div>
-      
               </div>
             </div>
           )}
