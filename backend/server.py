@@ -1654,6 +1654,46 @@ async def update_lead(
 
         allowed_stages = STAGE_TRANSITIONS.get(current_stage, [])
 
+        # Moving to Deferred requires selecting a later intake
+        if requested_stage == "DF":
+            current_intake = existing.get("intake", "")
+            new_intake = str(update.get("intake", "")).strip()
+
+            if not new_intake:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        "Please select a new intake before moving "
+                        "this lead to Deferred."
+                    ),
+                )
+
+            try:
+                current_intake_date = datetime.strptime(
+                    current_intake,
+                    "%B %Y",
+                )
+
+                new_intake_date = datetime.strptime(
+                    new_intake,
+                    "%B %Y",
+                )
+
+            except ValueError:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Invalid intake format.",
+                )
+
+            if new_intake_date <= current_intake_date:
+                raise HTTPException(
+                    status_code=400,
+                    detail=(
+                        "Deferred intake must be later than "
+                        "the student's current intake."
+                    ),
+                )
+
         # NL → CC requires a successful call
         if current_stage == "NL" and requested_stage == "CC":
             call_history = existing.get("call_history", [])
