@@ -75,6 +75,8 @@ export default function LeadDetail() {
     routeId
   );
   const [lead, setLead] = useState(null);
+  const [deferredOpen, setDeferredOpen] = useState(false);
+  const [deferredIntake, setDeferredIntake] = useState("");
 
   const canSeeShortlisting =
     !!lead &&
