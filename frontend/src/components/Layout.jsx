@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import NotificationBell from "@/components/NotificationBell";
-import { Mic, X } from "lucide-react";
+import { X } from "lucide-react";
 
 export default function Layout({ children, title, subtitle, actions }) {
   const [rayaOpen, setRayaOpen] = useState(false);
@@ -26,8 +26,8 @@ export default function Layout({ children, title, subtitle, actions }) {
               className="h-9 px-3 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 flex items-center gap-2 text-xs font-semibold text-[#1B365D] transition-colors"
               title="Open RAYA"
             >
-              <Mic className="w-4 h-4 text-[#C05B43]" />
-              RAYA
+            <span className="text-xl leading-none">🎙️</span>
+            RAYA
             </button>
           
             <NotificationBell />
@@ -42,9 +42,9 @@ export default function Layout({ children, title, subtitle, actions }) {
                 {/* Header */}
                 <div className="flex items-center justify-between px-5 py-4 border-b border-stone-200">
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full bg-[#1B365D] text-white grid place-items-center">
-                      <Mic className="w-4 h-4" />
-                    </div>
+                  <div className="w-9 h-9 rounded-full bg-[#1B365D] text-white grid place-items-center">
+                    <span className="text-lg leading-none">🎙️</span>
+                  </div>
           
                     <div>
                       <div className="font-display font-bold text-lg text-stone-900">
@@ -69,7 +69,7 @@ export default function Layout({ children, title, subtitle, actions }) {
                 {/* Body */}
                 <div className="p-6 text-center">
                   <div className="mx-auto w-16 h-16 rounded-full bg-[#C05B43]/10 grid place-items-center">
-                    <Mic className="w-7 h-7 text-[#C05B43]" />
+                    <span className="text-4xl leading-none">🎙️</span>
                   </div>
           
                   <div className="mt-4 font-semibold text-stone-800">
@@ -84,8 +84,8 @@ export default function Layout({ children, title, subtitle, actions }) {
                     type="button"
                     className="mt-5 w-full h-11 rounded-xl bg-[#1B365D] hover:bg-[#152a4a] text-white text-sm font-semibold flex items-center justify-center gap-2"
                   >
-                    <Mic className="w-4 h-4" />
-                    Start Listening
+                  <span className="text-xl leading-none">🎙️</span>
+                  Start Listening
                   </button>
           
                   <div className="mt-4 text-[11px] text-stone-400">
