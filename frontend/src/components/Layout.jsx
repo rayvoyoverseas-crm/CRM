@@ -14,6 +14,91 @@ export default function Layout({ children, title, subtitle, actions }) {
   const [rayaError, setRayaError] = useState("");
   const [rayaResult, setRayaResult] = useState("");
 
+  const handleRayaCommand = async (command) => {
+    const cleanCommand = command.trim();
+    const lowerCommand = cleanCommand.toLowerCase();
+  
+    setRayaResult("");
+    setRayaError("");
+  
+    // HARD SAFETY RULE:
+    // RAYA never performs delete actions for anyone, including Admin.
+    if (
+      lowerCommand.includes("delete") ||
+      lowerCommand.includes("remove lead") ||
+      lowerCommand.includes("trash lead")
+    ) {
+      setRayaResult(
+        "Delete actions are not available through RAYA voice commands."
+      );
+      return;
+    }
+  
+    // SEARCH / FIND / OPEN LEAD
+    const searchMatch = cleanCommand.match(
+      /^(search for|search|find|open)\s+(.+)$/i
+    );
+  
+    if (searchMatch) {
+      const leadName = searchMatch[2].trim();
+  
+      if (!leadName) {
+        setRayaResult("Please tell me which lead you want to search for.");
+        return;
+      }
+  
+      try {
+        const { data } = await api.get("/leads", {
+          params: {
+            search: leadName,
+          },
+        });
+  
+        if (!Array.isArray(data) || data.length === 0) {
+          setRayaResult(`I couldn't find a lead named "${leadName}".`);
+          return;
+        }
+  
+        const exactMatches = data.filter(
+          (lead) =>
+            (lead.name || "").trim().toLowerCase() ===
+            leadName.toLowerCase()
+        );
+  
+        const matches = exactMatches.length > 0 ? exactMatches : data;
+  
+        if (matches.length > 1) {
+          setRayaResult(
+            `I found ${matches.length} leads matching "${leadName}". Please use the CRM search to choose the correct one for now.`
+          );
+          return;
+        }
+  
+        const lead = matches[0];
+  
+        const leadRouteId = lead.lead_code
+          ? lead.lead_code.replace("/", "-")
+          : lead.id;
+  
+        setRayaResult(`Opening ${lead.name}...`);
+  
+        setTimeout(() => {
+          setRayaOpen(false);
+          navigate(`/lead/${leadRouteId}`);
+        }, 600);
+  
+        return;
+      } catch (error) {
+        setRayaError("I couldn't search the CRM right now.");
+        return;
+      }
+    }
+  
+    setRayaResult(
+      `I heard "${cleanCommand}", but I don't know that command yet.`
+    );
+  };
+
   const startRayaListening = () => {
     setRayaError("");
     setRayaTranscript("");
