@@ -312,21 +312,15 @@ export default function Layout({ children, title, subtitle, actions }) {
           {/* RAYA Persistent Voice Bar */}
           {rayaEnabled && !rayaOpen && (
             <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[60]">
-              <div
-                onMouseDown={startRayaListening}
-                onMouseUp={stopRayaListening}
-                onMouseLeave={() => {
-                  if (rayaListening) {
-                    stopRayaListening();
-                  }
-                }}
-                className={`h-12 px-5 rounded-full text-white shadow-2xl border border-white/20 flex items-center gap-3 select-none cursor-pointer transition-all ${
-                  rayaListening
-                    ? "bg-[#C05B43] scale-105"
-                    : "bg-[#1B365D]"
-                }`}
-                title="Hold to speak to RAYA"
-              >
+            <div
+              onMouseDown={startRayaListening}
+              className={`h-12 px-5 rounded-full text-white shadow-2xl border border-white/20 flex items-center gap-3 select-none cursor-pointer transition-all ${
+                rayaListening
+                  ? "bg-[#C05B43] scale-105"
+                  : "bg-[#1B365D]"
+              }`}
+              title="RAYA"
+            >
                 <span className="text-xl leading-none">🎙️</span>
           
                 <div className="flex items-center gap-[3px] h-5">
