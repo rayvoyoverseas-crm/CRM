@@ -3567,6 +3567,10 @@ const uploadedDocumentCount = new Set(
               
         <Select
           onValueChange={(v) => {
+            if (v === "DF") {
+              setDeferredOpen(true);
+              return;
+            }
             if (lead.stage === "OL" && v === "RD") {
               const missing = [];
         
