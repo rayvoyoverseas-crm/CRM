@@ -269,15 +269,17 @@ export default function Layout({ children, title, subtitle, actions }) {
 
                   <button
                     type="button"
-                    onClick={startRayaListening}
-                    disabled={rayaListening}
-                    className="mt-5 w-full h-11 rounded-xl bg-[#1B365D] hover:bg-[#152a4a] disabled:opacity-70 text-white text-sm font-semibold flex items-center justify-center gap-2"
-                  >
-                    <span className="text-xl leading-none">
-                      {rayaListening ? "🔴" : "🎙️"}
-                    </span>
+                    onClick={() => {
+                      if (!rayaEnabled) {
+                        toggleRaya();
+                      }
                   
-                    {rayaListening ? "Listening..." : "Start Listening"}
+                      setRayaOpen(false);
+                    }}
+                    className="mt-5 w-full h-11 rounded-xl bg-[#1B365D] hover:bg-[#152a4a] text-white text-sm font-semibold flex items-center justify-center gap-2"
+                  >
+                    <span className="text-xl leading-none">🎙️</span>
+                    Turn RAYA On
                   </button>
 
                   {rayaTranscript && (
@@ -303,6 +305,32 @@ export default function Layout({ children, title, subtitle, actions }) {
                   </div>
                 </div>
           
+              </div>
+            </div>
+          )}
+
+          {/* RAYA Persistent Voice Bar */}
+          {rayaEnabled && !rayaOpen && (
+            <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[60]">
+              <div
+                className="h-12 px-5 rounded-full bg-[#1B365D] text-white shadow-2xl border border-white/20 flex items-center gap-3 select-none"
+                title="RAYA is on"
+              >
+                <span className="text-xl leading-none">🎙️</span>
+          
+                <div className="flex items-center gap-[3px] h-5">
+                  <span className="w-[3px] h-2 rounded-full bg-white/70" />
+                  <span className="w-[3px] h-4 rounded-full bg-white" />
+                  <span className="w-[3px] h-3 rounded-full bg-white/80" />
+                  <span className="w-[3px] h-5 rounded-full bg-white" />
+                  <span className="w-[3px] h-3 rounded-full bg-white/80" />
+                  <span className="w-[3px] h-4 rounded-full bg-white" />
+                  <span className="w-[3px] h-2 rounded-full bg-white/70" />
+                </div>
+          
+                <span className="text-[11px] font-semibold tracking-wide">
+                  RAYA ON
+                </span>
               </div>
             </div>
           )}
