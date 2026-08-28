@@ -1607,7 +1607,8 @@ async def get_lead(
     return serialize_lead(lead)
 STAGE_TRANSITIONS = {
     "NL": ["CC"],
-    "CC": ["SL"],
+    "CC": ["DNP", "SL"],
+    "DNP": [],
     "SL": ["DR"],
     "DR": ["RA"],
     "RA": ["AP"],
