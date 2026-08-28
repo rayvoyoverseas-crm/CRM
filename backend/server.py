@@ -698,6 +698,7 @@ class LeadUpdateIn(BaseModel):
     course_interest: Optional[str] = None
     stage: Optional[str] = None
     notes: Optional[str] = None
+    intake: Optional[str] = None
     assigned_to: Optional[str] = None
     source: Optional[str] = None
     selected_shortlist_id: Optional[str] = None
