@@ -964,6 +964,7 @@ def serialize_lead(l: dict) -> dict:
         "phone": l.get("phone", ""),
         "country_interest": l.get("country_interest", ""),
         "course_interest": l.get("course_interest", ""),
+        "intake": l.get("intake", ""),
         "stage": l.get("stage"),
         "pipeline": l.get("pipeline"),
         "source": l.get("source"),
