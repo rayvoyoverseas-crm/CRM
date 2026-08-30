@@ -19,17 +19,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const STAGE_TRANSITIONS = {
   NL: ["CC"],
-  CC: ["DNP", "SL"],
+  CC: ["DNP", "SL", "LO", "DF"],
   DNP: [],
-  SL: ["DR"],
-  DR: ["RA"],
-  RA: ["AP"],
-  AP: ["OL"],
-  OL: ["RD"],
-  RD: ["DP"],
-  DP: ["VS"],
-  VS: ["EN"],
-  EN: [],
+  SL: ["DR", "LO", "DF"],
+  DR: ["RA", "LO", "DF"],
+  RA: ["AP", "LO", "DF"],
+  AP: ["OL", "LO", "DF"],
+  OL: ["RD", "LO", "DF"],
+  RD: ["DP", "LO", "DF"],
+  DP: ["VS", "LO", "DF"],
+  VS: ["EN", "LO", "DF"],
+  EN: ["LO", "DF"],
+  LO: [],
+  DF: [],
 };
 
 const SHORTLIST_VISIBLE_STAGES = [
