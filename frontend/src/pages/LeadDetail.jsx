@@ -3624,6 +3624,118 @@ const uploadedDocumentCount = new Set(
             </div>
           </div>
 
+          {deferredOpen && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 px-4">
+              <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+                <h3 className="font-display text-lg font-semibold">
+                  Move Lead to Deferred
+                </h3>
+
+                <p className="mt-2 text-sm text-stone-500">
+                  Current Intake:{" "}
+                  <span className="font-semibold text-stone-800">
+                    {lead.intake || "Not available"}
+                  </span>
+                </p>
+
+                <div className="mt-5">
+                  <Label className="text-xs">
+                    Select New Intake
+                  </Label>
+
+                  <Select
+                    value={deferredIntake}
+                    onValueChange={setDeferredIntake}
+                  >
+                    <SelectTrigger className="mt-2">
+                      <SelectValue placeholder="Select next intake" />
+                    </SelectTrigger>
+
+                    <SelectContent>
+                      {[
+                        "September 2026",
+                        "January 2027",
+                        "September 2027",
+                        "January 2028",
+                        "September 2028",
+                      ]
+                        .filter((intake) => {
+                          if (!lead.intake) return true;
+
+                          const parseIntake = (value) => {
+                            const [month, year] = value.split(" ");
+
+                            const monthMap = {
+                              January: 0,
+                              February: 1,
+                              March: 2,
+                              April: 3,
+                              May: 4,
+                              June: 5,
+                              July: 6,
+                              August: 7,
+                              September: 8,
+                              October: 9,
+                              November: 10,
+                              December: 11,
+                            };
+
+                            return new Date(
+                              Number(year),
+                              monthMap[month]
+                            );
+                          };
+
+                          return (
+                            parseIntake(intake) >
+                            parseIntake(lead.intake)
+                          );
+                        })
+                        .map((intake) => (
+                          <SelectItem key={intake} value={intake}>
+                            {intake}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="mt-6 flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setDeferredOpen(false);
+                      setDeferredIntake("");
+                    }}
+                  >
+                    Cancel
+                  </Button>
+
+                  <Button
+                    type="button"
+                    onClick={async () => {
+                      if (!deferredIntake) {
+                        toast.error("Please select the new intake.");
+                        return;
+                      }
+
+                      await updateField({
+                        stage: "DF",
+                        intake: deferredIntake,
+                      });
+
+                      setDeferredOpen(false);
+                      setDeferredIntake("");
+                    }}
+                  >
+                    Confirm Deferred
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {user?.role === "admin" && (
             <div className="bg-white border border-stone-200 rounded-2xl p-4">
               <div className="text-[11px] uppercase tracking-widest text-stone-400 font-semibold">Assigned Counsellor</div>
