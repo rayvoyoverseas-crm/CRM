@@ -3652,7 +3652,7 @@ const uploadedDocumentCount = new Set(
                       <SelectValue placeholder="Select next intake" />
                     </SelectTrigger>
 
-                    <SelectContent>
+                    <SelectContent className="z-[200]">
                       {[
                         "September 2026",
                         "January 2027",
