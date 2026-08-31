@@ -56,6 +56,73 @@ export default function Layout({ children, title, subtitle, actions }) {
       );
       return;
     }
+
+    // CRM NAVIGATION COMMANDS
+    const navigationCommands = [
+      {
+        phrases: [
+          "go to study abroad",
+          "go back to study abroad",
+          "open study abroad",
+          "study abroad",
+        ],
+        path: "/pipeline/study",
+        message: "Opening Study Abroad...",
+      },
+      {
+        phrases: [
+          "go to dashboard",
+          "go back to dashboard",
+          "open dashboard",
+          "dashboard",
+        ],
+        path: "/",
+        message: "Opening Dashboard...",
+      },
+      {
+        phrases: [
+          "go to tasks",
+          "open tasks",
+          "tasks",
+        ],
+        path: "/tasks",
+        message: "Opening Tasks...",
+      },
+      {
+        phrases: [
+          "go to website leads",
+          "open website leads",
+          "website leads",
+        ],
+        path: "/website-leads",
+        message: "Opening Website Leads...",
+      },
+      {
+        phrases: [
+          "go to analytics",
+          "open analytics",
+          "analytics",
+        ],
+        path: "/analytics",
+        message: "Opening Analytics...",
+      },
+    ];
+
+    const navigationMatch = navigationCommands.find((item) =>
+      item.phrases.includes(lowerCommand)
+    );
+
+    if (navigationMatch) {
+      setRayaResult(navigationMatch.message);
+
+      setTimeout(() => {
+        setRayaOpen(false);
+        navigate(navigationMatch.path);
+      }, 400);
+
+      return;
+    }
+
   
     // SEARCH / FIND / OPEN LEAD
     const searchMatch = cleanCommand.match(
