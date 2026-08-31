@@ -14,6 +14,8 @@ export default function Layout({ children, title, subtitle, actions }) {
   const [rayaError, setRayaError] = useState("");
   const [rayaResult, setRayaResult] = useState("");
   const rayaRecognitionRef = useRef(null);
+  const rayaWakeRecognitionRef = useRef(null);
+  const rayaWakeTriggeredRef = useRef(false);
 
   const [rayaEnabled, setRayaEnabled] = useState(() => {
     return localStorage.getItem("raya_enabled") === "true";
@@ -276,6 +278,18 @@ export default function Layout({ children, title, subtitle, actions }) {
   };
 
   const startRayaListening = () => {
+    const wakeRecognition = rayaWakeRecognitionRef.current;
+
+    if (wakeRecognition) {
+      try {
+        wakeRecognition.stop();
+      } catch (error) {
+        // Wake recognition has already stopped.
+      }
+
+      rayaWakeRecognitionRef.current = null;
+    }
+
     setRayaError("");
     setRayaTranscript("");
   
@@ -329,6 +343,14 @@ export default function Layout({ children, title, subtitle, actions }) {
   
     recognition.onend = () => {
       setRayaListening(false);
+    
+      if (rayaEnabled) {
+        setTimeout(() => {
+          if (!rayaWakeRecognitionRef.current) {
+            startRayaWakeListening();
+          }
+        }, 500);
+      }
     };
   
     recognition.start();
@@ -356,6 +378,49 @@ export default function Layout({ children, title, subtitle, actions }) {
       );
     };
   }, [rayaListening]);
+
+  useEffect(() => {
+    if (!rayaEnabled) {
+      const wakeRecognition = rayaWakeRecognitionRef.current;
+
+      if (wakeRecognition) {
+        try {
+          wakeRecognition.stop();
+        } catch (error) {
+          // Wake recognition has already stopped.
+        }
+
+        rayaWakeRecognitionRef.current = null;
+      }
+
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      if (
+        !rayaListening &&
+        !rayaWakeRecognitionRef.current
+      ) {
+        startRayaWakeListening();
+      }
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+
+      const wakeRecognition = rayaWakeRecognitionRef.current;
+
+      if (wakeRecognition) {
+        try {
+          wakeRecognition.stop();
+        } catch (error) {
+          // Wake recognition has already stopped.
+        }
+
+        rayaWakeRecognitionRef.current = null;
+      }
+    };
+  }, [rayaEnabled, rayaListening]);
   
 
   const stopRayaListening = () => {
@@ -369,6 +434,71 @@ export default function Layout({ children, title, subtitle, actions }) {
       // Recognition has already stopped.
     }
   };
+
+const startRayaWakeListening = () => {
+  const SpeechRecognition =
+    window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (!SpeechRecognition || !rayaEnabled) {
+    return;
+  }
+
+  const wakeRecognition = new SpeechRecognition();
+  rayaWakeRecognitionRef.current = wakeRecognition;
+
+  wakeRecognition.lang = "en-IN";
+  wakeRecognition.continuous = true;
+  wakeRecognition.interimResults = false;
+
+  wakeRecognition.onresult = (event) => {
+    const transcript =
+      event.results[event.results.length - 1][0].transcript
+        .trim()
+        .toLowerCase();
+
+    if (
+      transcript.includes("hey raya") ||
+      transcript.includes("hey rayya")
+    ) {
+      rayaWakeTriggeredRef.current = true;
+
+      setRayaTranscript("Hey RAYA");
+      setRayaResult("I'm listening...");
+      setRayaError("");
+
+      try {
+        wakeRecognition.stop();
+      } catch (error) {
+        // Wake recognition has already stopped.
+      }
+    }
+  };
+
+  wakeRecognition.onerror = (event) => {
+    if (
+      event.error === "aborted" ||
+      event.error === "no-speech"
+    ) {
+      return;
+    }
+  };
+
+  wakeRecognition.onend = () => {
+    if (rayaWakeTriggeredRef.current) {
+      rayaWakeTriggeredRef.current = false;
+
+      setTimeout(() => {
+        startRayaListening();
+      }, 250);
+    }
+  };
+
+  try {
+    wakeRecognition.start();
+  } catch (error) {
+    // Wake recognition is already running.
+  }
+};
   
   return (
     <div className="min-h-screen flex bg-[#F9F8F6]">
