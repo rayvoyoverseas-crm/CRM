@@ -340,17 +340,9 @@ export default function Layout({ children, title, subtitle, actions }) {
   
       setRayaError("I couldn't understand that. Please try again.");
     };
-  
+
     recognition.onend = () => {
       setRayaListening(false);
-    
-      if (rayaEnabled) {
-        setTimeout(() => {
-          if (!rayaWakeRecognitionRef.current) {
-            startRayaWakeListening();
-          }
-        }, 500);
-      }
     };
   
     recognition.start();
@@ -378,50 +370,6 @@ export default function Layout({ children, title, subtitle, actions }) {
       );
     };
   }, [rayaListening]);
-
-  useEffect(() => {
-    if (!rayaEnabled) {
-      const wakeRecognition = rayaWakeRecognitionRef.current;
-
-      if (wakeRecognition) {
-        try {
-          wakeRecognition.stop();
-        } catch (error) {
-          // Wake recognition has already stopped.
-        }
-
-        rayaWakeRecognitionRef.current = null;
-      }
-
-      return;
-    }
-
-    const timer = setTimeout(() => {
-      if (
-        !rayaListening &&
-        !rayaWakeRecognitionRef.current
-      ) {
-        startRayaWakeListening();
-      }
-    }, 500);
-
-    return () => {
-      clearTimeout(timer);
-
-      const wakeRecognition = rayaWakeRecognitionRef.current;
-
-      if (wakeRecognition) {
-        try {
-          wakeRecognition.stop();
-        } catch (error) {
-          // Wake recognition has already stopped.
-        }
-
-        rayaWakeRecognitionRef.current = null;
-      }
-    };
-  }, [rayaEnabled, rayaListening]);
-  
 
   const stopRayaListening = () => {
     const recognition = rayaRecognitionRef.current;
