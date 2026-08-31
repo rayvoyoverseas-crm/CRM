@@ -336,9 +336,9 @@ export default function Layout({ children, title, subtitle, actions }) {
 
   useEffect(() => {
     const handleRayaKeyboardShortcut = (event) => {
-      if (event.key === "F8") {
+      if (event.key === "`") {
         event.preventDefault();
-
+  
         if (rayaListening) {
           stopRayaListening();
         } else {
@@ -346,9 +346,9 @@ export default function Layout({ children, title, subtitle, actions }) {
         }
       }
     };
-
+  
     window.addEventListener("keydown", handleRayaKeyboardShortcut);
-
+  
     return () => {
       window.removeEventListener(
         "keydown",
