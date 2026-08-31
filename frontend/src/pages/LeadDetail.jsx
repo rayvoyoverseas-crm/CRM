@@ -430,14 +430,15 @@ useEffect(() => {
       const { data } = await api.patch(`/leads/${id}`, patch);
       setLead(data);
       toast.success("Updated");
+      return true;
     } catch (e) {
-  toast.error(
-    e?.response?.data?.detail ||
-      "Failed to update stage"
-  );
-}
-};
-
+      toast.error(
+        e?.response?.data?.detail ||
+          "Failed to update stage"
+      );
+      return false;
+    }
+  };
     const addNote = async () => {
       if (!note.trim()) return;
 
@@ -3720,13 +3721,15 @@ const uploadedDocumentCount = new Set(
                         return;
                       }
 
-                      await updateField({
+                      const updated = await updateField({
                         stage: "DF",
                         intake: deferredIntake,
                       });
-
-                      setDeferredOpen(false);
-                      setDeferredIntake("");
+                      
+                      if (updated) {
+                        setDeferredOpen(false);
+                        setDeferredIntake("");
+                      }
                     }}
                   >
                     Confirm Deferred
