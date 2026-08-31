@@ -57,63 +57,149 @@ export default function Layout({ children, title, subtitle, actions }) {
       return;
     }
 
-    // CRM NAVIGATION COMMANDS
-    const navigationCommands = [
+    // FULL CRM NAVIGATION
+    const crmNavigation = [
       {
-        phrases: [
-          "go to study abroad",
-          "go back to study abroad",
-          "open study abroad",
+        names: ["dashboard", "home", "home page"],
+        path: "/",
+        label: "Dashboard",
+      },
+      {
+        names: [
           "study abroad",
+          "study abroad pipeline",
+          "study pipeline",
         ],
         path: "/pipeline/study",
-        message: "Opening Study Abroad...",
+        label: "Study Abroad",
       },
       {
-        phrases: [
-          "go to dashboard",
-          "go back to dashboard",
-          "open dashboard",
-          "dashboard",
+        names: [
+          "accommodation",
+          "accommodation pipeline",
         ],
-        path: "/",
-        message: "Opening Dashboard...",
+        path: "/pipeline/accommodation",
+        label: "Accommodation",
       },
       {
-        phrases: [
-          "go to tasks",
-          "open tasks",
-          "tasks",
+        names: [
+          "loan",
+          "loan pipeline",
+          "education loan",
         ],
-        path: "/tasks",
-        message: "Opening Tasks...",
+        path: "/pipeline/loan",
+        label: "Loan",
       },
       {
-        phrases: [
-          "go to website leads",
-          "open website leads",
+        names: [
+          "calculation",
+          "calculations",
+          "calculator",
+        ],
+        path: "/calculation",
+        label: "Calculation",
+      },
+      {
+        names: [
           "website leads",
+          "website lead",
+          "web leads",
         ],
         path: "/website-leads",
-        message: "Opening Website Leads...",
+        label: "Website Leads",
       },
       {
-        phrases: [
-          "go to analytics",
-          "open analytics",
+        names: [
           "analytics",
+          "analytics page",
         ],
         path: "/analytics",
-        message: "Opening Analytics...",
+        label: "Analytics",
+      },
+      {
+        names: [
+          "team",
+          "team page",
+          "my team",
+        ],
+        path: "/team",
+        label: "Team",
+      },
+      {
+        names: [
+          "targets",
+          "target",
+          "targets page",
+        ],
+        path: "/targets",
+        label: "Targets",
+      },
+      {
+        names: [
+          "revenue",
+          "finance",
+          "revenue and finance",
+        ],
+        path: "/revenue",
+        label: "Revenue",
+      },
+      {
+        names: [
+          "settings",
+          "setting",
+          "settings page",
+        ],
+        path: "/settings",
+        label: "Settings",
+      },
+      {
+        names: [
+          "tasks",
+          "task",
+          "tasks page",
+          "my tasks",
+        ],
+        path: "/tasks",
+        label: "Tasks",
+      },
+      {
+        names: [
+          "bin",
+          "trash",
+          "recycle bin",
+        ],
+        path: "/bin",
+        label: "Bin",
       },
     ];
 
-    const navigationMatch = navigationCommands.find((item) =>
-      item.phrases.includes(lowerCommand)
+    const navigationPrefixes = [
+      "go to ",
+      "go back to ",
+      "open ",
+      "take me to ",
+      "navigate to ",
+      "show me ",
+      "show ",
+    ];
+
+    let navigationTarget = lowerCommand;
+
+    for (const prefix of navigationPrefixes) {
+      if (navigationTarget.startsWith(prefix)) {
+        navigationTarget = navigationTarget
+          .slice(prefix.length)
+          .trim();
+        break;
+      }
+    }
+
+    const navigationMatch = crmNavigation.find((item) =>
+      item.names.includes(navigationTarget)
     );
 
     if (navigationMatch) {
-      setRayaResult(navigationMatch.message);
+      setRayaResult(`Opening ${navigationMatch.label}...`);
 
       setTimeout(() => {
         setRayaOpen(false);
