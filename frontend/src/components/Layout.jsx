@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import NotificationBell from "@/components/NotificationBell";
@@ -333,6 +333,30 @@ export default function Layout({ children, title, subtitle, actions }) {
   
     recognition.start();
   };
+
+  useEffect(() => {
+    const handleRayaKeyboardShortcut = (event) => {
+      if (event.key === "F8") {
+        event.preventDefault();
+
+        if (rayaListening) {
+          stopRayaListening();
+        } else {
+          startRayaListening();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleRayaKeyboardShortcut);
+
+    return () => {
+      window.removeEventListener(
+        "keydown",
+        handleRayaKeyboardShortcut
+      );
+    };
+  }, [rayaListening]);
+  
 
   const stopRayaListening = () => {
     const recognition = rayaRecognitionRef.current;
