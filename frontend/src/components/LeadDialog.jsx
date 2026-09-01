@@ -243,6 +243,10 @@ const [form, setForm] = useState({
                   </SelectTrigger>
           
                   <SelectContent>
+                    <SelectItem value="January 2026">
+                      January 2026
+                    </SelectItem>
+
                     <SelectItem value="September 2026">
                       September 2026
                     </SelectItem>
