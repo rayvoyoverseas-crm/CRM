@@ -1321,6 +1321,10 @@ const uploadedDocumentCount = new Set(
   </SelectTrigger>
 
   <SelectContent>
+  <SelectItem value="January 2026">
+    January 2026
+  </SelectItem>
+    
     <SelectItem value="September 2026">
       September 2026
     </SelectItem>
@@ -3654,6 +3658,7 @@ const uploadedDocumentCount = new Set(
 
                     <SelectContent className="z-[200]">
                       {[
+                        "January 2026",
                         "September 2026",
                         "January 2027",
                         "September 2027",
