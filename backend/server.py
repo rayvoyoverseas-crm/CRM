@@ -2876,6 +2876,7 @@ async def permanent_delete(lead_id: str, admin: dict = Depends(require_admin)):
     await db.leads.delete_one({"_id": ObjectId(lead_id)})
     await db.documents.update_many({"lead_id": lead_id}, {"$set": {"is_deleted": True}})
     await db.tasks.delete_many({"lead_id": lead_id})
+    await db.student_revenue.delete_many({"lead_id": lead_id})
     return {"ok": True}
 
 @api.get("/leads/bin/list")
