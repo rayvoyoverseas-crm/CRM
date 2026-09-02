@@ -8,13 +8,14 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-const CURRENCIES = ["INR", "GBP", "EUR", "USD"];
+const CURRENCIES = ["INR", "GBP", "EUR", "USD", "AUD"];
 
 const CURRENCY_SYMBOLS = {
   INR: "₹",
   GBP: "£",
   EUR: "€",
   USD: "$",
+  AUD: "A$",
 };
 
 function getInitialRevenue() {
