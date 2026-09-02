@@ -825,6 +825,12 @@ const offerLetterDoc = leadDocs.find(
     doc.original_filename
 );
 
+const depositReceiptDoc = leadDocs.find(
+  (doc) =>
+    doc.doc_type === "deposit_receipt" &&
+    doc.original_filename
+);
+
 const completeShortlists = (lead?.shortlists || []).filter(
   (shortlist) =>
     [
@@ -2674,6 +2680,61 @@ const uploadedDocumentCount = new Set(
                 {depositReceiptFileName}
               </span>
             )}
+
+            {depositReceiptDoc && (
+              <div className="mt-4 border-t border-stone-200 pt-4">
+                <div className="text-sm text-stone-700">
+                  📄 {depositReceiptDoc.original_filename}
+                </div>
+            
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() =>
+                      window.open(
+                        `${api.defaults.baseURL}/documents/${depositReceiptDoc.id}/download`,
+                        "_blank"
+                      )
+                    }
+                  >
+                    👁 View
+                  </Button>
+            
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      const link = document.createElement("a");
+            
+                      link.href =
+                        `${api.defaults.baseURL}/documents/${depositReceiptDoc.id}/download`;
+            
+                      link.download =
+                        depositReceiptDoc.original_filename || "deposit-receipt";
+            
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    }}
+                  >
+                    ⬇ Download
+                  </Button>
+            
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() =>
+                      document
+                        .getElementById("deposit-receipt-file")
+                        ?.click()
+                    }
+                  >
+                    🔄 Replace
+                  </Button>
+                </div>
+              </div>
+            )}           
           </div>
         </div>
 
