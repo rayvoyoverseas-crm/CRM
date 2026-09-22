@@ -558,9 +558,39 @@ export default function Revenue() {
             </div>
 
 
+          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+          
+            {/* Intake Filter */}
+            <select
+              value={selectedIntake}
+              onChange={(e) =>
+                setSelectedIntake(
+                  e.target.value
+                )
+              }
+              className="h-10 px-3 rounded-xl border border-stone-200 bg-white text-sm text-stone-700 min-w-[170px]"
+            >
+              <option value="all">
+                All Intakes
+              </option>
+          
+              {intakeOptions.map(
+                (intake) => (
+                  <option
+                    key={intake}
+                    value={intake}
+                  >
+                    {intake}
+                  </option>
+                )
+              )}
+            </select>
+          
+          
+            {/* Search */}
             <div className="relative w-full md:w-72">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
-
+          
               <input
                 value={search}
                 onChange={(e) =>
@@ -572,6 +602,8 @@ export default function Revenue() {
                 className="w-full h-10 pl-9 pr-3 rounded-xl border border-stone-200 text-sm"
               />
             </div>
+          
+          </div>
 
           </div>
 
