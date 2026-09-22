@@ -410,6 +410,21 @@ export default function Revenue() {
       [records]
     );
 
+  const intakeOptions =
+  useMemo(() => {
+    const intakes = records
+      .map((record) =>
+        String(
+          record.intake || ""
+        ).trim()
+      )
+      .filter(Boolean);
+
+    return [
+      ...new Set(intakes),
+    ];
+  }, [records]);
+
 
   const filteredLedger =
     useMemo(() => {
