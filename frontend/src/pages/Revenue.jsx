@@ -357,6 +357,11 @@ export default function Revenue() {
     setSearch,
   ] = useState("");
 
+  const [
+  selectedIntake,
+  setSelectedIntake,
+] = useState("all");
+
 
   useEffect(() => {
     if (
