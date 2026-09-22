@@ -3196,15 +3196,39 @@ async def revenue_ledger(
             {},
         )
 
+        # Get the student's intake from the lead record.
+        intake = ""
+
+        lead_id = record.get(
+            "lead_id"
+        )
+
+        if lead_id:
+            try:
+                lead = await db.leads.find_one(
+                    {
+                        "_id": ObjectId(
+                            lead_id
+                        )
+                    }
+                )
+
+                if lead:
+                    intake = lead.get(
+                        "intake",
+                        "",
+                    )
+
+            except Exception:
+                pass
+
         result.append(
             {
                 "id": str(
                     record["_id"]
                 ),
 
-                "lead_id": record.get(
-                    "lead_id"
-                ),
+                "lead_id": lead_id,
 
                 "student_name": record.get(
                     "student_name",
@@ -3215,6 +3239,8 @@ async def revenue_ledger(
                     "student_email",
                     "",
                 ),
+
+                "intake": intake,
 
                 # Full saved finance information.
                 # Revenue.jsx will use this to calculate
