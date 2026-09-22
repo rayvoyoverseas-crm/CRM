@@ -426,42 +426,52 @@ export default function Revenue() {
   }, [records]);
 
 
-  const filteredLedger =
-    useMemo(() => {
-      const query =
-        search
-          .trim()
-          .toLowerCase();
+const filteredLedger =
+  useMemo(() => {
+    const query =
+      search
+        .trim()
+        .toLowerCase();
 
-      if (!query) {
-        return ledger;
-      }
+    return ledger.filter(
+      (row) => {
+        const matchesIntake =
+          selectedIntake === "all" ||
+          String(
+            row.intake || ""
+          ).trim() ===
+            selectedIntake;
 
-      return ledger.filter(
-        (row) =>
+        const matchesSearch =
+          !query ||
           String(
             row.student_name ||
               ""
           )
             .toLowerCase()
             .includes(query) ||
-
           String(
             row.universityName ||
               ""
           )
             .toLowerCase()
-            .includes(query)
-      );
-    }, [
-      ledger,
-      search,
-    ]);
+            .includes(query);
 
+        return (
+          matchesIntake &&
+          matchesSearch
+        );
+      }
+    );
+  }, [
+    ledger,
+    search,
+    selectedIntake,
+  ]);
 
   const totals =
     useMemo(() => {
-      return ledger.reduce(
+      return filteredLedger.reduce(
         (total, row) => {
           total.expected +=
             numberValue(
@@ -486,7 +496,7 @@ export default function Revenue() {
           balance: 0,
         }
       );
-    }, [ledger]);
+    }, [filteredLedger]);
 
 
   if (
